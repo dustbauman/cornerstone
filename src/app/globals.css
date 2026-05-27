@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F8F6F1;
+  --foreground: #1A1A1A;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+  font-weight: 400;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
