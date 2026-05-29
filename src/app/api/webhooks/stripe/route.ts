@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { generateUniqueClaimCode } from '@/lib/claim-code'
+import { generateUniqueClaimCode } from '@/lib/lodges/claim-code'
 import { sendLodgeClaimEmail } from '@/lib/email'
 
 const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')

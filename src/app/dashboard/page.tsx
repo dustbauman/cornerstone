@@ -5,15 +5,15 @@ import {
   Eye, Users, Share2, Edit3, Lock, Globe, Copy,
   TrendingUp, MessageSquare, ShieldCheck, ChevronRight,
 } from 'lucide-react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-import VerifiedBadge from '@/components/VerifiedBadge'
-import CategoryBadge from '@/components/CategoryBadge'
-import StarRating from '@/components/StarRating'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
+import VerifiedBadge from '@/components/directory/VerifiedBadge'
+import CategoryBadge from '@/components/directory/CategoryBadge'
+import StarRating from '@/components/directory/StarRating'
 import { createClient } from '@/lib/supabase/client'
-import { useDemoMode } from '@/lib/demo-context'
-import { demoUser, demoListings } from '@/data/demo'
-import { getListingBySlug } from '@/data/listings'
+import { useDemoMode } from '@/lib/demo/context'
+import { demoUser, demoListings } from '@/lib/demo/data'
+import { getDemoListingBySlug } from '@/lib/demo/listings'
 import type { Listing, TradeCategory } from '@/lib/types'
 
 interface DbListing {
@@ -100,7 +100,7 @@ export default function DashboardPage() {
   }, [isDemoMode])
 
   const listing: Listing | undefined = displayUser?.listingSlug
-    ? getListingBySlug(displayUser.listingSlug)
+    ? getDemoListingBySlug(displayUser.listingSlug)
     : undefined
 
   const demoListing = isDemoMode

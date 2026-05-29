@@ -8,8 +8,8 @@ import {
   Copy, QrCode, Mail, ChevronRight, AlertCircle,
   Building2, Loader2,
 } from 'lucide-react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
 import { createClient } from '@/lib/supabase/client'
 import { Suspense } from 'react'
 

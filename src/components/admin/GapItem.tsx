@@ -1,6 +1,6 @@
 import { AlertTriangle, Info, UserPlus } from "lucide-react";
 import { TradeCategory } from "@/lib/types";
-import CategoryBadge from "./CategoryBadge";
+import CategoryBadge from "@/components/directory/CategoryBadge";
 
 interface Props {
   trade: TradeCategory;

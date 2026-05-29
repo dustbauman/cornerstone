@@ -35,7 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# one-off lodge data scrapers (local only)
-/build_lodge_files.py
-/fl_masonic_lodges.py
-/docs/fl_masonic_lodges.ts
+# local-only lodge data scrapers
+/tools/

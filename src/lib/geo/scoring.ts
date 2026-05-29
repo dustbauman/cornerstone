@@ -1,4 +1,4 @@
-import { ServiceRequest } from "@/data/requests";
+import { ServiceRequest } from '@/lib/demo/requests'
 
 export interface MockUserProfile {
   trade: string;

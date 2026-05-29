@@ -2,15 +2,15 @@
 
 import { useState, useMemo } from "react";
 import { PlusCircle, SlidersHorizontal, X, Megaphone } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import RequestCard from "@/components/RequestCard";
-import SectionDivider from "@/components/SectionDivider";
-import PostRequestModal from "@/components/PostRequestModal";
-import ToastNotification from "@/components/ToastNotification";
-import { requests as seedRequests, ServiceRequest } from "@/data/requests";
-import { haversineDistance, getMatchScore } from "@/lib/scoring";
-import { CATEGORIES } from "@/data/listings";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import RequestCard from "@/components/requests/RequestCard";
+import SectionDivider from "@/components/ui/SectionDivider";
+import PostRequestModal from "@/components/requests/PostRequestModal";
+import ToastNotification from "@/components/ui/ToastNotification";
+import { requests as seedRequests, ServiceRequest } from "@/lib/demo/requests";
+import { haversineDistance, getMatchScore } from "@/lib/geo/scoring";
+import { CATEGORIES } from "@/lib/constants/categories";
 
 const MOCK_USER = {
   name: "Robert C. Ingram",

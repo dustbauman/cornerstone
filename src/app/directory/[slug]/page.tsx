@@ -2,16 +2,16 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { MapPin, Phone, Mail, Globe, CheckCircle2, Share2, Users, ShieldCheck } from 'lucide-react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-import VerifiedBadge from '@/components/VerifiedBadge'
-import CategoryBadge from '@/components/CategoryBadge'
-import StarRating from '@/components/StarRating'
-import ListingCard from '@/components/ListingCard'
-import { getListingBySlug, getRelatedListings, listings as hardcodedListings } from '@/data/listings'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
+import VerifiedBadge from '@/components/directory/VerifiedBadge'
+import CategoryBadge from '@/components/directory/CategoryBadge'
+import StarRating from '@/components/directory/StarRating'
+import ListingCard from '@/components/directory/ListingCard'
+import { getDemoListingBySlug, getDemoRelatedListings, demoListingSlugs } from '@/lib/demo/listings'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { dbListingToListing, DB_LISTING_SELECT } from '@/lib/db-utils'
-import type { DbListingRow } from '@/lib/db-utils'
+import { dbListingToListing, DB_LISTING_SELECT } from '@/lib/db/listings'
+import type { DbListingRow } from '@/lib/db/listings'
 import type { Listing } from '@/lib/types'
 
 interface Props {
@@ -27,11 +27,8 @@ function adminClient() {
 }
 
 async function getListing(slug: string): Promise<Listing | null> {
-  // 1. Try hardcoded data first (demo-mode-compatible slugs)
-  const hardcoded = getListingBySlug(slug)
-  if (hardcoded) return hardcoded
-
-  // 2. Try DB by UUID
+  const demo = getDemoListingBySlug(slug)
+  if (demo) return demo
   const supabase = adminClient()
   const { data } = await supabase
     .from('listings')
@@ -45,7 +42,7 @@ async function getListing(slug: string): Promise<Listing | null> {
 }
 
 export async function generateStaticParams() {
-  const hardcoded = hardcodedListings.map(l => ({ slug: l.slug }))
+  const demo = demoListingSlugs.map(slug => ({ slug }))
 
   try {
     const supabase = adminClient()
@@ -56,9 +53,9 @@ export async function generateStaticParams() {
       .eq('visibility', 'public')
 
     const dbSlugs = (data ?? []).map(l => ({ slug: l.id }))
-    return [...hardcoded, ...dbSlugs]
+    return [...demo, ...dbSlugs]
   } catch {
-    return hardcoded
+    return demo
   }
 }
 
@@ -80,7 +77,7 @@ export default async function BusinessProfilePage({ params }: Props) {
   const listing = await getListing(params.slug)
   if (!listing) notFound()
 
-  const related = getRelatedListings(listing)
+  const related = getDemoRelatedListings(listing)
 
   return (
     <div className="flex flex-col min-h-screen">

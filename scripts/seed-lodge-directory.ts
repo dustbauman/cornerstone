@@ -20,7 +20,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const dataDir = resolve(process.cwd(), 'docs')
+const dataDir = resolve(process.cwd(), 'data/lodges')
 
 // FL — source: docs/florida_lodges.json (lodges.glflamason.org)
 const rawFL = JSON.parse(readFileSync(resolve(dataDir, 'florida_lodges.json'), 'utf8'))

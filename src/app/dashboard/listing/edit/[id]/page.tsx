@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Plus, X, Loader2 } from 'lucide-react'
-import Navbar from '@/components/Navbar'
+import Navbar from '@/components/layout/Navbar'
 import { createClient } from '@/lib/supabase/client'
-import { CATEGORIES } from '@/data/listings'
+import { CATEGORIES } from '@/lib/constants/categories'
 
 const US_STATES = [
   ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],

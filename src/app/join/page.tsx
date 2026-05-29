@@ -3,9 +3,9 @@ import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, Clock, Search } from 'lucide-react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-import LodgeSearch, { US_STATES, type LodgeResult } from '@/components/LodgeSearch'
+import Navbar from '@/components/layout/Navbar'
+import Footer from '@/components/layout/Footer'
+import LodgeSearch, { US_STATES, type LodgeResult } from '@/components/lodge/LodgeSearch'
 
 const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
 

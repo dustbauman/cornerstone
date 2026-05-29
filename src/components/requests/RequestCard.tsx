@@ -1,6 +1,6 @@
 import { MapPin, DollarSign, MessageSquare, Globe } from "lucide-react";
-import { ServiceRequest } from "@/data/requests";
-import CategoryBadge from "./CategoryBadge";
+import { ServiceRequest } from "@/lib/demo/requests";
+import CategoryBadge from "@/components/directory/CategoryBadge";
 import MatchPill from "./MatchPill";
 
 interface Props {

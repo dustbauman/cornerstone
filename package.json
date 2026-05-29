@@ -1,12 +1,14 @@
 {
-  "name": "cornerstone-scaffold",
+  "name": "tyrian",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "tsx scripts/seed.ts",
+    "seed:lodges": "tsx scripts/seed-lodge-directory.ts"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.7.0",

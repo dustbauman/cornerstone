@@ -1,5 +1,5 @@
 import type { Listing, TradeCategory } from '@/lib/types'
-import type { demoListings } from '@/data/demo'
+import type { demoListings } from '@/lib/demo/data'
 
 export const STATE_CODE_TO_NAME: Record<string, string> = {
   AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',

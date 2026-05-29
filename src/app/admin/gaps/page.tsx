@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -9,15 +9,16 @@ import {
   AlertTriangle,
   MessageSquare,
   ShieldCheck,
+  Loader2,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import GapItem from "@/components/GapItem";
-import InviteModal from "@/components/InviteModal";
-import ToastNotification from "@/components/ToastNotification";
-import RequestCard from "@/components/RequestCard";
-import { useAuth } from "@/context/AuthContext";
-import { serviceRequests } from "@/data/requests";
+import Navbar from "@/components/layout/Navbar";
+import Footer from "@/components/layout/Footer";
+import GapItem from "@/components/admin/GapItem";
+import InviteModal from "@/components/admin/InviteModal";
+import ToastNotification from "@/components/ui/ToastNotification";
+import RequestCard from "@/components/requests/RequestCard";
+import { createClient } from "@/lib/supabase/client";
+import { serviceRequests } from "@/lib/demo/requests";
 import { TradeCategory } from "@/lib/types";
 
 const LODGE = { name: "Gulf Coast Lodge", number: 441, location: "Tampa Bay, FL" };
@@ -59,11 +60,20 @@ const UNLISTED_BROTHERS: UnlistedBrother[] = [
 const UNANSWERED = serviceRequests.filter((r) => r.responses === 0).slice(0, 3);
 
 export default function GapDashboardPage() {
-  const { isLoggedIn, toggleAuth } = useAuth();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const [inviteTarget, setInviteTarget] = useState<UnlistedBrother | null>(null);
   const [inviteGapTrade, setInviteGapTrade] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [sentInvites, setSentInvites] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsLoggedIn(!!session);
+      setAuthLoading(false);
+    });
+  }, []);
 
   function handleInviteConfirm() {
     const name = inviteTarget?.name ?? inviteGapTrade ?? "";
@@ -71,6 +81,18 @@ export default function GapDashboardPage() {
     setToast(`Invite sent to ${inviteTarget ? `Brother ${inviteTarget.name.split(" ").slice(-1)[0]}` : "a brother"}.`);
     setInviteTarget(null);
     setInviteGapTrade(null);
+  }
+
+  if (authLoading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center bg-stone">
+          <Loader2 size={32} className="text-navy animate-spin" />
+        </div>
+        <Footer />
+      </div>
+    );
   }
 
   if (!isLoggedIn) {
@@ -82,12 +104,12 @@ export default function GapDashboardPage() {
             <ShieldCheck size={40} className="text-navy mx-auto mb-4" />
             <h2 className="font-serif text-2xl font-bold text-navy mb-2">Lodge Admins Only</h2>
             <p className="text-muted mb-6 text-sm">Sign in to view your lodge coverage report.</p>
-            <button
-              onClick={toggleAuth}
-              className="w-full bg-gold hover:bg-gold-dark text-navy font-bold py-3 rounded-xl transition-colors"
+            <Link
+              href="/login?redirect=/admin/gaps"
+              className="block w-full bg-gold hover:bg-gold-dark text-navy font-bold py-3 rounded-xl transition-colors"
             >
-              Sign In (Demo)
-            </button>
+              Sign In
+            </Link>
           </div>
         </div>
         <Footer />

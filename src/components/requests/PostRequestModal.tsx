@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
-import { CATEGORIES } from "@/data/listings";
-import { ServiceRequest, RequestTimeline } from "@/data/requests";
+import { CATEGORIES } from "@/lib/constants/categories";
+import { ServiceRequest, RequestTimeline } from "@/lib/demo/requests";
 import { TradeCategory } from "@/lib/types";
 
 interface Props {
