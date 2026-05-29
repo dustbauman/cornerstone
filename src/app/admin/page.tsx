@@ -1,255 +1,454 @@
-"use client";
-
+'use client'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
 import {
-  Users,
-  Building2,
-  TrendingUp,
-  Share2,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ShieldCheck,
-  Globe,
-  Lock,
-  MoreHorizontal,
-  MapPin,
-  ArrowRight,
-} from "lucide-react";
-import Link from "next/link";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { useAuth } from "@/context/AuthContext";
+  Users, ShieldCheck, CheckCircle2, Clock, Eye,
+  Copy, QrCode, Mail, ChevronRight, AlertCircle,
+  Building2, Loader2,
+} from 'lucide-react'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
+import { createClient } from '@/lib/supabase/client'
+import { Suspense } from 'react'
 
-const LODGE = {
-  name: "Gulf Coast Lodge",
-  number: 441,
-  location: "Tampa, FL",
-  worshipfulMaster: "Bro. Richard P. Holt",
-};
+interface Lodge {
+  id: string
+  name: string
+  number: string
+  state: string
+  city: string
+  tier: string
+  status: string
+  paid_at: string | null
+  claim_code_claimed_at: string | null
+  directory_id: string | null
+}
 
-const LODGE_STATS = [
-  { label: "Active Listings", value: "14", icon: Building2 },
-  { label: "Total Members", value: "38", icon: Users },
-  { label: "Referrals This Month", value: "127", icon: Share2 },
-  { label: "Profile Completion", value: "84%", icon: TrendingUp },
-];
+interface Member {
+  id: string
+  full_name: string | null
+  email: string | null
+  trade_category: string | null
+  city: string | null
+  verification_status: string
+  is_lodge_admin: boolean
+  is_co_admin: boolean
+}
 
-const MEMBERS = [
-  { id: 1, name: "James R. Thornton", trade: "Roofing", listing: "Gulf Coast Roofing", status: "active", verified: true, visibility: "public" },
-  { id: 2, name: "Charles E. Monroe", trade: "HVAC", listing: "Craftsman HVAC Services", status: "active", verified: true, visibility: "public" },
-  { id: 3, name: "William A. Foster", trade: "Plumbing", listing: "Foster Plumbing Co.", status: "active", verified: true, visibility: "brothers_only" },
-  { id: 4, name: "Edward J. Blake", trade: "Legal", listing: "Blake Law Group", status: "active", verified: true, visibility: "public" },
-  { id: 5, name: "Raymond C. Holloway", trade: "Financial", listing: "—", status: "no_listing", verified: true, visibility: "—" },
-  { id: 6, name: "Thomas B. Garrett", trade: "Landscaping", listing: "Garrett Grounds", status: "active", verified: true, visibility: "public" },
-];
+interface Stats {
+  totalMembers: number
+  verifiedMembers: number
+  activeListings: number
+  pendingApprovals: number
+}
 
-const PENDING = [
-  { id: 101, name: "Marcus L. Stanton", trade: "Electrical", sponsor: "James R. Thornton", submitted: "May 20, 2026", lodge: "Gulf Coast Lodge #441" },
-  { id: 102, name: "Patrick D. Quinn", trade: "Automotive", sponsor: "Charles E. Monroe", submitted: "May 22, 2026", lodge: "Gulf Coast Lodge #441" },
-  { id: 103, name: "Gregory F. Nash", trade: "Technology", sponsor: "Edward J. Blake", submitted: "May 24, 2026", lodge: "Gulf Coast Lodge #441" },
-];
+const SETUP_STEPS = [
+  { key: 'claimed',   label: 'Lodge claimed',              done: true },
+  { key: 'city',      label: 'Add lodge city & address',   done: false },
+  { key: 'welcome',   label: 'Write welcome message',      done: false },
+  { key: 'members',   label: 'Invite first 5 members',     done: false },
+  { key: 'listing',   label: 'First member listing live',  done: false },
+]
 
-export default function AdminPage() {
-  const { isLoggedIn, toggleAuth } = useAuth();
+function AdminContent() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const showOnboarding = searchParams.get('onboarding') === 'true'
 
-  if (!isLoggedIn) {
+  const [lodge, setLodge] = useState<Lodge | null>(null)
+  const [members, setMembers] = useState<Member[]>([])
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [qrUrl, setQrUrl] = useState('')
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [sendingInvite, setSendingInvite] = useState(false)
+  const [inviteSent, setInviteSent] = useState(false)
+
+  // Unverified lodges (for platform admin — null directory_id)
+  const [unverifiedLodges, setUnverifiedLodges] = useState<Lodge[]>([])
+
+  const supabase = createClient()
+
+  useEffect(() => {
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('lodge_id, is_lodge_admin, is_co_admin')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile?.lodge_id || (!profile.is_lodge_admin && !profile.is_co_admin)) {
+        setError("You don't have admin access to any lodge.")
+        setLoading(false)
+        return
+      }
+
+      const [
+        { data: lodgeData },
+        { data: membersData },
+        { data: listingsData },
+        { data: unverifiedData },
+      ] = await Promise.all([
+        supabase.from('lodges').select('*').eq('id', profile.lodge_id).single(),
+        supabase.from('profiles').select('id, full_name, email, trade_category, city, verification_status, is_lodge_admin, is_co_admin').eq('lodge_id', profile.lodge_id),
+        supabase.from('listings').select('id').eq('is_active', true),
+        supabase.from('lodges').select('*').is('directory_id', null).eq('status', 'active'),
+      ])
+
+      setLodge(lodgeData)
+      const memberList = (membersData || []) as Member[]
+      setMembers(memberList)
+      setStats({
+        totalMembers: memberList.length,
+        verifiedMembers: memberList.filter(m => m.verification_status === 'verified').length,
+        activeListings: (listingsData || []).length,
+        pendingApprovals: memberList.filter(m => m.verification_status === 'pending').length,
+      })
+      setUnverifiedLodges((unverifiedData || []) as Lodge[])
+      setLoading(false)
+
+      // Generate QR code URL
+      if (lodgeData) {
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+        const joinUrl = `${appUrl}/join/${lodgeData.id}`
+        try {
+          const QRCode = (await import('qrcode')).default
+          const dataUrl = await QRCode.toDataURL(joinUrl, { width: 256, margin: 2, color: { dark: '#1B2A4A', light: '#FFFFFF' } })
+          setQrUrl(dataUrl)
+        } catch { /* qrcode not critical */ }
+      }
+    }
+    load()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const inviteLink = lodge ? `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${lodge.id}` : ''
+
+  function copyInviteLink() {
+    navigator.clipboard.writeText(inviteLink)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function sendInvite(e: React.FormEvent) {
+    e.preventDefault()
+    if (!inviteEmail.trim() || !lodge) return
+    setSendingInvite(true)
+    // Placeholder — wire to Resend when keys are available
+    await new Promise(r => setTimeout(r, 600))
+    setSendingInvite(false)
+    setInviteSent(true)
+    setInviteEmail('')
+    setTimeout(() => setInviteSent(false), 3000)
+  }
+
+  if (loading) {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <div className="flex-1 flex items-center justify-center bg-stone">
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 max-w-md w-full mx-4 text-center">
-            <ShieldCheck size={40} className="text-navy mx-auto mb-4" />
-            <h2 className="font-serif text-2xl font-bold text-navy mb-2">Lodge Admins Only</h2>
-            <p className="text-muted mb-6 text-sm leading-relaxed">
-              This area is restricted to verified lodge administrators. Sign in to manage your lodge.
-            </p>
-            <button
-              onClick={toggleAuth}
-              className="w-full bg-gold hover:bg-gold-dark text-navy font-bold py-3 rounded-xl transition-colors"
-            >
-              Sign In (Demo)
-            </button>
+          <Loader2 size={32} className="text-navy animate-spin" />
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col min-h-screen bg-stone">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center max-w-sm px-4">
+            <AlertCircle size={40} className="text-muted mx-auto mb-3" />
+            <p className="text-lg font-bold text-navy mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Access Restricted</p>
+            <p className="text-sm text-muted mb-4">{error}</p>
+            <Link href="/claim" className="text-sm font-semibold text-navy underline">Enter a claim code →</Link>
           </div>
         </div>
         <Footer />
       </div>
-    );
+    )
   }
+
+  const pendingMembers = members.filter(m => m.verification_status === 'pending')
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      {/* Header */}
       <div className="bg-navy text-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-white/50 text-sm mb-1">Lodge Administrator</p>
-              <h1 className="font-serif text-3xl font-bold">
-                {LODGE.name} #{LODGE.number}
-              </h1>
-              <p className="text-white/60 text-sm mt-1">
-                {LODGE.location} · W.M. {LODGE.worshipfulMaster}
-              </p>
-              <p className="text-white/40 text-xs mt-1">Manage your lodge&apos;s presence on Tyrian.</p>
-            </div>
-            <span className="inline-flex items-center gap-1.5 bg-trust/20 border border-trust/30 text-white/80 text-xs font-semibold px-3 py-1.5 rounded-full">
-              <CheckCircle2 size={13} className="text-trust" />
-              Active Lodge — Dues Current
-            </span>
-          </div>
+          <p className="text-white/50 text-sm mb-1">Lodge Admin</p>
+          <h1 className="text-3xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+            {lodge?.name} #{lodge?.number}
+          </h1>
+          {lodge && (
+            <p className="text-white/60 mt-1 text-sm">
+              {lodge.city ? `${lodge.city}, ` : ''}{lodge.state}
+              {lodge.tier === 'founding' && (
+                <span className="ml-2 text-[#C9A84C] font-semibold">⭐ Founding Lodge</span>
+              )}
+            </p>
+          )}
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
-        {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          {LODGE_STATS.map(({ label, value, icon: Icon }) => (
-            <div key={label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm text-muted font-medium">{label}</p>
-                <div className="w-9 h-9 rounded-full bg-navy/5 flex items-center justify-center">
-                  <Icon size={18} className="text-navy" />
+
+        {/* Onboarding checklist */}
+        {showOnboarding && (
+          <div className="bg-[#C9A84C]/10 border border-[#C9A84C]/25 rounded-2xl p-6">
+            <h2 className="text-lg font-bold text-navy mb-4" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Setup checklist
+            </h2>
+            <div className="space-y-2.5">
+              {SETUP_STEPS.map(step => (
+                <div key={step.key} className="flex items-center gap-3">
+                  {step.done
+                    ? <CheckCircle2 size={18} className="text-[#2D6A4F] flex-shrink-0" />
+                    : <div className="w-[18px] h-[18px] rounded-full border-2 border-[#E5E0D5] flex-shrink-0" />
+                  }
+                  <span className={`text-sm ${step.done ? 'text-[#1A1A1A] line-through text-muted' : 'text-[#1A1A1A]'}`}>
+                    {step.label}
+                  </span>
                 </div>
-              </div>
-              <div className="font-serif text-3xl font-bold text-navy">{value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Coverage gap callout */}
-        <Link
-          href="/admin/gaps"
-          className="flex items-center justify-between gap-4 bg-navy rounded-2xl p-5 hover:bg-navy-dark transition-colors group"
-        >
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <MapPin size={20} className="text-gold" />
-            </div>
-            <div>
-              <h3 className="font-serif text-lg font-bold text-white">⚠ Coverage gaps in your area</h3>
-              <p className="text-white/60 text-sm mt-0.5">
-                Your lodge has <span className="text-gold font-semibold">7 uncovered trade categories</span> in the Tampa Bay area. Members with open requests are waiting for a match.
-              </p>
+              ))}
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-gold font-semibold text-sm flex-shrink-0 group-hover:translate-x-0.5 transition-transform">
-            View Gap Report
-            <ArrowRight size={16} />
-          </div>
-        </Link>
+        )}
 
-        {/* Pending approvals */}
-        <div className="bg-white rounded-2xl border border-amber-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-amber-100 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Clock size={18} className="text-amber-500" />
-              <h2 className="font-serif text-xl font-bold text-navy">Pending verification requests</h2>
-            </div>
-            <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full">
-              {PENDING.length} pending
-            </span>
-          </div>
-
-          <div className="divide-y divide-gray-50">
-            {PENDING.map((applicant) => (
-              <div key={applicant.id} className="px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className="font-semibold text-sm">{applicant.name}</span>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{applicant.trade}</span>
-                  </div>
-                  <p className="text-xs text-muted">
-                    Sponsored by <span className="font-medium text-[#1A1A1A]">{applicant.sponsor}</span> · Submitted {applicant.submitted}
-                  </p>
+        {/* Stats row */}
+        {stats && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { label: 'Total members',     value: stats.totalMembers,     icon: Users },
+              { label: 'Verified members',  value: stats.verifiedMembers,  icon: ShieldCheck },
+              { label: 'Active listings',   value: stats.activeListings,   icon: Eye },
+              { label: 'Pending approvals', value: stats.pendingApprovals, icon: Clock },
+            ].map(({ label, value, icon: Icon }) => (
+              <div key={label} className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs text-muted font-medium">{label}</p>
+                  <Icon size={16} className="text-navy" />
                 </div>
-                <div className="flex items-center gap-2">
-                  <button className="flex items-center gap-1.5 bg-trust/10 hover:bg-trust/20 text-trust font-semibold text-xs px-3 py-2 rounded-lg transition-colors">
-                    <CheckCircle2 size={14} />
-                    Approve
-                  </button>
-                  <button className="flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs px-3 py-2 rounded-lg transition-colors">
-                    <XCircle size={14} />
-                    Deny
-                  </button>
+                <div className="text-3xl font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  {value}
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* Member table */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-serif text-xl font-bold text-navy">Lodge members</h2>
-            <button className="text-sm text-navy font-semibold border border-navy/20 px-3 py-1.5 rounded-lg hover:bg-navy/5 transition-colors">
-              + Add Member
-            </button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+
+            {/* Pending approvals */}
+            {pendingMembers.length > 0 && (
+              <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-xl font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                    Pending approvals
+                  </h2>
+                  <span className="text-xs bg-amber-100 text-amber-700 font-semibold px-2.5 py-1 rounded-full">
+                    {pendingMembers.length} waiting
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  {pendingMembers.map(member => (
+                    <div key={member.id} className="flex items-center justify-between gap-3 py-3 border-b border-gray-50 last:border-0">
+                      <div>
+                        <p className="text-sm font-semibold text-[#1A1A1A]">{member.full_name || 'Unknown'}</p>
+                        <p className="text-xs text-muted">{member.email}</p>
+                        {member.trade_category && (
+                          <p className="text-xs text-muted mt-0.5">{member.trade_category}</p>
+                        )}
+                      </div>
+                      <div className="flex gap-2 flex-shrink-0">
+                        <button className="text-xs font-semibold text-[#2D6A4F] border border-[#2D6A4F]/30 px-3 py-1.5 rounded-lg hover:bg-[#2D6A4F]/5 transition-colors">
+                          Approve
+                        </button>
+                        <button className="text-xs font-semibold text-muted border border-[#E5E0D5] px-3 py-1.5 rounded-lg hover:bg-stone transition-colors">
+                          Deny
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Member table */}
+            <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-[#E5E0D5]">
+                <h2 className="text-xl font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                  Members ({members.length})
+                </h2>
+              </div>
+              {members.length === 0 ? (
+                <div className="px-6 py-10 text-center text-muted">
+                  <Users size={32} className="mx-auto mb-3 opacity-30" />
+                  <p className="text-sm">No members yet. Share your invite link to get started.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-50">
+                  {members.map(member => (
+                    <div key={member.id} className="flex items-center justify-between gap-3 px-6 py-3.5 hover:bg-stone/50 transition-colors">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-[#1A1A1A] truncate">
+                          {member.full_name || member.email || 'Unknown'}
+                          {(member.is_lodge_admin || member.is_co_admin) && (
+                            <span className="ml-2 text-[10px] bg-navy/10 text-navy font-semibold px-1.5 py-0.5 rounded">Admin</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted truncate">{member.email}</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          member.verification_status === 'verified'
+                            ? 'bg-[#2D6A4F]/10 text-[#2D6A4F]'
+                            : member.verification_status === 'pending'
+                            ? 'bg-amber-100 text-amber-700'
+                            : 'bg-gray-100 text-gray-500'
+                        }`}>
+                          {member.verification_status}
+                        </span>
+                        <ChevronRight size={14} className="text-muted" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Unverified lodges (platform admin view) */}
+            {unverifiedLodges.length > 0 && (
+              <div className="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-5 border-b border-amber-100 bg-amber-50">
+                  <h2 className="text-base font-bold text-amber-800 flex items-center gap-2">
+                    <AlertCircle size={16} />
+                    Lodges needing directory review ({unverifiedLodges.length})
+                  </h2>
+                  <p className="text-xs text-amber-700 mt-0.5">These lodges signed up with manually entered details.</p>
+                </div>
+                <div className="divide-y divide-amber-50">
+                  {unverifiedLodges.map(l => (
+                    <div key={l.id} className="flex items-center justify-between gap-3 px-6 py-3.5">
+                      <div>
+                        <p className="text-sm font-semibold text-[#1A1A1A]">{l.name} #{l.number}</p>
+                        <p className="text-xs text-muted">{l.state} · Paid {l.paid_at ? new Date(l.paid_at).toLocaleDateString() : '—'}</p>
+                      </div>
+                      <button className="text-xs font-semibold text-navy border border-navy/20 px-3 py-1.5 rounded-lg hover:bg-navy/5 transition-colors">
+                        Mark verified
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-stone text-left">
-                  <th className="px-6 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Name</th>
-                  <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Trade / Profession</th>
-                  <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Listing status</th>
-                  <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Visibility</th>
-                  <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider">Verified</th>
-                  <th className="px-4 py-3 font-semibold text-muted text-xs uppercase tracking-wider"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {MEMBERS.map((member) => (
-                  <tr key={member.id} className="hover:bg-stone/50 transition-colors">
-                    <td className="px-6 py-4 font-medium">{member.name}</td>
-                    <td className="px-4 py-4 text-muted">{member.trade}</td>
-                    <td className="px-4 py-4">
-                      {member.listing !== "—" ? (
-                        <span className="text-navy font-medium">{member.listing}</span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">Not listed</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      {member.visibility === "public" ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                          <Globe size={11} /> Public
-                        </span>
-                      ) : member.visibility === "brothers_only" ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
-                          <Lock size={11} /> Members only
-                        </span>
-                      ) : (
-                        <span className="text-muted text-xs">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      {member.verified ? (
-                        <span className="inline-flex items-center gap-1 text-xs text-trust bg-trust/10 px-2 py-0.5 rounded-full font-medium">
-                          <ShieldCheck size={11} /> Verified
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full font-medium">
-                          <Clock size={11} /> Pending
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4">
-                      <button className="text-muted hover:text-navy transition-colors">
-                        <MoreHorizontal size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Sidebar */}
+          <div className="space-y-5">
+
+            {/* Invite tools */}
+            <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
+              <h3 className="font-bold text-navy text-sm mb-4" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                Invite members
+              </h3>
+
+              {/* Invite link */}
+              <p className="text-xs text-muted mb-2 font-medium">Lodge invite link</p>
+              <div className="flex items-center gap-2 bg-stone rounded-lg px-3 py-2 mb-3">
+                <span className="text-xs text-muted font-mono flex-1 truncate">{inviteLink}</span>
+                <button onClick={copyInviteLink} className="flex-shrink-0 text-navy hover:text-[#C9A84C] transition-colors">
+                  <Copy size={14} />
+                </button>
+              </div>
+              <button
+                onClick={copyInviteLink}
+                className="w-full py-2.5 bg-navy text-white text-xs font-semibold rounded-xl hover:bg-navy/90 transition-colors mb-4"
+              >
+                {copied ? '✓ Copied!' : 'Copy invite link'}
+              </button>
+
+              {/* QR code */}
+              {qrUrl && (
+                <div className="mb-4">
+                  <p className="text-xs text-muted mb-2 font-medium">QR code</p>
+                  <div className="flex items-center gap-3">
+                    <Image src={qrUrl} alt="Lodge invite QR code" width={64} height={64} className="rounded-lg border border-[#E5E0D5]" unoptimized />
+                    <a
+                      href={qrUrl}
+                      download={`tyrian-${lodge?.name?.toLowerCase().replace(/\s+/g, '-')}-qr.png`}
+                      className="text-xs text-navy font-semibold underline flex items-center gap-1"
+                    >
+                      <QrCode size={12} />
+                      Download PNG
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Email invite */}
+              <p className="text-xs text-muted mb-2 font-medium">Invite by email</p>
+              <form onSubmit={sendInvite} className="flex gap-2">
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                  placeholder="brother@email.com"
+                  className="flex-1 px-3 py-2 border border-[#E5E0D5] rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-navy/20 focus:border-navy"
+                />
+                <button
+                  type="submit"
+                  disabled={sendingInvite || !inviteEmail.trim()}
+                  className="px-3 py-2 bg-navy text-white text-xs font-semibold rounded-lg disabled:opacity-50 hover:bg-navy/90 transition-colors flex-shrink-0"
+                >
+                  {sendingInvite ? <Loader2 size={12} className="animate-spin" /> : inviteSent ? '✓' : <Mail size={12} />}
+                </button>
+              </form>
+              {inviteSent && <p className="text-xs text-[#2D6A4F] mt-1">Invite sent!</p>}
+            </div>
+
+            {/* Lodge info */}
+            <div className="bg-[#2D6A4F]/5 border border-[#2D6A4F]/15 rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Building2 size={16} className="text-[#2D6A4F]" />
+                <h3 className="font-semibold text-navy text-sm">Lodge details</h3>
+              </div>
+              {lodge && (
+                <div className="space-y-1.5 text-sm">
+                  <p><span className="text-muted">Name:</span> <span className="font-medium">{lodge.name}</span></p>
+                  <p><span className="text-muted">Number:</span> <span className="font-medium">#{lodge.number}</span></p>
+                  <p><span className="text-muted">State:</span> <span className="font-medium">{lodge.state}</span></p>
+                  <p><span className="text-muted">Tier:</span> <span className={`font-medium capitalize ${lodge.tier === 'founding' ? 'text-[#C9A84C]' : ''}`}>{lodge.tier}</span></p>
+                  {lodge.paid_at && (
+                    <p><span className="text-muted">Joined:</span> <span className="font-medium">{new Date(lodge.paid_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span></p>
+                  )}
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       </div>
 
       <Footer />
     </div>
-  );
+  )
+}
+
+export default function AdminPage() {
+  return (
+    <Suspense>
+      <AdminContent />
+    </Suspense>
+  )
 }

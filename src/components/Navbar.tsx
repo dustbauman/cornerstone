@@ -1,14 +1,38 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { useState } from "react";
-import { Menu, X, UserCircle, LogOut, LayoutDashboard, Settings, ClipboardList } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
-import Logo from "./Logo";
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Menu, X, UserCircle, LogOut, LayoutDashboard, ClipboardList } from 'lucide-react'
+import Logo from './Logo'
+import { createClient } from '@/lib/supabase/client'
+import type { Session } from '@supabase/supabase-js'
 
 export default function Navbar() {
-  const { isLoggedIn, user, toggleAuth } = useAuth();
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [session, setSession] = useState<Session | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    window.location.href = '/'
+  }
+
+  const isLoggedIn = !!session
+  const userLabel = session?.user?.email ?? ''
 
   return (
     <nav className="bg-navy sticky top-0 z-50 shadow-md">
@@ -25,29 +49,23 @@ export default function Navbar() {
               Requests
             </Link>
             {isLoggedIn && (
-              <>
-                <Link href="/dashboard" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
-                  My Dashboard
-                </Link>
-                <Link href="/admin" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
-                  Lodge Admin
-                </Link>
-              </>
+              <Link href="/dashboard" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
+                My Dashboard
+              </Link>
             )}
           </div>
 
-          {/* Auth area + demo toggle */}
+          {/* Auth area */}
           <div className="hidden md:flex items-center gap-3">
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-white/90 text-sm">
                   <UserCircle size={18} />
-                  <span className="font-medium">{user?.name.replace("Brother ", "")}</span>
+                  <span className="font-medium max-w-[140px] truncate">{userLabel}</span>
                 </div>
                 <button
-                  onClick={toggleAuth}
+                  onClick={handleSignOut}
                   className="flex items-center gap-1.5 text-white/60 hover:text-white text-sm transition-colors"
-                  title="Demo: toggle auth state"
                 >
                   <LogOut size={16} />
                   <span>Sign out</span>
@@ -55,31 +73,23 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center gap-3">
-                <button
-                  onClick={toggleAuth}
-                  className="text-white/80 hover:text-white text-sm font-medium transition-colors"
-                >
+                <Link href="/login" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
                   Sign In
-                </button>
+                </Link>
                 <Link
-                  href="/directory"
-                  className="bg-gold hover:bg-gold-dark text-navy font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+                  href="/join"
+                  className="bg-[#C9A84C] hover:bg-[#b8943d] text-navy font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
                 >
                   List Your Business
                 </Link>
               </div>
             )}
-
-            {/* Demo mode indicator */}
-            <span className="text-[10px] text-white/30 border border-white/10 rounded px-1.5 py-0.5 font-mono">
-              DEMO
-            </span>
           </div>
 
           {/* Mobile hamburger */}
           <button
             className="md:hidden text-white p-1"
-            onClick={() => setMenuOpen((v) => !v)}
+            onClick={() => setMenuOpen(v => !v)}
             aria-label="Toggle menu"
           >
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -89,52 +99,36 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-navy-dark border-t border-white/10 px-4 py-4 space-y-3">
-          <Link
-            href="/directory"
-            className="block text-white/80 hover:text-white text-base font-medium py-2"
-            onClick={() => setMenuOpen(false)}
-          >
+        <div className="md:hidden bg-[#162238] border-t border-white/10 px-4 py-4 space-y-3">
+          <Link href="/directory" className="block text-white/80 hover:text-white text-base font-medium py-2" onClick={() => setMenuOpen(false)}>
             Browse Directory
           </Link>
-          <Link
-            href="/requests"
-            className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2"
-            onClick={() => setMenuOpen(false)}
-          >
+          <Link href="/requests" className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2" onClick={() => setMenuOpen(false)}>
             <ClipboardList size={16} />
             Requests
           </Link>
           {isLoggedIn && (
-            <>
-              <Link
-                href="/dashboard"
-                className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2"
-                onClick={() => setMenuOpen(false)}
-              >
-                <LayoutDashboard size={16} />
-                My Dashboard
-              </Link>
-              <Link
-                href="/admin"
-                className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2"
-                onClick={() => setMenuOpen(false)}
-              >
-                <Settings size={16} />
-                Lodge Admin
-              </Link>
-            </>
+            <Link href="/dashboard" className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2" onClick={() => setMenuOpen(false)}>
+              <LayoutDashboard size={16} />
+              My Dashboard
+            </Link>
           )}
           <div className="pt-2 border-t border-white/10">
-            <button
-              onClick={() => { toggleAuth(); setMenuOpen(false); }}
-              className="w-full text-center bg-gold text-navy font-semibold py-2.5 rounded-lg text-sm"
-            >
-              {isLoggedIn ? "Sign Out (Demo)" : "Sign In (Demo)"}
-            </button>
+            {isLoggedIn ? (
+              <button
+                onClick={() => { handleSignOut(); setMenuOpen(false) }}
+                className="w-full text-center bg-white/10 text-white font-semibold py-2.5 rounded-lg text-sm"
+              >
+                Sign Out
+              </button>
+            ) : (
+              <Link href="/login" onClick={() => setMenuOpen(false)} className="block w-full text-center bg-[#C9A84C] text-navy font-semibold py-2.5 rounded-lg text-sm">
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       )}
     </nav>
-  );
+  )
 }

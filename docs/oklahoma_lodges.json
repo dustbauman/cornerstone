@@ -1,0 +1,1434 @@
+[
+  {
+    "name": "Eufaula Lodge",
+    "number": "1",
+    "city": "Eufaula",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Caddo Lodge",
+    "number": "3",
+    "city": "Caddo",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Vinita Lodge",
+    "number": "5",
+    "city": "Vinita",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Valley Lodge",
+    "number": "6",
+    "city": "Pauls Valley",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Colbert Lodge",
+    "number": "8",
+    "city": "Colbert",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "McAlester Lodge",
+    "number": "9",
+    "city": "McAlester",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Cherokee Lodge",
+    "number": "10",
+    "city": "Tahlequah",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Flint Lodge",
+    "number": "11",
+    "city": "Stilwell",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Alpha Lodge",
+    "number": "12",
+    "city": "Ft. Gibson",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Mosholatubbee Lodge",
+    "number": "13",
+    "city": "Cameron",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Webbers Falls Lodge",
+    "number": "14",
+    "city": "Webbers Falls",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Muskogee Lodge",
+    "number": "17",
+    "city": "Muskogee",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Anadarko Lodge",
+    "number": "21",
+    "city": "Anadarko",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Canadian Lodge",
+    "number": "22",
+    "city": "Indianola",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Bruton Lodge",
+    "number": "30",
+    "city": "Muldrow",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Ardmore Lodge",
+    "number": "31",
+    "city": "Ardmore",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Norman Lodge",
+    "number": "36",
+    "city": "Norman",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Edmond Lodge",
+    "number": "37",
+    "city": "Edmond",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Antlers Lodge",
+    "number": "39",
+    "city": "Antlers",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Comanche Lodge",
+    "number": "41",
+    "city": "Comanche",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Durant Lodge",
+    "number": "45",
+    "city": "Durant",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Frontier Lodge",
+    "number": "48",
+    "city": "Stillwater",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Murrow Lodge",
+    "number": "49",
+    "city": "Spiro",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "El Reno Lodge",
+    "number": "50",
+    "city": "El Reno",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Kingfisher Lodge",
+    "number": "52",
+    "city": "Kingfisher",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Will Rogers Lodge",
+    "number": "53",
+    "city": "Claremore",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Coronado Lodge",
+    "number": "56",
+    "city": "Hennessey",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Sunset Lodge",
+    "number": "57",
+    "city": "Nowata",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Chandler Lodge",
+    "number": "58",
+    "city": "Chandler",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Duncan Lodge",
+    "number": "60",
+    "city": "Duncan",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Mangum Lodge",
+    "number": "61",
+    "city": "Mangum",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Altus Lodge",
+    "number": "62",
+    "city": "Altus",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Red Oak Lodge",
+    "number": "66",
+    "city": "Red Oak",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Tecumseh Lodge",
+    "number": "69",
+    "city": "Tecumseh",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Tulsa Lodge",
+    "number": "71",
+    "city": "Tulsa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Lexington-Baxter Lodge",
+    "number": "72",
+    "city": "Lexington",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Talihina Lodge",
+    "number": "73",
+    "city": "Talihina",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Creekmore Lodge",
+    "number": "74",
+    "city": "Madill",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Afton Lodge",
+    "number": "76",
+    "city": "Afton",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Perry Lodge",
+    "number": "78",
+    "city": "Perry",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Enid Lodge",
+    "number": "80",
+    "city": "Enid",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Allen Lodge",
+    "number": "81",
+    "city": "Allen",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Pawnee Lodge",
+    "number": "82",
+    "city": "Pawnee",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Ponca Lodge",
+    "number": "83",
+    "city": "Ponca City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Checotah Lodge",
+    "number": "86",
+    "city": "Checotah",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Newkirk Lodge",
+    "number": "88",
+    "city": "Newkirk",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Yukon Lodge",
+    "number": "90",
+    "city": "Yukon",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Tishomingo Lodge",
+    "number": "91",
+    "city": "Tishomingo",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Perkins Lodge",
+    "number": "92",
+    "city": "Perkins",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Chickasha Lodge",
+    "number": "94",
+    "city": "Chickasha",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "South McAlester Lodge",
+    "number": "96",
+    "city": "McAlester",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Wagoner Lodge",
+    "number": "98",
+    "city": "Wagoner",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Adair Lodge",
+    "number": "99",
+    "city": "Adair",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Pryor Creek Lodge",
+    "number": "100",
+    "city": "Pryor",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Marlow Lodge",
+    "number": "103",
+    "city": "Marlow",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Anchor-Crescent Lodge",
+    "number": "104",
+    "city": "Crescent",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Alva Lodge",
+    "number": "105",
+    "city": "Alva",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Maud Lodge",
+    "number": "106",
+    "city": "Maud",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Composite Lodge",
+    "number": "107",
+    "city": "Shawnee",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Medford Lodge",
+    "number": "108",
+    "city": "Medford",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Wah-Shah-She Lodge",
+    "number": "110",
+    "city": "Pawhuska",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Cushing Lodge",
+    "number": "111",
+    "city": "Cushing",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Bright Star Lodge",
+    "number": "113",
+    "city": "Stonewall",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Kiowa Lodge",
+    "number": "117",
+    "city": "Kiowa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Stratford Lodge",
+    "number": "118",
+    "city": "Stratford",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Ada Lodge",
+    "number": "119",
+    "city": "Ada",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Sallisaw Lodge",
+    "number": "120",
+    "city": "Sallisaw",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Stigler Lodge",
+    "number": "121",
+    "city": "Stigler",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Hartshorne-Haileyville Lodge",
+    "number": "122",
+    "city": "Hartshorne",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Holdenville Lodge",
+    "number": "123",
+    "city": "Holdenville",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Grayhorse Lodge",
+    "number": "124",
+    "city": "Fairfax",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Pond Creek Lodge",
+    "number": "125",
+    "city": "Pond Creek",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "McLoud Lodge",
+    "number": "126",
+    "city": "McLoud",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Cordell Lodge",
+    "number": "127",
+    "city": "Cordell",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Ingalls-Glencoe Lodge",
+    "number": "128",
+    "city": "Glencoe",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Rising Star Lodge",
+    "number": "129",
+    "city": "Calera",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Cheyenne Lodge",
+    "number": "133",
+    "city": "Cheyenne",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Pontotoc Lodge",
+    "number": "136",
+    "city": "Pontotoc",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Western Star Lodge",
+    "number": "138",
+    "city": "Weatherford",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Miami Lodge",
+    "number": "140",
+    "city": "Miami",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Wilburton Lodge",
+    "number": "141",
+    "city": "Wilburton",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Stroud Lodge",
+    "number": "142",
+    "city": "Stroud",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Sulphur Lodge",
+    "number": "144",
+    "city": "Sulphur",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Myrtle Lodge",
+    "number": "145",
+    "city": "Oklahoma City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Goodwater Lodge",
+    "number": "148",
+    "city": "Haworth",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Jennings Lodge",
+    "number": "151",
+    "city": "Jennings",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Heavener Lodge",
+    "number": "154",
+    "city": "Heavener",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Tonkawa Lodge",
+    "number": "157",
+    "city": "Tonkawa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Albany Lodge",
+    "number": "159",
+    "city": "Albany",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Waukomis Lodge",
+    "number": "161",
+    "city": "Waukomis",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Albert Pike Lodge",
+    "number": "162",
+    "city": "Guthrie",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Collinsville Lodge",
+    "number": "165",
+    "city": "Collinsville",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Mountain View Lodge",
+    "number": "168",
+    "city": "Mountain View",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Roff Lodge",
+    "number": "169",
+    "city": "Roff",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Sapulpa Lodge",
+    "number": "170",
+    "city": "Sapulpa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Cashion Lodge",
+    "number": "174",
+    "city": "Cashion",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Elk City Lodge",
+    "number": "182",
+    "city": "Elk City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Lawton Lodge",
+    "number": "183",
+    "city": "Lawton",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Catoosa Lodge",
+    "number": "185",
+    "city": "Catoosa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Grove Lodge",
+    "number": "187",
+    "city": "Grove",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Woodward Lodge",
+    "number": "189",
+    "city": "Woodward",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "St. Alban Lodge",
+    "number": "192",
+    "city": "Arnett",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Sayre Lodge",
+    "number": "195",
+    "city": "Sayre",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Yeldell Lodge",
+    "number": "196",
+    "city": "Elmer",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Hobart Lodge",
+    "number": "198",
+    "city": "Hobart",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Okmulgee Lodge",
+    "number": "199",
+    "city": "Okmulgee",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Wapanucka Lodge",
+    "number": "200",
+    "city": "Wapanucka",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Tulledega Lodge",
+    "number": "201",
+    "city": "Henryetta",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Prague Lodge",
+    "number": "209",
+    "city": "Prague",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Coalgate Lodge",
+    "number": "211",
+    "city": "Coalgate",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Hebron Lodge",
+    "number": "215",
+    "city": "Cleveland",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Hugo Lodge",
+    "number": "217",
+    "city": "Hugo",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Calvin Lodge",
+    "number": "221",
+    "city": "Calvin",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Apache Lodge",
+    "number": "223",
+    "city": "Apache",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Creek Lodge",
+    "number": "226",
+    "city": "Bristow",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Uriah Lodge",
+    "number": "227",
+    "city": "Wheatland",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Boswell Lodge",
+    "number": "232",
+    "city": "Boswell",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Broken Arrow Lodge",
+    "number": "243",
+    "city": "Broken Arrow",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Coweta Lodge",
+    "number": "251",
+    "city": "Coweta",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Bokchito Lodge",
+    "number": "253",
+    "city": "Bokchito",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Custer Lodge",
+    "number": "258",
+    "city": "Custer City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Davenport Lodge",
+    "number": "260",
+    "city": "Davenport",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Beaver Lodge",
+    "number": "269",
+    "city": "Beaver",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Pauls Valley Lodge",
+    "number": "282",
+    "city": "Pauls Valley",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Bartlesville Lodge",
+    "number": "284",
+    "city": "Bartlesville",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Carnegie Lodge",
+    "number": "294",
+    "city": "Carnegie",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Corinthian Lodge",
+    "number": "307",
+    "city": "Cherokee",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Beggs Lodge",
+    "number": "319",
+    "city": "Beggs",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Idabel Lodge",
+    "number": "338",
+    "city": "Idabel",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Clinton Lodge",
+    "number": "339",
+    "city": "Clinton",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Nowata Lodge",
+    "number": "346",
+    "city": "Nowata",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Bixby Lodge",
+    "number": "359",
+    "city": "Bixby",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Cache Lodge",
+    "number": "391",
+    "city": "Cache",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Blanchard Lodge",
+    "number": "395",
+    "city": "Blanchard",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Canton Lodge",
+    "number": "418",
+    "city": "Canton",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Delta Lodge",
+    "number": "425",
+    "city": "Tulsa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Britton Lodge",
+    "number": "434",
+    "city": "Oklahoma City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Broken Bow Lodge",
+    "number": "441",
+    "city": "Broken Bow",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Achille Lodge",
+    "number": "454",
+    "city": "Achille",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Covey Lodge",
+    "number": "460",
+    "city": "Locust Grove",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Dewey Lodge",
+    "number": "466",
+    "city": "Bartlesville",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Drumright Lodge",
+    "number": "468",
+    "city": "Drumright",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Amity Lodge",
+    "number": "473",
+    "city": "Oklahoma City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Sand Springs Lodge",
+    "number": "475",
+    "city": "Sand Springs",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Seminole City Lodge",
+    "number": "476",
+    "city": "Seminole",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Delaware Lodge",
+    "number": "477",
+    "city": "Delaware",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Meeker Lodge",
+    "number": "479",
+    "city": "Meeker",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Wright Lodge",
+    "number": "483",
+    "city": "Wright City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Tuskahoma Lodge",
+    "number": "491",
+    "city": "Clayton",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Hiram Lodge",
+    "number": "494",
+    "city": "Oklahoma City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Seiling Lodge",
+    "number": "495",
+    "city": "Seiling",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Jenks Lodge",
+    "number": "497",
+    "city": "Jenks",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Garfield Lodge",
+    "number": "501",
+    "city": "Enid",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Trinity Lodge",
+    "number": "502",
+    "city": "Muskogee",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Cyril Lodge",
+    "number": "504",
+    "city": "Cyril",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Red Fork-Brookside Lodge",
+    "number": "505",
+    "city": "Tulsa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Mannford Lodge",
+    "number": "515",
+    "city": "Mannford",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Pilgrim-Rock Lodge",
+    "number": "522",
+    "city": "Tulsa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Piedmont Lodge",
+    "number": "526",
+    "city": "Piedmont",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Bethany Lodge",
+    "number": "529",
+    "city": "Bethany",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Cache Valley Lodge",
+    "number": "530",
+    "city": "Walters",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Midwest City Lodge",
+    "number": "532",
+    "city": "Midwest City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Del City Lodge",
+    "number": "536",
+    "city": "Del City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Jones City Lodge",
+    "number": "537",
+    "city": "Jones City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Moore Lodge",
+    "number": "539",
+    "city": "Moore",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Mount Scott Lodge",
+    "number": "540",
+    "city": "Lawton",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Nicoma Park Lodge",
+    "number": "541",
+    "city": "Nicoma Park",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Daylight Lodge",
+    "number": "542",
+    "city": "Tulsa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Jay Lodge",
+    "number": "544",
+    "city": "Jay",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Owasso Lodge",
+    "number": "545",
+    "city": "Owasso",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Day Lodge",
+    "number": "547",
+    "city": "Oklahoma City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Triangle Lodge",
+    "number": "548",
+    "city": "Lawton",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Westville Lodge",
+    "number": "549",
+    "city": "Westville",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "India Lodge",
+    "number": "551",
+    "city": "Oklahoma City",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Watonga Lodge",
+    "number": "552",
+    "city": "Watonga",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Guildhall Lodge",
+    "number": "553",
+    "city": "Stillwater",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Ringwood Lodge",
+    "number": "554",
+    "city": "Ringwood",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Akdar Lodge",
+    "number": "555",
+    "city": "Tulsa",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  },
+  {
+    "name": "Veritas Lodge",
+    "number": "556",
+    "city": "Norman",
+    "state": "OK",
+    "grand_lodge": "Grand Lodge of Oklahoma",
+    "source": "haskell334.com \u2014 May 2026"
+  }
+]

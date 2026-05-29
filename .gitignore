@@ -34,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# one-off lodge data scrapers (local only)
+/build_lodge_files.py
+/fl_masonic_lodges.py
+/docs/fl_masonic_lodges.ts

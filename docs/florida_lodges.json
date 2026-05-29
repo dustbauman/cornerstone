@@ -1,0 +1,2117 @@
+[
+  {
+    "number": 1,
+    "name": "Jackson",
+    "address": "2818 APALACHEE PKWY",
+    "city": "TALLAHASSEE",
+    "zip": "32301-3608",
+    "county": "Leon",
+    "state": "FL"
+  },
+  {
+    "number": 2,
+    "name": "Washington",
+    "address": "906 E JEFFERSON ST",
+    "city": "Quincy",
+    "zip": "32351",
+    "county": "Gadsden",
+    "state": "FL"
+  },
+  {
+    "number": 3,
+    "name": "Harmony",
+    "address": "3024 N JEFFERSON ST",
+    "city": "MARIANNA",
+    "zip": "32446-2318",
+    "county": "Jackson",
+    "state": "FL"
+  },
+  {
+    "number": 4,
+    "name": "Joppa",
+    "address": "11403 NE HWY 349",
+    "city": "OLD TOWN",
+    "zip": "32680",
+    "county": "Dixie",
+    "state": "FL"
+  },
+  {
+    "number": 5,
+    "name": "Hiram",
+    "address": "235 N OLIVE ST",
+    "city": "MONTICELLO",
+    "zip": "32344-1433",
+    "county": "Jefferson",
+    "state": "FL"
+  },
+  {
+    "number": 6,
+    "name": "Tuscan",
+    "address": "320 S FLORIDA AVE",
+    "city": "BARTOW",
+    "zip": "33830",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 9,
+    "name": "Pine Hill",
+    "address": "18695 Charlotte Ave",
+    "city": "BROOKER",
+    "zip": "32622",
+    "county": "Bradford",
+    "state": "FL"
+  },
+  {
+    "number": 10,
+    "name": "Waldo",
+    "address": "14730 NE 142ND ST",
+    "city": "WALDO",
+    "zip": "32694",
+    "county": "Alachua",
+    "state": "FL"
+  },
+  {
+    "number": 11,
+    "name": "Madison",
+    "address": "301 S Range St",
+    "city": "MADISON",
+    "zip": "32340-2760",
+    "county": "Madison",
+    "state": "FL"
+  },
+  {
+    "number": 12,
+    "name": "Cherry Hill",
+    "address": "7674 SW US HWY 27 STE 201",
+    "city": "FORT WHITE",
+    "zip": "32038",
+    "county": "Columbia",
+    "state": "FL"
+  },
+  {
+    "number": 13,
+    "name": "Wellborn",
+    "address": "12232 CR 137",
+    "city": "WELLBORN",
+    "zip": "32094",
+    "county": "Suwannee",
+    "state": "FL"
+  },
+  {
+    "number": 15,
+    "name": "Escambia",
+    "address": "2920 LONGLEAF DR",
+    "city": "PENSACOLA",
+    "zip": "32526-8929",
+    "county": "Escambia",
+    "state": "FL"
+  },
+  {
+    "number": 16,
+    "name": "Santa Rosa",
+    "address": "5158 PIKE ST",
+    "city": "MILTON",
+    "zip": "32570",
+    "county": "Santa Rosa",
+    "state": "FL"
+  },
+  {
+    "number": 17,
+    "name": "Wauchula",
+    "address": "118 W Main St",
+    "city": "WAUCHULA",
+    "zip": "33873",
+    "county": "Hardee",
+    "state": "FL"
+  },
+  {
+    "number": 19,
+    "name": "Marion-Dunn",
+    "address": "1846 SE 36TH AVE",
+    "city": "OCALA",
+    "zip": "34471-5536",
+    "county": "Marion",
+    "state": "FL"
+  },
+  {
+    "number": 20,
+    "name": "Solomon",
+    "address": "25 E First St",
+    "city": "JACKSONVILLE",
+    "zip": "32206",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 21,
+    "name": "Gee",
+    "address": "381 S Main St",
+    "city": "CHATTAHOOCHEE",
+    "zip": "32324-0695",
+    "county": "Gadsden",
+    "state": "FL"
+  },
+  {
+    "number": 23,
+    "name": "Temple",
+    "address": "5700 Colcord Ave",
+    "city": "JACKSONVILLE",
+    "zip": "32211-7019",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 24,
+    "name": "Naval",
+    "address": "221 S Navy Blvd",
+    "city": "PENSACOLA",
+    "zip": "32507-6432",
+    "county": "Escambia",
+    "state": "FL"
+  },
+  {
+    "number": 25,
+    "name": "Hillsborough",
+    "address": "508 E Kennedy Blvd",
+    "city": "TAMPA",
+    "zip": "33602",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 27,
+    "name": "Lake City",
+    "address": "1423 SW McFarlane Ave",
+    "city": "LAKE CITY",
+    "zip": "32025-0606",
+    "county": "Columbia",
+    "state": "FL"
+  },
+  {
+    "number": 28,
+    "name": "Greenville",
+    "address": "163 SW Church Ave",
+    "city": "GREENVILLE",
+    "zip": "32331",
+    "county": "Madison",
+    "state": "FL"
+  },
+  {
+    "number": 29,
+    "name": "Micanopy",
+    "address": "503 NE Cholokka Blvd",
+    "city": "Micanopy",
+    "zip": "32667",
+    "county": "Alachua",
+    "state": "FL"
+  },
+  {
+    "number": 30,
+    "name": "Bushnell-Hernando",
+    "address": "103 N Florida St",
+    "city": "BUSHNELL",
+    "zip": "33513",
+    "county": "Sumter",
+    "state": "FL"
+  },
+  {
+    "number": 31,
+    "name": "Manatee",
+    "address": "402 15th St E",
+    "city": "BRADENTON",
+    "zip": "34208",
+    "county": "Manatee",
+    "state": "FL"
+  },
+  {
+    "number": 32,
+    "name": "Callahan",
+    "address": "45085 Frank Brookins Dr",
+    "city": "CALLAHAN",
+    "zip": "32011",
+    "county": "Nassau",
+    "state": "FL"
+  },
+  {
+    "number": 34,
+    "name": "Palatka",
+    "address": "1334 Crill Ave",
+    "city": "PALATKA",
+    "zip": "32177",
+    "county": "Putnam",
+    "state": "FL"
+  },
+  {
+    "number": 35,
+    "name": "Bradford",
+    "address": "101 S Orange St",
+    "city": "STARKE",
+    "zip": "32091",
+    "county": "Bradford",
+    "state": "FL"
+  },
+  {
+    "number": 36,
+    "name": "Orange",
+    "address": "453 E Main St",
+    "city": "APOPKA",
+    "zip": "32703",
+    "county": "Orange",
+    "state": "FL"
+  },
+  {
+    "number": 37,
+    "name": "Saint Johns",
+    "address": "2557 N Spring Garden Ave",
+    "city": "DELAND",
+    "zip": "32720-2314",
+    "county": "Volusia",
+    "state": "FL"
+  },
+  {
+    "number": 39,
+    "name": "Wausau",
+    "address": "3542 Washington St",
+    "city": "WAUSAU",
+    "zip": "32463-0571",
+    "county": "Washington",
+    "state": "FL"
+  },
+  {
+    "number": 40,
+    "name": "Orion",
+    "address": "1437 Jackson Ave",
+    "city": "CHIPLEY",
+    "zip": "32428-1601",
+    "county": "Washington",
+    "state": "FL"
+  },
+  {
+    "number": 41,
+    "name": "Gainesville",
+    "address": "2207 NW 13th St",
+    "city": "GAINESVILLE",
+    "zip": "32609",
+    "county": "Alachua",
+    "state": "FL"
+  },
+  {
+    "number": 42,
+    "name": "Pensacola",
+    "address": "189 W Airport Blvd",
+    "city": "PENSACOLA",
+    "zip": "32505-2245",
+    "county": "Escambia",
+    "state": "FL"
+  },
+  {
+    "number": 43,
+    "name": "Barrett",
+    "address": "11557 100th St",
+    "city": "LIVE OAK",
+    "zip": "32060",
+    "county": "Suwannee",
+    "state": "FL"
+  },
+  {
+    "number": 44,
+    "name": "Laurel Hill",
+    "address": "3955 2nd Ave",
+    "city": "LAUREL HILL",
+    "zip": "32567",
+    "county": "Okaloosa",
+    "state": "FL"
+  },
+  {
+    "number": 47,
+    "name": "Amelia",
+    "address": "1101 S 14th St",
+    "city": "FERNANDINA BEACH",
+    "zip": "32034-2952",
+    "county": "Nassau",
+    "state": "FL"
+  },
+  {
+    "number": 48,
+    "name": "Dade City",
+    "address": "13642 21st St",
+    "city": "Dade City",
+    "zip": "33525",
+    "county": "Pasco",
+    "state": "FL"
+  },
+  {
+    "number": 49,
+    "name": "Marston",
+    "address": "11351 E HWY 316",
+    "city": "FORT MCCOY",
+    "zip": "32134-0308",
+    "county": "Marion",
+    "state": "FL"
+  },
+  {
+    "number": 51,
+    "name": "Brown",
+    "address": "15 NE 1st St",
+    "city": "CHIEFLAND",
+    "zip": "32626",
+    "county": "Levy",
+    "state": "FL"
+  },
+  {
+    "number": 52,
+    "name": "Lake Butler",
+    "address": "325 W Main St",
+    "city": "LAKE BUTLER",
+    "zip": "32054-1642",
+    "county": "Union",
+    "state": "FL"
+  },
+  {
+    "number": 53,
+    "name": "Friendship",
+    "address": "10420 N US Highway 27",
+    "city": "OCALA",
+    "zip": "34482-1805",
+    "county": "Marion",
+    "state": "FL"
+  },
+  {
+    "number": 56,
+    "name": "Tropical",
+    "address": "10868 Metro Pkwy",
+    "city": "FORT MYERS",
+    "zip": "33966",
+    "county": "Lee",
+    "state": "FL"
+  },
+  {
+    "number": 58,
+    "name": "Leesburg",
+    "address": "200 Richey Rd",
+    "city": "LEESBURG",
+    "zip": "34748",
+    "county": "Lake",
+    "state": "FL"
+  },
+  {
+    "number": 60,
+    "name": "Dawkins",
+    "address": "14052 US HIGHWAY 90",
+    "city": "SANDERSON",
+    "zip": "32087-0233",
+    "county": "Baker",
+    "state": "FL"
+  },
+  {
+    "number": 61,
+    "name": "Moore Haven",
+    "address": "200 Ave J SW",
+    "city": "MOORE HAVEN",
+    "zip": "33471",
+    "county": "Glades",
+    "state": "FL"
+  },
+  {
+    "number": 62,
+    "name": "Sanford",
+    "address": "212 N Park Ave",
+    "city": "SANFORD",
+    "zip": "32771-1267",
+    "county": "Seminole",
+    "state": "FL"
+  },
+  {
+    "number": 64,
+    "name": "Key West",
+    "address": "909 Fleming St",
+    "city": "KEY WEST",
+    "zip": "33041-1248",
+    "county": "Monroe",
+    "state": "FL"
+  },
+  {
+    "number": 65,
+    "name": "Umatilla",
+    "address": "101 N Central Ave",
+    "city": "UMATILLA",
+    "zip": "32784-7568",
+    "county": "Lake",
+    "state": "FL"
+  },
+  {
+    "number": 69,
+    "name": "Orlando",
+    "address": "1204 E South St",
+    "city": "ORLANDO",
+    "zip": "32801-3016",
+    "county": "Orange",
+    "state": "FL"
+  },
+  {
+    "number": 70,
+    "name": "John M. Caldwell",
+    "address": "213 3rd Ave SE",
+    "city": "JASPER",
+    "zip": "32052",
+    "county": "Hamilton",
+    "state": "FL"
+  },
+  {
+    "number": 72,
+    "name": "Lake",
+    "address": "112 Shrine Club Rd",
+    "city": "LAKE COMO",
+    "zip": "32157-0285",
+    "county": "Putnam",
+    "state": "FL"
+  },
+  {
+    "number": 73,
+    "name": "Curfew",
+    "address": "108 NE 1st St",
+    "city": "CARRABELLE",
+    "zip": "32322-0820",
+    "county": "Franklin",
+    "state": "FL"
+  },
+  {
+    "number": 76,
+    "name": "Apalachicola",
+    "address": "1 Chestnut St",
+    "city": "APALACHICOLA",
+    "zip": "32320",
+    "county": "Franklin",
+    "state": "FL"
+  },
+  {
+    "number": 77,
+    "name": "Volusia",
+    "address": "210 E State Road 40",
+    "city": "Pierson",
+    "zip": "32180",
+    "county": "Volusia",
+    "state": "FL"
+  },
+  {
+    "number": 78,
+    "name": "Star",
+    "address": "1145 Highland Ave",
+    "city": "Largo",
+    "zip": "33770",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 79,
+    "name": "Olin S. Wright",
+    "address": "304 Acacia St",
+    "city": "PLANT CITY",
+    "zip": "33563-4350",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 80,
+    "name": "Orange Blossom",
+    "address": "321 E Dakin Ave",
+    "city": "KISSIMMEE",
+    "zip": "34741",
+    "county": "Osceola",
+    "state": "FL"
+  },
+  {
+    "number": 82,
+    "name": "Raiford",
+    "address": "SR 229 N",
+    "city": "RAIFORD",
+    "zip": "32083",
+    "county": "Union",
+    "state": "FL"
+  },
+  {
+    "number": 85,
+    "name": "Peninsular",
+    "address": "1234 Wells Ave",
+    "city": "TAVARES",
+    "zip": "32778",
+    "county": "Lake",
+    "state": "FL"
+  },
+  {
+    "number": 86,
+    "name": "Pineland",
+    "address": "190 E Peniel Rd",
+    "city": "PALATKA",
+    "zip": "32177-7911",
+    "county": "Putnam",
+    "state": "FL"
+  },
+  {
+    "number": 89,
+    "name": "Melrose",
+    "address": "290 SE Palmetto Ave",
+    "city": "KEYSTONE HEIGHTS",
+    "zip": "32656-9237",
+    "county": "Clay",
+    "state": "FL"
+  },
+  {
+    "number": 90,
+    "name": "Indian River",
+    "address": "19 N Washington Ave",
+    "city": "TITUSVILLE",
+    "zip": "32796-2833",
+    "county": "Brevard",
+    "state": "FL"
+  },
+  {
+    "number": 91,
+    "name": "Lakeland",
+    "address": "505 N Massachusetts Ave",
+    "city": "LAKELAND",
+    "zip": "33801",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 92,
+    "name": "Wildwood",
+    "address": "103 GEORGIA ST",
+    "city": "WILDWOOD",
+    "zip": "34785-3446",
+    "county": "Sumter",
+    "state": "FL"
+  },
+  {
+    "number": 93,
+    "name": "Corinth",
+    "address": "4378 164th St",
+    "city": "WELLBORN",
+    "zip": "32094",
+    "county": "Suwannee",
+    "state": "FL"
+  },
+  {
+    "number": 94,
+    "name": "Morning Star",
+    "address": "11185 NE 40th Street Rd",
+    "city": "SILVER SPRINGS",
+    "zip": "34488",
+    "county": "Marion",
+    "state": "FL"
+  },
+  {
+    "number": 95,
+    "name": "Belleview",
+    "address": "5871 SE Baseline Rd",
+    "city": "BELLEVIEW",
+    "zip": "32620",
+    "county": "Marion",
+    "state": "FL"
+  },
+  {
+    "number": 96,
+    "name": "Red Rock",
+    "address": "11684 Munson HWY",
+    "city": "Milton",
+    "zip": "32570",
+    "county": "Santa Rosa",
+    "state": "FL"
+  },
+  {
+    "number": 101,
+    "name": "Ionic",
+    "address": "1011 Rosselle St",
+    "city": "JACKSONVILLE",
+    "zip": "32204-2832",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 103,
+    "name": "Hawthorne",
+    "address": "6700 SE 221st St",
+    "city": "HAWTHORNE",
+    "zip": "32640",
+    "county": "Alachua",
+    "state": "FL"
+  },
+  {
+    "number": 105,
+    "name": "De Soto",
+    "address": "10801 DeSoto Rd",
+    "city": "Riverview",
+    "zip": "33578-4478",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 107,
+    "name": "Middleburg",
+    "address": "2108 Palmetto Street",
+    "city": "MIDDLEBURG",
+    "zip": "32068",
+    "county": "Clay",
+    "state": "FL"
+  },
+  {
+    "number": 108,
+    "name": "Herman",
+    "address": "314 Madison St",
+    "city": "FREEPORT",
+    "zip": "32439",
+    "county": "Walton",
+    "state": "FL"
+  },
+  {
+    "number": 109,
+    "name": "Dixie",
+    "address": "16923 NW 16th St",
+    "city": "BLOUNTSTOWN",
+    "zip": "32424-8509",
+    "county": "Calhoun",
+    "state": "FL"
+  },
+  {
+    "number": 112,
+    "name": "Tarpon",
+    "address": "26 N Ring Ave",
+    "city": "TARPON SPRINGS",
+    "zip": "34689",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 113,
+    "name": "Brevard",
+    "address": "40 Carmalt St",
+    "city": "COCOA",
+    "zip": "32922",
+    "county": "Brevard",
+    "state": "FL"
+  },
+  {
+    "number": 114,
+    "name": "Brandon",
+    "address": "203 N Moon Ave",
+    "city": "BRANDON",
+    "zip": "33509-0816",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 115,
+    "name": "Punta Gorda",
+    "address": "25349 Airport Rd",
+    "city": "PUNTA GORDA",
+    "zip": "33950-5744",
+    "county": "Charlotte",
+    "state": "FL"
+  },
+  {
+    "number": 116,
+    "name": "Cabul",
+    "address": "4261 HWY 17 S",
+    "city": "GREEN COVE SPRINGS",
+    "zip": "32043",
+    "county": "Clay",
+    "state": "FL"
+  },
+  {
+    "number": 117,
+    "name": "Ornan",
+    "address": "250 NE 6th Blvd (SR 121)",
+    "city": "WILLISTON",
+    "zip": "32696-0982",
+    "county": "Levy",
+    "state": "FL"
+  },
+  {
+    "number": 119,
+    "name": "Mayo",
+    "address": "632 E MAIN ST",
+    "city": "MAYO",
+    "zip": "32066",
+    "county": "Lafayette",
+    "state": "FL"
+  },
+  {
+    "number": 123,
+    "name": "Perry",
+    "address": "114 E Main St",
+    "city": "PERRY",
+    "zip": "32347",
+    "county": "Taylor",
+    "state": "FL"
+  },
+  {
+    "number": 126,
+    "name": "Albert J. Russell",
+    "address": "2015 Gilmore St",
+    "city": "JACKSONVILLE",
+    "zip": "32245-6052",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 127,
+    "name": "Clearwater",
+    "address": "705 S Hercules Ave",
+    "city": "Clearwater",
+    "zip": "33764",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 130,
+    "name": "Branford",
+    "address": "207 Suwannee Ave SW",
+    "city": "BRANFORD",
+    "zip": "32008",
+    "county": "Suwannee",
+    "state": "FL"
+  },
+  {
+    "number": 131,
+    "name": "Mount Ewell",
+    "address": "5822 HWY 189 N",
+    "city": "BAKER",
+    "zip": "32531",
+    "county": "Okaloosa",
+    "state": "FL"
+  },
+  {
+    "number": 134,
+    "name": "Red Level",
+    "address": "5602 Alliance Rd",
+    "city": "MARIANNA",
+    "zip": "32448",
+    "county": "Jackson",
+    "state": "FL"
+  },
+  {
+    "number": 137,
+    "name": "High Springs",
+    "address": "18616 NW 241st St",
+    "city": "HIGH SPRINGS",
+    "zip": "32643",
+    "county": "Alachua",
+    "state": "FL"
+  },
+  {
+    "number": 138,
+    "name": "Harmonia",
+    "address": "1896 Palm Beach Lakes Blvd Ste 200 Upper",
+    "city": "West Palm Beach",
+    "zip": "33409",
+    "county": "Palm Beach",
+    "state": "FL"
+  },
+  {
+    "number": 139,
+    "name": "St. Petersburg",
+    "address": "3325 1st St NE",
+    "city": "SAINT PETERSBURG",
+    "zip": "33704",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 140,
+    "name": "Doric",
+    "address": "401 SE 15th St",
+    "city": "FORT LAUDERDALE",
+    "zip": "33316",
+    "county": "Broward",
+    "state": "FL"
+  },
+  {
+    "number": 141,
+    "name": "Trilby",
+    "address": "21049 Old Trilby Rd",
+    "city": "Dade City",
+    "zip": "33523",
+    "county": "Pasco",
+    "state": "FL"
+  },
+  {
+    "number": 142,
+    "name": "Parker",
+    "address": "4802 E Business Highway 98",
+    "city": "PARKER",
+    "zip": "32404-7018",
+    "county": "Bay",
+    "state": "FL"
+  },
+  {
+    "number": 143,
+    "name": "Melbourne",
+    "address": "2300 Dairy Rd",
+    "city": "WEST MELBOURNE",
+    "zip": "32904-5245",
+    "county": "Brevard",
+    "state": "FL"
+  },
+  {
+    "number": 146,
+    "name": "Pearl of the West",
+    "address": "6319 Louisiana Ave",
+    "city": "NEW PORT RICHEY",
+    "zip": "34653",
+    "county": "Pasco",
+    "state": "FL"
+  },
+  {
+    "number": 147,
+    "name": "Sarasota",
+    "address": "2160 Main St",
+    "city": "SARASOTA",
+    "zip": "34237",
+    "county": "Sarasota",
+    "state": "FL"
+  },
+  {
+    "number": 149,
+    "name": "New Smyrna",
+    "address": "300 N Riverside Drive",
+    "city": "EDGEWATER",
+    "zip": "32168",
+    "county": "Volusia",
+    "state": "FL"
+  },
+  {
+    "number": 153,
+    "name": "PTF United",
+    "address": "4712 W Commerce St",
+    "city": "TAMPA",
+    "zip": "33616",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 157,
+    "name": "Ponce de Leon",
+    "address": "2881 N Highway 81",
+    "city": "WESTVILLE",
+    "zip": "32455",
+    "county": "Holmes",
+    "state": "FL"
+  },
+  {
+    "number": 159,
+    "name": "Duval",
+    "address": "2620 Dean Rd",
+    "city": "JACKSONVILLE",
+    "zip": "32216-5137",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 160,
+    "name": "Fort Meade",
+    "address": "19 6th St NW",
+    "city": "FORT MEADE",
+    "zip": "33841",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 163,
+    "name": "Acacia",
+    "address": "20 SE Osceola St",
+    "city": "STUART",
+    "zip": "34994-2115",
+    "county": "Martin",
+    "state": "FL"
+  },
+  {
+    "number": 164,
+    "name": "Vernon",
+    "address": "2855 Church St",
+    "city": "VERNON",
+    "zip": "32462",
+    "county": "Washington",
+    "state": "FL"
+  },
+  {
+    "number": 165,
+    "name": "Winter Garden",
+    "address": "230 W Bay St",
+    "city": "WINTER GARDEN",
+    "zip": "34787",
+    "county": "Orange",
+    "state": "FL"
+  },
+  {
+    "number": 167,
+    "name": "Havana",
+    "address": "117 E 7th Ave",
+    "city": "Havana",
+    "zip": "32333",
+    "county": "Gadsden",
+    "state": "FL"
+  },
+  {
+    "number": 170,
+    "name": "DeFuniak",
+    "address": "132 Park Ave",
+    "city": "DEFUNIAK SPRINGS",
+    "zip": "32435-8735",
+    "county": "Walton",
+    "state": "FL"
+  },
+  {
+    "number": 171,
+    "name": "Boca-Delray",
+    "address": "4093 NW 4th Ave",
+    "city": "BOCA RATON",
+    "zip": "33431",
+    "county": "Palm Beach",
+    "state": "FL"
+  },
+  {
+    "number": 172,
+    "name": "Alpha",
+    "address": "130 Brooks St SE",
+    "city": "FORT WALTON BEACH",
+    "zip": "32548-5827",
+    "county": "Okaloosa",
+    "state": "FL"
+  },
+  {
+    "number": 174,
+    "name": "Sutherland",
+    "address": "1297 Michigan Blvd",
+    "city": "DUNEDIN",
+    "zip": "34698",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 176,
+    "name": "Jay",
+    "address": "3842 Highway 4",
+    "city": "JAY",
+    "zip": "32565-1753",
+    "county": "Santa Rosa",
+    "state": "FL"
+  },
+  {
+    "number": 178,
+    "name": "Universal",
+    "address": "4601 N Habana Ave",
+    "city": "TAMPA",
+    "zip": "33614-7103",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 185,
+    "name": "A.W. Windhorst",
+    "address": "5011 N Nebraska Ave",
+    "city": "TAMPA",
+    "zip": "33603-2338",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 186,
+    "name": "Winter Haven",
+    "address": "3596 Recker Hwy",
+    "city": "WINTER HAVEN",
+    "zip": "33880",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 187,
+    "name": "William B. Barnett",
+    "address": "965 Hubbard St",
+    "city": "JACKSONVILLE",
+    "zip": "32207",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 188,
+    "name": "Nitram",
+    "address": "4275 78th St N",
+    "city": "SAINT PETERSBURG",
+    "zip": "33709-4423",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 190,
+    "name": "Groveland",
+    "address": "320 E Jim Payne Rd",
+    "city": "GROVELAND",
+    "zip": "34736-2260",
+    "county": "Lake",
+    "state": "FL"
+  },
+  {
+    "number": 191,
+    "name": "Corinthian",
+    "address": "805 5th St NW",
+    "city": "MULBERRY",
+    "zip": "33860-0003",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 192,
+    "name": "Dunedin",
+    "address": "1297 Michigan Blvd",
+    "city": "PALM HARBOR",
+    "zip": "34683-7222",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 197,
+    "name": "Archer",
+    "address": "17081 SW 135th Ln",
+    "city": "Archer",
+    "zip": "32618",
+    "county": "Alachua",
+    "state": "FL"
+  },
+  {
+    "number": 198,
+    "name": "Zephyr",
+    "address": "5950 12th St",
+    "city": "ZEPHYRHILLS",
+    "zip": "33542",
+    "county": "Pasco",
+    "state": "FL"
+  },
+  {
+    "number": 200,
+    "name": "Bunnell",
+    "address": "109 S Bay St",
+    "city": "BUNNELL",
+    "zip": "32110",
+    "county": "Flagler",
+    "state": "FL"
+  },
+  {
+    "number": 202,
+    "name": "Etna",
+    "address": "1275 HWY 179A",
+    "city": "WESTVILLE",
+    "zip": "32464",
+    "county": "Holmes",
+    "state": "FL"
+  },
+  {
+    "number": 206,
+    "name": "Cottondale",
+    "address": "3149 Main St",
+    "city": "COTTONDALE",
+    "zip": "32431",
+    "county": "Jackson",
+    "state": "FL"
+  },
+  {
+    "number": 207,
+    "name": "Eola",
+    "address": "3200 E Grant St",
+    "city": "Orlando",
+    "zip": "32806",
+    "county": "Orange",
+    "state": "FL"
+  },
+  {
+    "number": 212,
+    "name": "Saint Andrews",
+    "address": "1104 Bayview Ave",
+    "city": "PANAMA CITY",
+    "zip": "32401",
+    "county": "Bay",
+    "state": "FL"
+  },
+  {
+    "number": 213,
+    "name": "Century",
+    "address": "7611 Lodge Dr",
+    "city": "Century",
+    "zip": "32535-2896",
+    "county": "Escambia",
+    "state": "FL"
+  },
+  {
+    "number": 217,
+    "name": "Baldwin",
+    "address": "137 Rosewood Ave",
+    "city": "BALDWIN",
+    "zip": "32234",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 219,
+    "name": "Haines City",
+    "address": "260 E Pomelo St",
+    "city": "Lake Alfred",
+    "zip": "33850",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 221,
+    "name": "Saint Cloud",
+    "address": "901 Oregon Ave",
+    "city": "SAINT CLOUD",
+    "zip": "34769-3434",
+    "county": "Osceola",
+    "state": "FL"
+  },
+  {
+    "number": 222,
+    "name": "Acme",
+    "address": "1332 Fortune Avenue",
+    "city": "PANAMA CITY",
+    "zip": "32401",
+    "county": "Bay",
+    "state": "FL"
+  },
+  {
+    "number": 225,
+    "name": "Glendale",
+    "address": "25 North St",
+    "city": "DEFUNIAK SPRINGS",
+    "zip": "32433-0953",
+    "county": "Walton",
+    "state": "FL"
+  },
+  {
+    "number": 226,
+    "name": "Clermont",
+    "address": "865 W DeSoto St",
+    "city": "CLERMONT",
+    "zip": "34711",
+    "county": "Lake",
+    "state": "FL"
+  },
+  {
+    "number": 227,
+    "name": "Poinciana",
+    "address": "939 W Main St",
+    "city": "AVON PARK",
+    "zip": "33825-9596",
+    "county": "Highlands",
+    "state": "FL"
+  },
+  {
+    "number": 229,
+    "name": "Frostproof",
+    "address": "46 W Wall St",
+    "city": "FROSTPROOF",
+    "zip": "33843",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 230,
+    "name": "Beaver Creek",
+    "address": "6987 Beaver Creek Rd",
+    "city": "BAKER",
+    "zip": "32531-8039",
+    "county": "Okaloosa",
+    "state": "FL"
+  },
+  {
+    "number": 232,
+    "name": "Sebastian Masonic",
+    "address": "1715 N Central Ave",
+    "city": "SEBASTIAN",
+    "zip": "32958",
+    "county": "Indian River",
+    "state": "FL"
+  },
+  {
+    "number": 236,
+    "name": "Boynton",
+    "address": "2701 Quantum Blvd",
+    "city": "BOYNTON BEACH",
+    "zip": "33426",
+    "county": "Palm Beach",
+    "state": "FL"
+  },
+  {
+    "number": 237,
+    "name": "Okeechobee",
+    "address": "107 NW 5th Ave",
+    "city": "OKEECHOBEE",
+    "zip": "34973",
+    "county": "Okeechobee",
+    "state": "FL"
+  },
+  {
+    "number": 238,
+    "name": "Mount Dora",
+    "address": "535 N Donnally St",
+    "city": "MOUNT DORA",
+    "zip": "32757",
+    "county": "Lake",
+    "state": "FL"
+  },
+  {
+    "number": 239,
+    "name": "Winter Park",
+    "address": "1495 Grand Rd",
+    "city": "WINTER PARK",
+    "zip": "32792-7349",
+    "county": "Seminole",
+    "state": "FL"
+  },
+  {
+    "number": 240,
+    "name": "Tampa",
+    "address": "11807 N 56th St",
+    "city": "Temple Terrace",
+    "zip": "33617",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 242,
+    "name": "Lake Wales",
+    "address": "660 S 9th St",
+    "city": "LAKE WALES",
+    "zip": "33853",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 243,
+    "name": "Oviedo",
+    "address": "534 W King St",
+    "city": "OVIEDO",
+    "zip": "32765",
+    "county": "Seminole",
+    "state": "FL"
+  },
+  {
+    "number": 245,
+    "name": "Gulf Stream",
+    "address": "421 Jennings Ave",
+    "city": "Greenacres",
+    "zip": "33463",
+    "county": "Palm Beach",
+    "state": "FL"
+  },
+  {
+    "number": 250,
+    "name": "Vero Beach Masonic",
+    "address": "1959 14th Ave",
+    "city": "VERO BEACH",
+    "zip": "32960",
+    "county": "Indian River",
+    "state": "FL"
+  },
+  {
+    "number": 251,
+    "name": "J. F. Swartsel",
+    "address": "3109 Lutz Lake Fern Rd",
+    "city": "LUTZ",
+    "zip": "33558",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 252,
+    "name": "Tampa Bay",
+    "address": "354 Main St",
+    "city": "PALM HARBOR",
+    "zip": "34695",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 253,
+    "name": "West Broward",
+    "address": "927 NW 178th Ave",
+    "city": "PEMBROKE PINES",
+    "zip": "33029",
+    "county": "Broward",
+    "state": "FL"
+  },
+  {
+    "number": 255,
+    "name": "Luz de America",
+    "address": "471 NW 3rd St",
+    "city": "MIAMI",
+    "zip": "33134",
+    "county": "Miami-Dade",
+    "state": "FL"
+  },
+  {
+    "number": 257,
+    "name": "Holyrood",
+    "address": "5500 Memorial Hwy",
+    "city": "Tampa",
+    "zip": "33634-7336",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 258,
+    "name": "Coconut Grove",
+    "address": "7090 SW 61st Ave",
+    "city": "SOUTH MIAMI",
+    "zip": "33143",
+    "county": "Miami-Dade",
+    "state": "FL"
+  },
+  {
+    "number": 266,
+    "name": "Riverside",
+    "address": "1225 McDuff Ave S",
+    "city": "JACKSONVILLE",
+    "zip": "32205-8050",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 267,
+    "name": "Orange Park",
+    "address": "511 Kingsley Ave",
+    "city": "ORANGE PARK",
+    "zip": "32073-4829",
+    "county": "Clay",
+    "state": "FL"
+  },
+  {
+    "number": 268,
+    "name": "Shamrock",
+    "address": "Chewning Avenue, 1 block North of Court House,325 SE 134st",
+    "city": "CROSS CITY",
+    "zip": "32628",
+    "county": "Dixie",
+    "state": "FL"
+  },
+  {
+    "number": 269,
+    "name": "Eureka-North Shore",
+    "address": "101 SE 1st Ave",
+    "city": "DANIA",
+    "zip": "33004",
+    "county": "Broward",
+    "state": "FL"
+  },
+  {
+    "number": 275,
+    "name": "Hibiscus",
+    "address": "471 NW 3rd St",
+    "city": "MIAMI",
+    "zip": "33128-1602",
+    "county": "Miami-Dade",
+    "state": "FL"
+  },
+  {
+    "number": 276,
+    "name": "Bethlehem",
+    "address": "1465 Highway 177",
+    "city": "BONIFAY",
+    "zip": "32425",
+    "county": "Holmes",
+    "state": "FL"
+  },
+  {
+    "number": 278,
+    "name": "Ensley",
+    "address": "8640 N PALAFOX ST",
+    "city": "PENSACOLA",
+    "zip": "32534",
+    "county": "Escambia",
+    "state": "FL"
+  },
+  {
+    "number": 281,
+    "name": "Sugarland",
+    "address": "524 E Sugarland Hwy",
+    "city": "CLEWISTON",
+    "zip": "33440-0072",
+    "county": "Hendry",
+    "state": "FL"
+  },
+  {
+    "number": 282,
+    "name": "Placid",
+    "address": "103 N Main Ave",
+    "city": "LAKE PLACID",
+    "zip": "33852",
+    "county": "Highlands",
+    "state": "FL"
+  },
+  {
+    "number": 289,
+    "name": "Tupelo",
+    "address": "843 Tupelo St",
+    "city": "WEWAHITCHKA",
+    "zip": "32465-0001",
+    "county": "Gulf",
+    "state": "FL"
+  },
+  {
+    "number": 291,
+    "name": "Gulf Beach",
+    "address": "14020 Marguerite Dr",
+    "city": "Madeira Beach",
+    "zip": "33708",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 294,
+    "name": "Crawford",
+    "address": "50 Ochlockonee St",
+    "city": "CRAWFORDVILLE",
+    "zip": "32327",
+    "county": "Wakulla",
+    "state": "FL"
+  },
+  {
+    "number": 295,
+    "name": "Cypress",
+    "address": "5850 N Tamiami Trail",
+    "city": "NAPLES",
+    "zip": "34108",
+    "county": "Collier",
+    "state": "FL"
+  },
+  {
+    "number": 297,
+    "name": "Wesconnett",
+    "address": "5917 Old Timuquana Rd",
+    "city": "JACKSONVILLE",
+    "zip": "32210-7889",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 299,
+    "name": "Roe Fulkerson",
+    "address": "811 Glenn Pkwy",
+    "city": "HOLLYWOOD",
+    "zip": "33021-5626",
+    "county": "Broward",
+    "state": "FL"
+  },
+  {
+    "number": 301,
+    "name": "Venice",
+    "address": "118 E Venice Ave",
+    "city": "VENICE",
+    "zip": "34285",
+    "county": "Sarasota",
+    "state": "FL"
+  },
+  {
+    "number": 303,
+    "name": "Palmwood",
+    "address": "845 Bradley St",
+    "city": "WEST PALM BEACH",
+    "zip": "33405",
+    "county": "Palm Beach",
+    "state": "FL"
+  },
+  {
+    "number": 305,
+    "name": "Robert Butler",
+    "address": "1361 E Lafayette St",
+    "city": "TALLAHASSEE",
+    "zip": "32301-4724",
+    "county": "Leon",
+    "state": "FL"
+  },
+  {
+    "number": 309,
+    "name": "Arlington",
+    "address": "3421 University Blvd N",
+    "city": "JACKSONVILLE",
+    "zip": "32211",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 312,
+    "name": "Okaloosa",
+    "address": "502 John Sims Pkwy E",
+    "city": "NICEVILLE",
+    "zip": "32578-2028",
+    "county": "Okaloosa",
+    "state": "FL"
+  },
+  {
+    "number": 314,
+    "name": "Harry Jackson",
+    "address": "720 Florida Ave",
+    "city": "LYNN HAVEN",
+    "zip": "32444-1740",
+    "county": "Bay",
+    "state": "FL"
+  },
+  {
+    "number": 318,
+    "name": "Harbor City",
+    "address": "1715 Avocado Ave",
+    "city": "MELBOURNE",
+    "zip": "32935",
+    "county": "Brevard",
+    "state": "FL"
+  },
+  {
+    "number": 322,
+    "name": "Cantonment",
+    "address": "735 N Highway 29",
+    "city": "CANTONMENT",
+    "zip": "32533",
+    "county": "Escambia",
+    "state": "FL"
+  },
+  {
+    "number": 323,
+    "name": "Marathon",
+    "address": "110 89th St Ocean",
+    "city": "MARATHON",
+    "zip": "33050-5266",
+    "county": "Monroe",
+    "state": "FL"
+  },
+  {
+    "number": 324,
+    "name": "Inglis",
+    "address": "652 W Highway 40",
+    "city": "INGLIS",
+    "zip": "34449",
+    "county": "Levy",
+    "state": "FL"
+  },
+  {
+    "number": 329,
+    "name": "Mokanna",
+    "address": "4925 Clarcona-Ocoee Rd",
+    "city": "ORLANDO",
+    "zip": "32810",
+    "county": "Orange",
+    "state": "FL"
+  },
+  {
+    "number": 330,
+    "name": "Temple Terrace",
+    "address": "11807 N 56th St",
+    "city": "TEMPLE TERRACE",
+    "zip": "33617-16651",
+    "county": "Hillsborough",
+    "state": "FL"
+  },
+  {
+    "number": 331,
+    "name": "J Dewey Hawkins",
+    "address": "555 NE 42nd Ct",
+    "city": "OAKLAND PARK",
+    "zip": "33334-3113",
+    "county": "Broward",
+    "state": "FL"
+  },
+  {
+    "number": 333,
+    "name": "Bykota",
+    "address": "421 Jennings Ave",
+    "city": "GREENACRES",
+    "zip": "33463",
+    "county": "Palm Beach",
+    "state": "FL"
+  },
+  {
+    "number": 336,
+    "name": "Florida Keys",
+    "address": "284 Tavernier St",
+    "city": "TAVERNIER",
+    "zip": "33070",
+    "county": "Monroe",
+    "state": "FL"
+  },
+  {
+    "number": 338,
+    "name": "Kathleen",
+    "address": "3933 1st St NW",
+    "city": "KATHLEEN",
+    "zip": "33849",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 339,
+    "name": "Canaveral",
+    "address": "149 S Orlando Ave",
+    "city": "COCOA BEACH",
+    "zip": "32931",
+    "county": "Brevard",
+    "state": "FL"
+  },
+  {
+    "number": 340,
+    "name": "Jupiter Light",
+    "address": "600 S Loxahatchee Dr",
+    "city": "JUPITER",
+    "zip": "33458-5781",
+    "county": "Palm Beach",
+    "state": "FL"
+  },
+  {
+    "number": 342,
+    "name": "Stafford Caldwell",
+    "address": "1237 McDuff Ave S",
+    "city": "JACKSONVILLE",
+    "zip": "32205",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 343,
+    "name": "Mandarin",
+    "address": "2914 Loretto Rd",
+    "city": "JACKSONVILLE",
+    "zip": "32223",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 346,
+    "name": "Phoenix",
+    "address": "240 S Tuttle Ave",
+    "city": "SARASOTA",
+    "zip": "34237",
+    "county": "Sarasota",
+    "state": "FL"
+  },
+  {
+    "number": 347,
+    "name": "Gulf Breeze",
+    "address": "2629 Gulf Breeze Pkwy",
+    "city": "Gulf Breeze",
+    "zip": "32563-3023",
+    "county": "Santa Rosa",
+    "state": "FL"
+  },
+  {
+    "number": 349,
+    "name": "Pace",
+    "address": "5158 E Spencer Field Rd",
+    "city": "PACE",
+    "zip": "32571",
+    "county": "Santa Rosa",
+    "state": "FL"
+  },
+  {
+    "number": 350,
+    "name": "R. T. Schafer",
+    "address": "14435 NW US Highway 441",
+    "city": "ALACHUA",
+    "zip": "32615",
+    "county": "Alachua",
+    "state": "FL"
+  },
+  {
+    "number": 352,
+    "name": "Myrtle Grove",
+    "address": "7667 W Fairfield Dr",
+    "city": "PENSACOLA",
+    "zip": "32506",
+    "county": "Escambia",
+    "state": "FL"
+  },
+  {
+    "number": 353,
+    "name": "Merritt Island",
+    "address": "247 S Tropical Trl",
+    "city": "MERRITT ISLAND",
+    "zip": "32905",
+    "county": "Brevard",
+    "state": "FL"
+  },
+  {
+    "number": 354,
+    "name": "Beach",
+    "address": "1550 Highway A1A",
+    "city": "INDIALANTIC",
+    "zip": "32903-3354",
+    "county": "Brevard",
+    "state": "FL"
+  },
+  {
+    "number": 357,
+    "name": "Noah",
+    "address": "41 Willis Rd",
+    "city": "North Fort Myers",
+    "zip": "33917",
+    "county": "Lee",
+    "state": "FL"
+  },
+  {
+    "number": 358,
+    "name": "Pythagoras",
+    "address": "115 S Arnold Rd",
+    "city": "PANAMA CITY BEACH",
+    "zip": "32413",
+    "county": "Bay",
+    "state": "FL"
+  },
+  {
+    "number": 360,
+    "name": "Englewood",
+    "address": "265 Pine St",
+    "city": "ENGLEWOOD",
+    "zip": "34223-2661",
+    "county": "Sarasota",
+    "state": "FL"
+  },
+  {
+    "number": 361,
+    "name": "J Edwin Larson",
+    "address": "1819 N Monroe St",
+    "city": "TALLAHASSEE",
+    "zip": "32303",
+    "county": "Leon",
+    "state": "FL"
+  },
+  {
+    "number": 362,
+    "name": "Fort Myers Beach",
+    "address": "17671 Pine Ridge Rd",
+    "city": "FORT MYERS BEACH",
+    "zip": "33931",
+    "county": "Lee",
+    "state": "FL"
+  },
+  {
+    "number": 364,
+    "name": "South Seminole",
+    "address": "122 Triplet Lake Dr",
+    "city": "CASSELBERRY",
+    "zip": "32707",
+    "county": "Seminole",
+    "state": "FL"
+  },
+  {
+    "number": 366,
+    "name": "Garden",
+    "address": "9463 Roan Ln",
+    "city": "PALM BEACH GARDENS",
+    "zip": "33403-1035",
+    "county": "Palm Beach",
+    "state": "FL"
+  },
+  {
+    "number": 367,
+    "name": "Cape Coral",
+    "address": "10868 Metro Pkwy",
+    "city": "FORT MYERS",
+    "zip": "33966",
+    "county": "Lee",
+    "state": "FL"
+  },
+  {
+    "number": 368,
+    "name": "Pine Castle",
+    "address": "1216 Hoffner Ave",
+    "city": "PINE CASTLE",
+    "zip": "32809-3502",
+    "county": "Orange",
+    "state": "FL"
+  },
+  {
+    "number": 369,
+    "name": "Callaway",
+    "address": "5711 Douglas St",
+    "city": "PANAMA CITY",
+    "zip": "32404-6100",
+    "county": "Bay",
+    "state": "FL"
+  },
+  {
+    "number": 370,
+    "name": "Hyde Park",
+    "address": "6744 McMullin St",
+    "city": "JACKSONVILLE",
+    "zip": "32210",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 372,
+    "name": "Lantana",
+    "address": "244 N Congress Ave",
+    "city": "Boynton Beach",
+    "zip": "33426-4212",
+    "county": "Palm Beach",
+    "state": "FL"
+  },
+  {
+    "number": 379,
+    "name": "LaBelle",
+    "address": "180 Jaycee Lions Dr",
+    "city": "LABELLE",
+    "zip": "33935",
+    "county": "Hendry",
+    "state": "FL"
+  },
+  {
+    "number": 380,
+    "name": "Omega",
+    "address": "719 Commanche St",
+    "city": "FORT WALTON BEACH",
+    "zip": "32548",
+    "county": "Okaloosa",
+    "state": "FL"
+  },
+  {
+    "number": 383,
+    "name": "Landmark",
+    "address": "720 N Apache Cir",
+    "city": "ORANGE CITY",
+    "zip": "32725",
+    "county": "Volusia",
+    "state": "FL"
+  },
+  {
+    "number": 384,
+    "name": "Gateway",
+    "address": "2995 Temple Ln",
+    "city": "MIMS",
+    "zip": "32754",
+    "county": "Brevard",
+    "state": "FL"
+  },
+  {
+    "number": 389,
+    "name": "Fort King Daylight",
+    "address": "1846 SE 36th Ave",
+    "city": "OCALA",
+    "zip": "34471",
+    "county": "Marion",
+    "state": "FL"
+  },
+  {
+    "number": 390,
+    "name": "Travelers",
+    "address": "260 E Pomelo St",
+    "city": "LAKE ALFRED",
+    "zip": "33850",
+    "county": "Polk",
+    "state": "FL"
+  },
+  {
+    "number": 394,
+    "name": "The Villages Masonic",
+    "address": "2401 Virginia Dr",
+    "city": "LEESBURG",
+    "zip": "34748-9728",
+    "county": "Lake",
+    "state": "FL"
+  },
+  {
+    "number": 397,
+    "name": "Palm Bay",
+    "address": "4430 Dixie Hwy",
+    "city": "MALABAR",
+    "zip": "32905",
+    "county": "Brevard",
+    "state": "FL"
+  },
+  {
+    "number": 401,
+    "name": "Hurricane",
+    "address": "145 S Royal Poinciana Blvd",
+    "city": "MIAMI SPRINGS",
+    "zip": "33166-6134",
+    "county": "Miami-Dade",
+    "state": "FL"
+  },
+  {
+    "number": 403,
+    "name": "Lewis A. Armistead",
+    "address": "1237 McDuff Ave S",
+    "city": "JACKSONVILLE",
+    "zip": "32205",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 407,
+    "name": "Hirams' Daylight",
+    "address": "122 Triplet Lake Dr",
+    "city": "CASSELBERRY",
+    "zip": "32707",
+    "county": "Seminole",
+    "state": "FL"
+  },
+  {
+    "number": 408,
+    "name": "Oceanview",
+    "address": "308 New Berlin Rd",
+    "city": "JACKSONVILLE",
+    "zip": "32226-1349",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 409,
+    "name": "West Coast",
+    "address": "600 7th St W",
+    "city": "Palmetto",
+    "zip": "34221-4704",
+    "county": "Manatee",
+    "state": "FL"
+  },
+  {
+    "number": 411,
+    "name": "Miami-Dade Hispano-Americana",
+    "address": "7090 SW 61st Ave",
+    "city": "SOUTH MIAMI",
+    "zip": "33143-3450",
+    "county": "Miami-Dade",
+    "state": "FL"
+  },
+  {
+    "number": 412,
+    "name": "Liberty",
+    "address": "402 15th St E",
+    "city": "BRADENTON",
+    "zip": "34208",
+    "county": "Manatee",
+    "state": "FL"
+  },
+  {
+    "number": 413,
+    "name": "Perseverancia",
+    "address": "150 W 20th St",
+    "city": "HIALEAH",
+    "zip": "33010",
+    "county": "Miami-Dade",
+    "state": "FL"
+  },
+  {
+    "number": 414,
+    "name": "Fraternidad",
+    "address": "150 W 20th St",
+    "city": "HIALEAH",
+    "zip": "33010-2612",
+    "county": "Miami-Dade",
+    "state": "FL"
+  },
+  {
+    "number": 415,
+    "name": "Nuevos Horizontes",
+    "address": "150 W 20th St",
+    "city": "HIALEAH",
+    "zip": "33012-5604",
+    "county": "Miami-Dade",
+    "state": "FL"
+  },
+  {
+    "number": 416,
+    "name": "Cornerstone",
+    "address": "**TEMPORARY 555 NE 42nd CT",
+    "city": "Deerfield Beach",
+    "zip": "33441",
+    "county": "Broward",
+    "state": "FL"
+  },
+  {
+    "number": 417,
+    "name": "John E. Karroum",
+    "address": "33 NW 15th St",
+    "city": "HOMESTEAD",
+    "zip": "33030-4201",
+    "county": "Miami-Dade",
+    "state": "FL"
+  },
+  {
+    "number": 418,
+    "name": "Nature Coast Masonic",
+    "address": "301 Hendrix Ave",
+    "city": "INVERNESS",
+    "zip": "34451-1851",
+    "county": "Citrus",
+    "state": "FL"
+  },
+  {
+    "number": 419,
+    "name": "Paul Revere",
+    "address": "13402 Montour St",
+    "city": "BROOKSVILLE",
+    "zip": "34613-6804",
+    "county": "Hernando",
+    "state": "FL"
+  },
+  {
+    "number": 421,
+    "name": "Neptune Beach",
+    "address": "2130 Florida Blvd",
+    "city": "NEPTUNE BEACH",
+    "zip": "32266",
+    "county": "Duval",
+    "state": "FL"
+  },
+  {
+    "number": 910,
+    "name": "Memorial",
+    "address": "Various Locations *Contact Secretary*",
+    "city": "GAINESVILLE",
+    "zip": "32653",
+    "county": "Alachua",
+    "state": "FL"
+  },
+  {
+    "number": 913,
+    "name": "Memorial",
+    "address": "105 Harney Street",
+    "city": "Daytona Beach",
+    "zip": "32114",
+    "county": "Volusia",
+    "state": "FL"
+  },
+  {
+    "number": 914,
+    "name": "Memorial",
+    "address": "5030 S Memorial Drive",
+    "city": "HOMOSASSA",
+    "zip": "34447",
+    "county": "Citrus",
+    "state": "FL"
+  },
+  {
+    "number": 915,
+    "name": "Memorial",
+    "address": "1234 Wells Avenue",
+    "city": "Tavares",
+    "zip": "32778",
+    "county": "Lake",
+    "state": "FL"
+  },
+  {
+    "number": 918,
+    "name": "Memorial",
+    "address": "1123 FLORIDA AVENUE",
+    "city": "TARPON SPRINGS",
+    "zip": "34683",
+    "county": "Pinellas",
+    "state": "FL"
+  },
+  {
+    "number": 999,
+    "name": "FLOR",
+    "address": "9137 MERRILL RD",
+    "city": "Jacksonville",
+    "zip": "32225",
+    "county": "Duval",
+    "state": "FL"
+  }
+]

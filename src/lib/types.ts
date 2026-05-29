@@ -33,7 +33,7 @@ export interface Listing {
   email: string;
   website: string;
   verified: boolean;
-  visibility: "public" | "brothers_only";
+  visibility: "public" | "members_only";
   joinedDate: string;
 }
 
