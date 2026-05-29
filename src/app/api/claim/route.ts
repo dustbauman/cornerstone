@@ -1,12 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
-
-function adminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
 
 function resolveDisplayName(
   existingName: string | null | undefined,
@@ -38,7 +31,7 @@ export async function POST(request: Request) {
     return Response.json({ error: 'NOT_AUTHENTICATED' }, { status: 401 })
   }
 
-  const admin = adminClient()
+  const admin = createAdminClient()
 
   const { data: lodge } = await admin
     .from('lodges')
@@ -73,6 +66,25 @@ export async function POST(request: Request) {
 
   const now = new Date().toISOString()
 
+  // Mark the lodge claimed first using a conditional WHERE — this acts as the
+  // concurrency guard. If two requests race, only one gets a row back.
+  const { data: claimedLodge, error: lodgeError } = await admin
+    .from('lodges')
+    .update({ claim_code_claimed_at: now, claim_code_claimed_by: user.id })
+    .eq('id', lodge.id)
+    .is('claim_code_claimed_at', null)
+    .select('id')
+    .maybeSingle()
+
+  if (lodgeError) {
+    console.error('Claim lodge error:', lodgeError)
+    return Response.json({ error: 'Failed to update lodge' }, { status: 500 })
+  }
+
+  if (!claimedLodge) {
+    return Response.json({ error: 'ALREADY_CLAIMED' }, { status: 409 })
+  }
+
   const { error: profileError } = await admin
     .from('profiles')
     .upsert({
@@ -87,16 +99,6 @@ export async function POST(request: Request) {
   if (profileError) {
     console.error('Claim profile error:', profileError)
     return Response.json({ error: 'Failed to update profile' }, { status: 500 })
-  }
-
-  const { error: lodgeError } = await admin
-    .from('lodges')
-    .update({ claim_code_claimed_at: now, claim_code_claimed_by: user.id })
-    .eq('id', lodge.id)
-
-  if (lodgeError) {
-    console.error('Claim lodge error:', lodgeError)
-    return Response.json({ error: 'Failed to update lodge' }, { status: 500 })
   }
 
   return Response.json({

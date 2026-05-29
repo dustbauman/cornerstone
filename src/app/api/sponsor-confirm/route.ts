@@ -1,13 +1,6 @@
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { sendMemberVerifiedEmail, sponsorResponsePage } from '@/lib/email'
 import { haversineDistance } from '@/lib/geo/scoring'
-
-function adminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -21,7 +14,7 @@ export async function GET(request: Request) {
     )
   }
 
-  const supabase = adminClient()
+  const supabase = createAdminClient()
 
   const { data: confirmation } = await supabase
     .from('sponsor_confirmations')
@@ -50,6 +43,7 @@ export async function GET(request: Request) {
       .from('sponsor_confirmations')
       .update({ status: 'expired', responded_at: new Date().toISOString() })
       .eq('id', confirmation.id)
+      .eq('status', 'pending')
 
     return new Response(
       sponsorResponsePage('Link expired', 'This confirmation link has expired. The member will need to submit a new join request.'),
@@ -60,10 +54,21 @@ export async function GET(request: Request) {
   const now = new Date().toISOString()
 
   if (action === 'deny') {
-    await supabase
+    // Atomic update — only proceeds if still pending, guards against double-click
+    const { data: claimed } = await supabase
       .from('sponsor_confirmations')
       .update({ status: 'denied', responded_at: now })
       .eq('id', confirmation.id)
+      .eq('status', 'pending')
+      .select('id')
+      .maybeSingle()
+
+    if (!claimed) {
+      return new Response(
+        sponsorResponsePage('Already responded', 'This sponsor confirmation has already been processed.'),
+        { headers: { 'Content-Type': 'text/html' } }
+      )
+    }
 
     await supabase
       .from('profiles')
@@ -76,10 +81,21 @@ export async function GET(request: Request) {
     )
   }
 
-  await supabase
+  // Atomic update — only proceeds if still pending, guards against double-click
+  const { data: claimed } = await supabase
     .from('sponsor_confirmations')
     .update({ status: 'confirmed', responded_at: now })
     .eq('id', confirmation.id)
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle()
+
+  if (!claimed) {
+    return new Response(
+      sponsorResponsePage('Already responded', 'This sponsor confirmation has already been processed.'),
+      { headers: { 'Content-Type': 'text/html' } }
+    )
+  }
 
   await supabase
     .from('profiles')
@@ -113,13 +129,17 @@ export async function GET(request: Request) {
   }
 
   if (profile?.email && profile.full_name) {
-    await sendMemberVerifiedEmail({
-      to: profile.email,
-      memberName: profile.full_name,
-      city: profile.city || 'your area',
-      nearbyRequestCount,
-      hasListing: !!listing,
-    })
+    try {
+      await sendMemberVerifiedEmail({
+        to: profile.email,
+        memberName: profile.full_name,
+        city: profile.city || 'your area',
+        nearbyRequestCount,
+        hasListing: !!listing,
+      })
+    } catch (err) {
+      console.error('Member verified email failed:', err)
+    }
   }
 
   return new Response(

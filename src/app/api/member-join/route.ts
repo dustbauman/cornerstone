@@ -41,6 +41,10 @@ export async function POST(request: Request) {
   const normalizedEmail = email.toLowerCase().trim()
   const normalizedSponsorContact = sponsorContact.trim()
 
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    return Response.json({ error: 'INVALID_EMAIL', message: 'Please enter a valid email address.' }, { status: 400 })
+  }
+
   if (!normalizedSponsorContact.includes('@')) {
     return Response.json({
       error: 'SPONSOR_EMAIL_REQUIRED',
@@ -63,6 +67,20 @@ export async function POST(request: Request) {
 
   const userId = linkData.user.id
   const magicLink = linkData.properties.action_link
+
+  // Prevent re-joining from overwriting a verified member's profile
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('lodge_id, verification_status')
+    .eq('id', userId)
+    .maybeSingle()
+
+  if (existingProfile?.lodge_id && existingProfile.verification_status === 'verified') {
+    return Response.json({
+      error: 'ALREADY_MEMBER',
+      message: 'This email is already associated with a verified Tyrian membership.',
+    }, { status: 409 })
+  }
 
   const { error: profileError } = await supabase
     .from('profiles')

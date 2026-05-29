@@ -16,6 +16,7 @@ export default function JoinCompletePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [form, setForm] = useState({
     tradeCategory: '' as TradeCategory | '',
     occupation: '',
@@ -24,12 +25,13 @@ export default function JoinCompletePage() {
   })
 
   useEffect(() => {
-    createClient().auth.getUser().then(({ data: { user } }) => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
         window.location.href = '/login?redirect=/join/complete'
         return
       }
-      createClient()
+      supabase
         .from('profiles')
         .select('city, state, trade_category, occupation')
         .eq('id', user.id)
@@ -52,11 +54,12 @@ export default function JoinCompletePage() {
     e.preventDefault()
     setSaving(true)
 
+    setSaveError(null)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    await supabase.from('profiles').update({
+    const { error } = await supabase.from('profiles').update({
       trade_category: form.tradeCategory || null,
       occupation: form.occupation || null,
       city: form.city || null,
@@ -64,6 +67,10 @@ export default function JoinCompletePage() {
     }).eq('id', user.id)
 
     setSaving(false)
+    if (error) {
+      setSaveError('Could not save your profile. Please try again.')
+      return
+    }
     router.push('/dashboard')
   }
 
@@ -138,6 +145,9 @@ export default function JoinCompletePage() {
             </div>
           </div>
 
+          {saveError && (
+            <p className="text-sm text-red-600 text-center">{saveError}</p>
+          )}
           <button
             type="submit"
             disabled={saving}

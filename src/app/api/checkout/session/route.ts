@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -6,6 +7,13 @@ export async function GET(request: Request) {
 
   if (!sessionId) {
     return Response.json({ error: 'session_id required' }, { status: 400 })
+  }
+
+  // Require authentication — session_id is in the URL and could be shared
+  const supabaseUser = createClient()
+  const { data: { user } } = await supabaseUser.auth.getUser()
+  if (!user?.email) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -24,6 +32,12 @@ export async function GET(request: Request) {
 
   if (session.payment_status !== 'paid') {
     return Response.json({ error: 'Payment not completed' }, { status: 402 })
+  }
+
+  // Verify the requester is the session payer — compare emails case-insensitively
+  const payerEmail = (session.metadata?.payer_email ?? session.customer_email ?? '').toLowerCase()
+  if (!payerEmail || user.email.toLowerCase() !== payerEmail) {
+    return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const lodgeId = session.metadata?.lodge_id

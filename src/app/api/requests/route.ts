@@ -1,12 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
-
-function adminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
 
 const VALID_TIMELINES = new Set(['ASAP', 'Within 1 week', 'Within 1 month', 'Flexible'])
 
@@ -40,6 +33,8 @@ export async function POST(request: Request) {
   const supabase = createServerClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  const admin = createAdminClient()
+
   let profileId: string | null = null
   let lodgeId: string | null = null
   let lodgeDisplay: string | null = null
@@ -47,7 +42,6 @@ export async function POST(request: Request) {
   let isVerifiedMember = false
 
   if (user) {
-    const admin = adminClient()
     const { data: profile } = await admin
       .from('profiles')
       .select('id, full_name, lodge_id, verification_status')
@@ -71,7 +65,6 @@ export async function POST(request: Request) {
     }
   }
 
-  const admin = adminClient()
   const { data: row, error } = await admin
     .from('requests')
     .insert({
