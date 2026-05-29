@@ -10,7 +10,7 @@ import StarRating from '@/components/directory/StarRating'
 import ListingCard from '@/components/directory/ListingCard'
 import { getDemoListingBySlug, getDemoRelatedListings, demoListingSlugs } from '@/lib/demo/listings'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { dbListingToListing, DB_LISTING_SELECT } from '@/lib/db/listings'
+import { dbListingToListing, DB_LISTING_SELECT, isVerifiedPublicListing } from '@/lib/db/listings'
 import type { DbListingRow } from '@/lib/db/listings'
 import type { Listing } from '@/lib/types'
 
@@ -37,7 +37,11 @@ async function getListing(slug: string): Promise<Listing | null> {
     .eq('is_active', true)
     .maybeSingle()
 
-  if (data) return dbListingToListing(data as unknown as DbListingRow)
+  if (data) {
+    const row = data as unknown as DbListingRow
+    if (!isVerifiedPublicListing(row) || row.visibility !== 'public') return null
+    return dbListingToListing(row)
+  }
   return null
 }
 

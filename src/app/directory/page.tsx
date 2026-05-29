@@ -11,7 +11,7 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useDemoMode } from '@/lib/demo/context'
 import { demoListings } from '@/lib/demo/data'
-import { dbListingToListing, demoListingToListing, DB_LISTING_SELECT, STATE_CODE_TO_NAME } from '@/lib/db/listings'
+import { dbListingToListing, demoListingToListing, DB_LISTING_SELECT, STATE_CODE_TO_NAME, isVerifiedPublicListing } from '@/lib/db/listings'
 import type { DbListingRow } from '@/lib/db/listings'
 import type { Listing } from '@/lib/types'
 
@@ -42,6 +42,8 @@ function DirectoryContent() {
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') ?? '')
   const [selectedState, setSelectedState] = useState(searchParams.get('state') ?? '')
+  const [selectedLodge, setSelectedLodge] = useState(searchParams.get('lodge') ?? '')
+  const [lodgeOptions, setLodgeOptions] = useState<{ id: string; name: string; number: string }[]>([])
   const [filtersOpen, setFiltersOpen] = useState(false)
 
   useEffect(() => {
@@ -60,9 +62,21 @@ function DirectoryContent() {
       .eq('visibility', 'public')
       .then(({ data, error }) => {
         if (error) console.error('Directory fetch error:', error)
-        setAllListings((data ?? []).map(row => dbListingToListing(row as unknown as DbListingRow)))
+        const rows = (data ?? []) as unknown as DbListingRow[]
+        setAllListings(
+          rows
+            .filter(isVerifiedPublicListing)
+            .map(row => dbListingToListing(row))
+        )
         setLoading(false)
       })
+
+    supabase
+      .from('lodges')
+      .select('id, name, number')
+      .eq('status', 'active')
+      .order('name')
+      .then(({ data }) => setLodgeOptions(data ?? []))
   }, [isDemoMode])
 
   // Derive available states from fetched listings
@@ -80,15 +94,18 @@ function DirectoryContent() {
         l.trade.toLowerCase().includes(search.toLowerCase())
       const matchCategory = !selectedCategory || l.trade === selectedCategory
       const matchState = !selectedState || l.location.stateCode === selectedState || l.location.state === selectedState
-      return matchSearch && matchCategory && matchState
+      const matchLodge = !selectedLodge || l.lodgeId === selectedLodge
+      return matchSearch && matchCategory && matchState && matchLodge
     })
-  }, [allListings, search, selectedCategory, selectedState])
+  }, [allListings, search, selectedCategory, selectedState, selectedLodge])
 
-  const hasFilters = selectedCategory || selectedState
+  const hasFilters = selectedCategory || selectedState || selectedLodge
+  const activeLodge = lodgeOptions.find(l => l.id === selectedLodge)
 
   function clearFilters() {
     setSelectedCategory('')
     setSelectedState('')
+    setSelectedLodge('')
     setSearch('')
   }
 
@@ -165,7 +182,7 @@ function DirectoryContent() {
               </div>
 
               {availableStates.length > 0 && (
-                <div>
+                <div className="mb-5">
                   <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">State</p>
                   <div className="flex flex-col gap-1">
                     {availableStates.map(({ code, label }) => (
@@ -182,11 +199,37 @@ function DirectoryContent() {
                   </div>
                 </div>
               )}
+
+              {lodgeOptions.length > 0 && (
+                <div>
+                  <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Lodge</p>
+                  <select
+                    value={selectedLodge}
+                    onChange={e => setSelectedLodge(e.target.value)}
+                    className="w-full text-sm border border-[#E5E0D5] rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-1 focus:ring-navy/20"
+                  >
+                    <option value="">All Lodges</option>
+                    {lodgeOptions.map(l => (
+                      <option key={l.id} value={l.id}>{l.name} #{l.number}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </aside>
 
           {/* Grid */}
           <div className="flex-1 min-w-0">
+            {activeLodge && (
+              <div className="mb-5 flex flex-wrap items-center gap-2 text-sm">
+                <span className="text-muted">
+                  Showing listings from <strong className="text-navy">{activeLodge.name} #{activeLodge.number}</strong>
+                </span>
+                <Link href={`/lodge/${activeLodge.id}`} className="text-navy font-semibold underline">
+                  ← Back to lodge page
+                </Link>
+              </div>
+            )}
             <Link
               href="/requests"
               className="flex items-center justify-between gap-3 bg-[#C9A84C]/10 border border-[#C9A84C]/25 rounded-xl px-4 py-3 mb-5 hover:bg-[#C9A84C]/15 transition-colors group"

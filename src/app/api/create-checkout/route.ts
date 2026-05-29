@@ -1,6 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
 import { generateUniqueClaimCode } from '@/lib/lodges/claim-code'
+import { generateUniqueLodgeSlug } from '@/lib/lodges/slug'
 import { sendLodgeClaimEmail } from '@/lib/email'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
 
@@ -11,152 +12,211 @@ const PRICES: Record<string, number> = {
   founding: 1,
 }
 
-function adminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
-
 export async function POST(request: Request) {
-  const body = await request.json()
-  const { lodgeName, lodgeNumber, state, size, payerName, payerEmail, directoryId } = body
+  try {
+    const body = await request.json()
+    const { lodgeName, lodgeNumber, state, size, payerName, payerEmail, directoryId } = body
 
-  if (!lodgeName || !lodgeNumber || !state || !size || !payerEmail) {
-    return Response.json({ error: 'Missing required fields' }, { status: 400 })
-  }
-
-  const supabase = adminClient()
-
-  // Server-side duplicate check
-  const { data: existing } = await supabase
-    .from('lodges')
-    .select('id, status, name')
-    .eq('number', lodgeNumber)
-    .eq('state', state)
-    .maybeSingle()
-
-  if (existing) {
-    if (existing.status === 'active') {
-      return Response.json({ error: 'LODGE_ALREADY_EXISTS', message: `${existing.name} is already on Tyrian.` }, { status: 409 })
+    if (!lodgeName || !lodgeNumber || !state || !size || !payerEmail) {
+      return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
-    if (existing.status === 'pending') {
-      return Response.json({ error: 'LODGE_PAYMENT_PENDING', message: 'A payment for this lodge is already in progress.' }, { status: 409 })
+
+    const supabase = createAdminClient()
+
+    const { data: existing } = await supabase
+      .from('lodges')
+      .select('id, status, name, slug')
+      .eq('number', lodgeNumber)
+      .eq('state', state)
+      .maybeSingle()
+
+    if (existing?.status === 'active') {
+      return Response.json(
+        { error: 'LODGE_ALREADY_EXISTS', message: `${existing.name} is already on Tyrian.` },
+        { status: 409 }
+      )
     }
-  }
 
-  // Determine founding eligibility (server-side only)
-  const { count: foundingCount } = await supabase
-    .from('lodges')
-    .select('*', { count: 'exact', head: true })
-    .eq('tier', 'founding')
-    .eq('status', 'active')
+    const { count: foundingCount } = await supabase
+      .from('lodges')
+      .select('*', { count: 'exact', head: true })
+      .eq('tier', 'founding')
+      .eq('status', 'active')
 
-  const isFoundingEligible = (foundingCount ?? 0) < FOUNDING_LIMIT
+    const isFoundingEligible = (foundingCount ?? 0) < FOUNDING_LIMIT
 
-  // Create pending lodge
-  const { data: lodge, error: lodgeError } = await supabase
-    .from('lodges')
-    .insert({
-      name: lodgeName,
-      number: lodgeNumber,
-      state: state,
-      city: '',
-      status: 'pending',
-      tier: 'standard',
-      paid_by_email: payerEmail,
-      paid_by_name: payerName,
-      directory_id: directoryId || null,
-    })
-    .select()
-    .single()
+    let lodge: { id: string; slug: string | null }
 
-  if (lodgeError) {
-    if (lodgeError.code === '23505') {
-      return Response.json({ error: 'LODGE_ALREADY_EXISTS', message: 'This lodge is already registered.' }, { status: 409 })
-    }
-    console.error('Lodge insert error:', lodgeError)
-    return Response.json({ error: 'Failed to create lodge' }, { status: 500 })
-  }
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-
-  // ── Stripe path ──────────────────────────────────────────────────────────
-  if (process.env.STRIPE_SECRET_KEY) {
-    const Stripe = (await import('stripe')).default
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
-
-    let priceId: string
-    if (isFoundingEligible) {
-      priceId = process.env.STRIPE_PRICE_FOUNDING!
+    if (existing?.status === 'pending') {
+      lodge = existing
+      await supabase
+        .from('lodges')
+        .update({
+          paid_by_email: payerEmail,
+          paid_by_name: payerName,
+          name: lodgeName,
+        })
+        .eq('id', existing.id)
     } else {
-      const priceMap: Record<string, string> = {
-        small:    process.env.STRIPE_PRICE_STANDARD_SMALL!,
-        standard: process.env.STRIPE_PRICE_STANDARD!,
-        large:    process.env.STRIPE_PRICE_LARGE!,
+      const slug = await generateUniqueLodgeSlug(supabase, lodgeName, lodgeNumber)
+
+      let city = ''
+      let meetingAddress: string | null = null
+      if (directoryId) {
+        const { data: dirRow } = await supabase
+          .from('lodge_directory')
+          .select('city, meeting_address')
+          .eq('id', directoryId)
+          .maybeSingle()
+        if (dirRow) {
+          city = dirRow.city || ''
+          meetingAddress = dirRow.meeting_address || null
+        }
       }
-      priceId = priceMap[size] || process.env.STRIPE_PRICE_STANDARD!
+
+      const { data: inserted, error: lodgeError } = await supabase
+        .from('lodges')
+        .insert({
+          name: lodgeName,
+          number: lodgeNumber,
+          state,
+          city,
+          meeting_address: meetingAddress,
+          status: 'pending',
+          tier: 'standard',
+          paid_by_email: payerEmail,
+          paid_by_name: payerName,
+          directory_id: directoryId || null,
+          slug,
+        })
+        .select('id, slug')
+        .single()
+
+      if (lodgeError) {
+        if (lodgeError.code === '23505') {
+          return Response.json(
+            { error: 'LODGE_ALREADY_EXISTS', message: 'This lodge is already registered.' },
+            { status: 409 }
+          )
+        }
+        console.error('Lodge insert error:', lodgeError)
+        return Response.json({ error: 'Failed to create lodge', message: lodgeError.message }, { status: 500 })
+      }
+
+      lodge = inserted
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: ['card'],
-      line_items: [{ price: priceId, quantity: 1 }],
-      metadata: {
-        lodge_id: lodge.id,
-        lodge_name: lodgeName,
-        lodge_number: lodgeNumber,
-        lodge_state: state,
-        lodge_size: size,
-        payer_email: payerEmail,
-        payer_name: payerName,
-        is_founding_eligible: String(isFoundingEligible),
-      },
-      customer_email: payerEmail,
-      success_url: `${appUrl}/join/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/join/confirm`,
-      expires_at: Math.floor(Date.now() / 1000) + 2 * 60 * 60,
-    })
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
-    return Response.json({ url: session.url })
-  }
+    if (process.env.STRIPE_SECRET_KEY) {
+      const Stripe = (await import('stripe')).default
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-  // ── Stub path (no Stripe key) — activate directly ───────────────────────
-  const tier = isFoundingEligible ? 'founding' : 'charter'
-  const claimCode = await generateUniqueClaimCode(supabase)
-  const expiresAt = new Date()
-  expiresAt.setDate(expiresAt.getDate() + 30)
-  const amount = isFoundingEligible ? PRICES.founding : PRICES[size] ?? PRICES.standard
+      let priceId: string
+      if (isFoundingEligible) {
+        priceId = process.env.STRIPE_PRICE_FOUNDING!
+      } else {
+        const priceMap: Record<string, string> = {
+          small: process.env.STRIPE_PRICE_STANDARD_SMALL!,
+          standard: process.env.STRIPE_PRICE_STANDARD!,
+          large: process.env.STRIPE_PRICE_LARGE!,
+        }
+        priceId = priceMap[size] || process.env.STRIPE_PRICE_STANDARD!
+      }
 
-  await supabase
-    .from('lodges')
-    .update({
-      status: 'active',
+      if (!priceId) {
+        return Response.json(
+          {
+            error: 'STRIPE_NOT_CONFIGURED',
+            message: 'Payment is not fully configured. Contact support.',
+          },
+          { status: 503 }
+        )
+      }
+
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [{ price: priceId, quantity: 1 }],
+        metadata: {
+          lodge_id: lodge.id,
+          lodge_name: lodgeName,
+          lodge_number: lodgeNumber,
+          lodge_state: state,
+          lodge_size: size,
+          payer_email: payerEmail,
+          payer_name: payerName,
+          is_founding_eligible: String(isFoundingEligible),
+        },
+        customer_email: payerEmail,
+        success_url: `${appUrl}/join/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${appUrl}/join/confirm`,
+        expires_at: Math.floor(Date.now() / 1000) + 2 * 60 * 60,
+      })
+
+      if (!session.url) {
+        return Response.json(
+          { error: 'CHECKOUT_FAILED', message: 'Could not start checkout session.' },
+          { status: 500 }
+        )
+      }
+
+      return Response.json({ url: session.url })
+    }
+
+    const tier = isFoundingEligible ? 'founding' : 'charter'
+    const claimCode = await generateUniqueClaimCode(supabase)
+    const expiresAt = new Date()
+    expiresAt.setDate(expiresAt.getDate() + 30)
+    const amount = isFoundingEligible ? PRICES.founding : PRICES[size] ?? PRICES.standard
+
+    const { error: activateError } = await supabase
+      .from('lodges')
+      .update({
+        status: 'active',
+        tier,
+        paid_at: new Date().toISOString(),
+        claim_code: claimCode,
+        claim_code_expires_at: expiresAt.toISOString(),
+        slug: lodge.slug ?? (await generateUniqueLodgeSlug(supabase, lodgeName, lodgeNumber, lodge.id)),
+      })
+      .eq('id', lodge.id)
+
+    if (activateError) {
+      console.error('Lodge activate error:', activateError)
+      return Response.json(
+        { error: 'Failed to activate lodge', message: activateError.message },
+        { status: 500 }
+      )
+    }
+
+    try {
+      await sendLodgeClaimEmail({
+        to: payerEmail,
+        payerName: payerName || 'Brother',
+        lodgeName,
+        lodgeNumber,
+        claimCode,
+        tier,
+        expiresAt,
+      })
+    } catch (emailErr) {
+      console.error('Claim email failed (checkout still succeeded):', emailErr)
+    }
+
+    const params = new URLSearchParams({
+      lodge: lodgeName,
+      number: lodgeNumber,
+      code: claimCode,
       tier,
-      paid_at: new Date().toISOString(),
-      claim_code: claimCode,
-      claim_code_expires_at: expiresAt.toISOString(),
+      amount: String(amount),
+      email: payerEmail,
     })
-    .eq('id', lodge.id)
 
-  await sendLodgeClaimEmail({
-    to: payerEmail,
-    payerName: payerName || 'Brother',
-    lodgeName,
-    lodgeNumber,
-    claimCode,
-    tier,
-    expiresAt,
-  })
-
-  const params = new URLSearchParams({
-    lodge: lodgeName,
-    number: lodgeNumber,
-    code: claimCode,
-    tier,
-    amount: String(amount),
-    email: payerEmail,
-  })
-
-  return Response.json({ url: `${appUrl}/join/success?${params}` })
+    return Response.json({ url: `${appUrl}/join/success?${params}` })
+  } catch (err) {
+    console.error('create-checkout unhandled error:', err)
+    const message = err instanceof Error ? err.message : 'Checkout failed'
+    return Response.json({ error: 'CHECKOUT_FAILED', message }, { status: 500 })
+  }
 }

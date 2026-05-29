@@ -8,12 +8,14 @@ import { TradeCategory } from "@/lib/types";
 
 interface Props {
   onClose: () => void;
-  onSubmit: (request: ServiceRequest) => void;
+  onSubmit: (request: ServiceRequest) => void | Promise<void>;
   defaultLodge?: string;
   defaultCity?: string;
   defaultState?: string;
   defaultLat?: number;
   defaultLng?: number;
+  defaultEmail?: string;
+  defaultName?: string;
 }
 
 const TIMELINES: RequestTimeline[] = ["ASAP", "Within 1 week", "Within 2 weeks", "Within 1 month", "Flexible"];
@@ -26,6 +28,8 @@ export default function PostRequestModal({
   defaultState = "OK",
   defaultLat = 0,
   defaultLng = 0,
+  defaultEmail = "",
+  defaultName = "You",
 }: Props) {
   const [form, setForm] = useState({
     title: "",
@@ -36,8 +40,10 @@ export default function PostRequestModal({
     budget: "",
     timeline: "Flexible" as RequestTimeline,
     details: "",
-    email: "",
+    email: defaultEmail,
   });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -49,35 +55,68 @@ export default function PostRequestModal({
     return () => document.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.title || !form.category || !form.city || !form.email) return;
+
+    setSubmitting(true);
+    setSubmitError("");
 
     const lodge = form.lodgeNumber
       ? `${defaultLodge.replace(/ #\d+$/, "")} #${form.lodgeNumber}`
       : defaultLodge;
 
-    const newRequest: ServiceRequest = {
-      id: Date.now(),
-      title: form.title,
-      category: form.category as TradeCategory,
-      name: "You",
-      lodge,
-      city: form.city,
-      state: form.state,
-      lat: defaultLat,
-      lng: defaultLng,
-      budget: form.budget || "Flexible",
-      timeline: form.timeline,
-      details: form.details,
-      responses: 0,
-      postedHoursAgo: 0,
-      status: "open",
-      remoteEligible: false,
-      verifiedMember: true,
-    };
+    try {
+      const res = await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title,
+          category: form.category,
+          city: form.city,
+          state: form.state,
+          budget: form.budget,
+          timeline: form.timeline,
+          details: form.details,
+          email: form.email,
+          name: defaultName,
+          lat: defaultLat,
+          lng: defaultLng,
+        }),
+      });
 
-    onSubmit(newRequest);
+      const data = await res.json();
+      if (!res.ok) {
+        setSubmitError(data.error || "Failed to post request");
+        return;
+      }
+
+      const newRequest: ServiceRequest = {
+        id: data.id,
+        title: form.title,
+        category: form.category as TradeCategory,
+        name: defaultName,
+        lodge,
+        city: form.city,
+        state: form.state,
+        lat: defaultLat,
+        lng: defaultLng,
+        budget: form.budget || "Flexible",
+        timeline: form.timeline,
+        details: form.details,
+        responses: 0,
+        postedHoursAgo: 0,
+        status: "open",
+        remoteEligible: false,
+        verifiedMember: true,
+      };
+
+      await onSubmit(newRequest);
+    } catch {
+      setSubmitError("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const field = "w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold transition";
@@ -229,19 +268,25 @@ export default function PostRequestModal({
             <p className="text-xs text-muted mt-1">We won&apos;t use this for anything else.</p>
           </div>
 
+          {submitError && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{submitError}</p>
+          )}
+
           <div className="pt-2 flex gap-3">
             <button
               type="button"
               onClick={onClose}
+              disabled={submitting}
               className="flex-1 border border-gray-200 text-muted font-semibold py-3 rounded-xl hover:bg-stone transition-colors text-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 bg-gold hover:bg-gold-dark text-navy font-bold py-3 rounded-xl transition-colors text-sm"
+              disabled={submitting}
+              className="flex-1 bg-gold hover:bg-gold-dark disabled:opacity-50 text-navy font-bold py-3 rounded-xl transition-colors text-sm"
             >
-              Post to the Network
+              {submitting ? "Posting…" : "Post to the Network"}
             </button>
           </div>
           <p className="text-xs text-muted text-center pb-2">

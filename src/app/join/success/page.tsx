@@ -1,23 +1,45 @@
 'use client'
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle2, Copy, Check, Mail } from 'lucide-react'
+import { CheckCircle2, Copy, Check, Mail, Loader2 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
   const [copied, setCopied] = useState(false)
+  const [loadingSession, setLoadingSession] = useState(false)
+  const [sessionError, setSessionError] = useState('')
 
-  // Params from stub path
-  const lodgeName   = searchParams.get('lodge') || ''
-  const lodgeNumber = searchParams.get('number') || ''
-  const claimCode   = searchParams.get('code') || ''
-  const tier        = searchParams.get('tier') || ''
-  const payerEmail  = searchParams.get('email') || ''
-  // Stripe path uses session_id — in that case we'd fetch the session details
-  const sessionId   = searchParams.get('session_id') || ''
+  const sessionId = searchParams.get('session_id') || ''
+
+  const [lodgeName, setLodgeName] = useState(searchParams.get('lodge') || '')
+  const [lodgeNumber, setLodgeNumber] = useState(searchParams.get('number') || '')
+  const [claimCode, setClaimCode] = useState(searchParams.get('code') || '')
+  const [tier, setTier] = useState(searchParams.get('tier') || '')
+  const [payerEmail, setPayerEmail] = useState(searchParams.get('email') || '')
+
+  useEffect(() => {
+    if (claimCode || !sessionId) return
+
+    setLoadingSession(true)
+    fetch(`/api/checkout/session?session_id=${encodeURIComponent(sessionId)}`)
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) {
+          setSessionError(data.error || 'Could not load your claim code yet.')
+          return
+        }
+        setLodgeName(data.lodgeName || '')
+        setLodgeNumber(data.lodgeNumber || '')
+        setClaimCode(data.claimCode || '')
+        setTier(data.tier || '')
+        setPayerEmail(data.payerEmail || '')
+      })
+      .catch(() => setSessionError('Could not load your claim code. Check your email or use resend below.'))
+      .finally(() => setLoadingSession(false))
+  }, [claimCode, sessionId])
 
   const isFounding = tier === 'founding'
 
@@ -54,7 +76,6 @@ function SuccessContent() {
 
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-10 flex-1 w-full">
 
-        {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 rounded-full bg-[#2D6A4F]/10 flex items-center justify-center flex-shrink-0">
             <CheckCircle2 size={24} className="text-[#2D6A4F]" />
@@ -73,7 +94,19 @@ function SuccessContent() {
           </div>
         )}
 
-        {/* Claim code display */}
+        {loadingSession && (
+          <div className="flex items-center justify-center gap-2 text-sm text-muted py-8">
+            <Loader2 size={18} className="animate-spin" />
+            Loading your claim code…
+          </div>
+        )}
+
+        {sessionError && !claimCode && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm text-amber-900">
+            {sessionError} If you just paid, wait a moment and refresh — or check your email.
+          </div>
+        )}
+
         {claimCode && (
           <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6 mb-5">
             <p className="text-sm font-semibold text-muted uppercase tracking-wide mb-3">Your lodge claim code</p>
@@ -91,28 +124,28 @@ function SuccessContent() {
           </div>
         )}
 
-        {/* Instructions */}
         <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6 mb-6">
           <p className="text-sm text-[#1A1A1A] leading-relaxed">
             This code unlocks your lodge&apos;s admin access on Tyrian. Forward it to your Worshipful Master or Secretary, or claim admin yourself if that&apos;s you.
           </p>
         </div>
 
-        {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <Link
             href={claimCode ? `/claim?code=${claimCode}` : '/claim'}
-            className="flex-1 bg-navy text-[#C9A84C] font-bold py-3.5 rounded-xl text-sm text-center hover:bg-navy/90 transition-colors"
+            className={`flex-1 bg-navy text-[#C9A84C] font-bold py-3.5 rounded-xl text-sm text-center hover:bg-navy/90 transition-colors ${!claimCode ? 'pointer-events-none opacity-50' : ''}`}
           >
             Claim Admin Access →
           </Link>
-          <a
-            href={mailtoLink}
-            className="flex-1 flex items-center justify-center gap-2 border border-[#E5E0D5] text-navy text-sm font-medium py-3.5 rounded-xl hover:bg-stone transition-colors"
-          >
-            <Mail size={16} />
-            Share via email
-          </a>
+          {claimCode && (
+            <a
+              href={mailtoLink}
+              className="flex-1 flex items-center justify-center gap-2 border border-[#E5E0D5] text-navy text-sm font-medium py-3.5 rounded-xl hover:bg-stone transition-colors"
+            >
+              <Mail size={16} />
+              Share via email
+            </a>
+          )}
         </div>
 
         {payerEmail && (

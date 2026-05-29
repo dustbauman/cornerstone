@@ -1,6 +1,14 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+function redirectWithSessionCookies(url: URL, sessionResponse: NextResponse) {
+  const redirectResponse = NextResponse.redirect(url)
+  sessionResponse.cookies.getAll().forEach(({ name, value }) => {
+    redirectResponse.cookies.set(name, value)
+  })
+  return redirectResponse
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -36,6 +44,22 @@ export async function updateSession(request: NextRequest) {
     url.pathname = '/login'
     url.searchParams.set('redirect', path)
     return NextResponse.redirect(url)
+  }
+
+  if (user && isProtected) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('lodge_id')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (!profile?.lodge_id) {
+      await supabase.auth.signOut()
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('error', 'no_membership')
+      return redirectWithSessionCookies(url, supabaseResponse)
+    }
   }
 
   return supabaseResponse

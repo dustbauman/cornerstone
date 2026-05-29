@@ -13,6 +13,7 @@ const categoryColors: Record<TradeCategory, string> = {
   Technology: "bg-indigo-100 text-indigo-800",
   "Home Inspection": "bg-rose-100 text-rose-800",
   Painting: "bg-pink-100 text-pink-800",
+  Other: "bg-stone text-gray-700",
 };
 
 interface Props {

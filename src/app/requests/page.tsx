@@ -1,28 +1,65 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { PlusCircle, SlidersHorizontal, X, Megaphone } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { PlusCircle, SlidersHorizontal, X, Megaphone, Loader2 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import RequestCard from "@/components/requests/RequestCard";
 import SectionDivider from "@/components/ui/SectionDivider";
 import PostRequestModal from "@/components/requests/PostRequestModal";
 import ToastNotification from "@/components/ui/ToastNotification";
-import { requests as seedRequests, ServiceRequest } from "@/lib/demo/requests";
+import { requests as demoRequests, ServiceRequest } from "@/lib/demo/requests";
 import { haversineDistance, getMatchScore } from "@/lib/geo/scoring";
 import { CATEGORIES } from "@/lib/constants/categories";
+import { useDemoMode } from "@/lib/demo/context";
+import { demoUser } from "@/lib/demo/data";
+import { createClient } from "@/lib/supabase/client";
+import { DB_REQUEST_SELECT, dbRequestToServiceRequest } from "@/lib/db/requests";
+import type { TradeCategory } from "@/lib/types";
 
-const MOCK_USER = {
-  name: "Robert C. Ingram",
-  firstName: "Robert",
-  trade: "Plumbing" as const,
-  lodge: "Acacia Lodge #123",
-  city: "Tulsa",
-  state: "OK",
-  lat: 36.1540,
-  lng: -95.9928,
+interface RequestUser {
+  name: string;
+  firstName: string;
+  trade: TradeCategory | "";
+  lodge: string;
+  lodgeId: string | null;
+  city: string;
+  state: string;
+  lat: number;
+  lng: number;
+  isVerified: boolean;
+  isLoggedIn: boolean;
+  email: string;
+}
+
+const DEMO_REQUEST_USER: RequestUser = {
+  name: demoUser.full_name,
+  firstName: demoUser.full_name.split(" ")[0],
+  trade: demoUser.trade_category as TradeCategory,
+  lodge: `${demoUser.lodge_name} #${demoUser.lodge_number}`,
+  lodgeId: demoUser.lodge_id,
+  city: demoUser.city,
+  state: demoUser.state,
+  lat: demoUser.lat,
+  lng: demoUser.lng,
   isVerified: true,
   isLoggedIn: true,
+  email: demoUser.email,
+};
+
+const ANON_USER: RequestUser = {
+  name: "Guest",
+  firstName: "Guest",
+  trade: "",
+  lodge: "",
+  lodgeId: null,
+  city: "Tulsa",
+  state: "OK",
+  lat: 36.154,
+  lng: -95.9928,
+  isVerified: false,
+  isLoggedIn: false,
+  email: "",
 };
 
 type TabType = "for-you" | "your-lodge" | "your-area" | "all";
@@ -42,26 +79,92 @@ const STATUSES = [
   { value: "filled", label: "Filled" },
 ];
 
-function scoreSort(user: typeof MOCK_USER) {
+function scoreSort(user: RequestUser) {
   return (a: ServiceRequest, b: ServiceRequest) =>
     getMatchScore(b, user) - getMatchScore(a, user);
 }
 
 export default function RequestsPage() {
-  const [requests, setRequests] = useState<ServiceRequest[]>(seedRequests);
+  const { isDemoMode } = useDemoMode();
+  const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [requestUser, setRequestUser] = useState<RequestUser>(ANON_USER);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("for-you");
   const [modalOpen, setModalOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // All-tab filters
   const [filterCategory, setFilterCategory] = useState("");
   const [filterState, setFilterState] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const hasFilters = filterCategory || filterState || filterStatus;
 
-  // ── For You bands ────────────────────────────────────────────────────────
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+
+      if (isDemoMode) {
+        setRequests(demoRequests);
+        setRequestUser(DEMO_REQUEST_USER);
+        setLoading(false);
+        return;
+      }
+
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      let userCtx: RequestUser = { ...ANON_USER };
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, email, trade_category, city, state, lat, lng, lodge_id, verification_status")
+          .eq("id", user.id)
+          .single();
+
+        let lodgeName = "";
+        const lodgeId: string | null = profile?.lodge_id ?? null;
+
+        if (profile?.lodge_id) {
+          const { data: lodge } = await supabase
+            .from("lodges")
+            .select("name, number")
+            .eq("id", profile.lodge_id)
+            .maybeSingle();
+          if (lodge) lodgeName = `${lodge.name} #${lodge.number}`;
+        }
+
+        userCtx = {
+          name: profile?.full_name || user.email?.split("@")[0] || "Member",
+          firstName: (profile?.full_name || "Member").split(" ")[0],
+          trade: (profile?.trade_category as TradeCategory) || "",
+          lodge: lodgeName,
+          lodgeId,
+          city: profile?.city || ANON_USER.city,
+          state: profile?.state || ANON_USER.state,
+          lat: profile?.lat ?? ANON_USER.lat,
+          lng: profile?.lng ?? ANON_USER.lng,
+          isVerified: profile?.verification_status === "verified",
+          isLoggedIn: true,
+          email: user.email ?? "",
+        };
+      }
+
+      const { data: rows } = await supabase
+        .from("requests")
+        .select(DB_REQUEST_SELECT)
+        .in("status", ["open", "active", "filled"])
+        .order("created_at", { ascending: false });
+
+      setRequests((rows || []).map(dbRequestToServiceRequest));
+      setRequestUser(userCtx);
+      setLoading(false);
+    }
+
+    load();
+  }, [isDemoMode]);
+
   const forYouBands = useMemo(() => {
-    const sort = scoreSort(MOCK_USER);
+    const sort = scoreSort(requestUser);
     const nationwide = requests.filter((r) => r.remoteEligible).sort(sort);
     const nonRemote = requests.filter((r) => !r.remoteEligible);
 
@@ -71,9 +174,9 @@ export default function RequestsPage() {
     const acrossState: ServiceRequest[] = [];
 
     for (const r of nonRemote) {
-      const mi = haversineDistance(MOCK_USER.lat, MOCK_USER.lng, r.lat, r.lng);
+      const mi = haversineDistance(requestUser.lat, requestUser.lng, r.lat, r.lng);
       if (mi <= 25) {
-        if (r.category === MOCK_USER.trade) nearYou.push(r);
+        if (requestUser.trade && r.category === requestUser.trade) nearYou.push(r);
         else nearYouOther.push(r);
       } else if (mi <= 50) {
         inYourArea.push(r);
@@ -89,31 +192,33 @@ export default function RequestsPage() {
       inYourArea: inYourArea.sort(sort),
       acrossState: acrossState.sort(sort),
     };
-  }, [requests]);
+  }, [requests, requestUser]);
 
-  // ── Your Lodge ───────────────────────────────────────────────────────────
   const lodgeRequests = useMemo(
     () =>
       requests
-        .filter((r) => r.lodge === MOCK_USER.lodge)
+        .filter((r) =>
+          requestUser.lodgeId
+            ? r.lodgeId === requestUser.lodgeId
+            : requestUser.lodge && r.lodge === requestUser.lodge
+        )
         .sort((a, b) => a.postedHoursAgo - b.postedHoursAgo),
-    [requests]
+    [requests, requestUser]
   );
 
-  // ── Your Area ────────────────────────────────────────────────────────────
   const areaBands = useMemo(() => {
-    const nationwide = requests.filter((r) => r.remoteEligible)
+    const nationwide = requests
+      .filter((r) => r.remoteEligible)
       .sort((a, b) => a.postedHoursAgo - b.postedHoursAgo);
     const local = requests
       .filter((r) => {
         if (r.remoteEligible) return false;
-        return haversineDistance(MOCK_USER.lat, MOCK_USER.lng, r.lat, r.lng) <= 50;
+        return haversineDistance(requestUser.lat, requestUser.lng, r.lat, r.lng) <= 50;
       })
       .sort((a, b) => a.postedHoursAgo - b.postedHoursAgo);
     return { nationwide, local };
-  }, [requests]);
+  }, [requests, requestUser]);
 
-  // ── All filtered ─────────────────────────────────────────────────────────
   const allFiltered = useMemo(
     () =>
       requests
@@ -127,13 +232,28 @@ export default function RequestsPage() {
     [requests, filterCategory, filterState, filterStatus]
   );
 
+  const openNearCount = useMemo(
+    () =>
+      requests.filter(
+        (r) =>
+          r.status === "open" &&
+          !r.remoteEligible &&
+          haversineDistance(requestUser.lat, requestUser.lng, r.lat, r.lng) <= 50
+      ).length,
+    [requests, requestUser]
+  );
+
+  const noResponseCount = useMemo(
+    () => requests.filter((r) => r.responses === 0 && r.status === "open").length,
+    [requests]
+  );
+
   function handleNewRequest(request: ServiceRequest) {
     setRequests((prev) => [request, ...prev]);
     setModalOpen(false);
     setToast("Your request has been posted. Verified professionals in your area have been notified.");
   }
 
-  // ── Render helpers ───────────────────────────────────────────────────────
   function renderForYou() {
     const { nationwide, nearYou, inYourArea, nearYouOther, acrossState } = forYouBands;
     const empty =
@@ -141,6 +261,8 @@ export default function RequestsPage() {
       !nearYouOther.length && !acrossState.length;
 
     if (empty) return <EmptyState />;
+
+    const stateLabel = requestUser.state === "OK" ? "Oklahoma" : requestUser.state;
 
     return (
       <div className="space-y-3">
@@ -151,10 +273,10 @@ export default function RequestsPage() {
               <RequestCard
                 key={r.id}
                 request={r}
-                isLoggedIn={MOCK_USER.isLoggedIn}
-                matchScore={getMatchScore(r, MOCK_USER)}
-                isMatchingTrade={r.category === MOCK_USER.trade}
-                userLodge={MOCK_USER.lodge}
+                isLoggedIn={requestUser.isLoggedIn}
+                matchScore={getMatchScore(r, requestUser)}
+                isMatchingTrade={!!requestUser.trade && r.category === requestUser.trade}
+                userLodge={requestUser.lodge}
               />
             ))}
           </>
@@ -166,10 +288,10 @@ export default function RequestsPage() {
               <RequestCard
                 key={r.id}
                 request={r}
-                isLoggedIn={MOCK_USER.isLoggedIn}
-                matchScore={getMatchScore(r, MOCK_USER)}
-                isMatchingTrade={true}
-                userLodge={MOCK_USER.lodge}
+                isLoggedIn={requestUser.isLoggedIn}
+                matchScore={getMatchScore(r, requestUser)}
+                isMatchingTrade
+                userLodge={requestUser.lodge}
               />
             ))}
           </>
@@ -181,10 +303,10 @@ export default function RequestsPage() {
               <RequestCard
                 key={r.id}
                 request={r}
-                isLoggedIn={MOCK_USER.isLoggedIn}
-                matchScore={getMatchScore(r, MOCK_USER)}
-                isMatchingTrade={r.category === MOCK_USER.trade}
-                userLodge={MOCK_USER.lodge}
+                isLoggedIn={requestUser.isLoggedIn}
+                matchScore={getMatchScore(r, requestUser)}
+                isMatchingTrade={!!requestUser.trade && r.category === requestUser.trade}
+                userLodge={requestUser.lodge}
               />
             ))}
           </>
@@ -196,25 +318,25 @@ export default function RequestsPage() {
               <RequestCard
                 key={r.id}
                 request={r}
-                isLoggedIn={MOCK_USER.isLoggedIn}
-                matchScore={getMatchScore(r, MOCK_USER)}
+                isLoggedIn={requestUser.isLoggedIn}
+                matchScore={getMatchScore(r, requestUser)}
                 isMatchingTrade={false}
-                userLodge={MOCK_USER.lodge}
+                userLodge={requestUser.lodge}
               />
             ))}
           </>
         )}
         {acrossState.length > 0 && (
           <>
-            <SectionDivider label="📍  Across Oklahoma" />
+            <SectionDivider label={`📍  Across ${stateLabel}`} />
             {acrossState.map((r) => (
               <RequestCard
                 key={r.id}
                 request={r}
-                isLoggedIn={MOCK_USER.isLoggedIn}
-                matchScore={getMatchScore(r, MOCK_USER)}
-                isMatchingTrade={r.category === MOCK_USER.trade}
-                userLodge={MOCK_USER.lodge}
+                isLoggedIn={requestUser.isLoggedIn}
+                matchScore={getMatchScore(r, requestUser)}
+                isMatchingTrade={!!requestUser.trade && r.category === requestUser.trade}
+                userLodge={requestUser.lodge}
               />
             ))}
           </>
@@ -224,6 +346,13 @@ export default function RequestsPage() {
   }
 
   function renderYourLodge() {
+    if (!requestUser.lodgeId && !requestUser.lodge) {
+      return (
+        <div className="text-center py-20 text-muted">
+          <p className="font-medium text-base">Join a lodge to see requests from your brothers.</p>
+        </div>
+      );
+    }
     if (!lodgeRequests.length) {
       return (
         <div className="text-center py-20 text-muted">
@@ -239,8 +368,8 @@ export default function RequestsPage() {
           <RequestCard
             key={r.id}
             request={r}
-            isLoggedIn={MOCK_USER.isLoggedIn}
-            userLodge={MOCK_USER.lodge}
+            isLoggedIn={requestUser.isLoggedIn}
+            userLodge={requestUser.lodge}
           />
         ))}
       </div>
@@ -256,25 +385,15 @@ export default function RequestsPage() {
           <>
             <SectionDivider label="🌐  Available nationwide" />
             {nationwide.map((r) => (
-              <RequestCard
-                key={r.id}
-                request={r}
-                isLoggedIn={MOCK_USER.isLoggedIn}
-                userLodge={MOCK_USER.lodge}
-              />
+              <RequestCard key={r.id} request={r} isLoggedIn={requestUser.isLoggedIn} userLodge={requestUser.lodge} />
             ))}
           </>
         )}
         {local.length > 0 && (
           <>
-            <SectionDivider label="📍  Within 50 miles of Tulsa" />
+            <SectionDivider label={`📍  Within 50 miles of ${requestUser.city}`} />
             {local.map((r) => (
-              <RequestCard
-                key={r.id}
-                request={r}
-                isLoggedIn={MOCK_USER.isLoggedIn}
-                userLodge={MOCK_USER.lodge}
-              />
+              <RequestCard key={r.id} request={r} isLoggedIn={requestUser.isLoggedIn} userLodge={requestUser.lodge} />
             ))}
           </>
         )}
@@ -285,7 +404,6 @@ export default function RequestsPage() {
   function renderAll() {
     return (
       <>
-        {/* Inline filter bar */}
         <div className="flex flex-wrap items-center gap-2 mb-5">
           <select
             value={filterCategory}
@@ -324,12 +442,7 @@ export default function RequestsPage() {
         {allFiltered.length > 0 ? (
           <div className="space-y-3">
             {allFiltered.map((r) => (
-              <RequestCard
-                key={r.id}
-                request={r}
-                isLoggedIn={MOCK_USER.isLoggedIn}
-                userLodge={MOCK_USER.lodge}
-              />
+              <RequestCard key={r.id} request={r} isLoggedIn={requestUser.isLoggedIn} userLodge={requestUser.lodge} />
             ))}
           </div>
         ) : (
@@ -339,11 +452,22 @@ export default function RequestsPage() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center bg-stone">
+          <Loader2 size={32} className="text-navy animate-spin" />
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      {/* Page header */}
       <div className="bg-navy text-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-start justify-between gap-4 flex-wrap mb-5">
@@ -365,19 +489,15 @@ export default function RequestsPage() {
             </button>
           </div>
 
-          {/* Context line */}
-          <p className="text-white/60 text-sm">
-            Showing results for:{" "}
-            <span className="text-white font-semibold">{MOCK_USER.trade}</span>
-            {" · "}
-            <span className="text-white font-semibold">{MOCK_USER.city}, {MOCK_USER.state}</span>
-            {"  "}
-            <button className="text-gold/80 hover:text-gold text-xs ml-1 underline underline-offset-2">
-              [Edit preferences]
-            </button>
-          </p>
+          {requestUser.isLoggedIn && requestUser.trade && (
+            <p className="text-white/60 text-sm">
+              Showing results for:{" "}
+              <span className="text-white font-semibold">{requestUser.trade}</span>
+              {" · "}
+              <span className="text-white font-semibold">{requestUser.city}, {requestUser.state}</span>
+            </p>
+          )}
 
-          {/* Tabs */}
           <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-1 scrollbar-none">
             {TABS.map((tab) => (
               <button
@@ -399,10 +519,8 @@ export default function RequestsPage() {
         </div>
       </div>
 
-      {/* Main content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
         <div className="flex gap-8">
-          {/* Feed */}
           <div className="flex-1 min-w-0">
             {activeTab === "for-you" && renderForYou()}
             {activeTab === "your-lodge" && renderYourLodge()}
@@ -410,14 +528,11 @@ export default function RequestsPage() {
             {activeTab === "all" && renderAll()}
           </div>
 
-          {/* Sidebar */}
           <aside className="hidden lg:block w-64 flex-shrink-0 space-y-4">
-            {/* Post CTA */}
             <div className="bg-navy rounded-2xl p-5 text-white">
               <h3 className="font-serif text-lg font-bold mb-1">Need a service?</h3>
               <p className="text-white/60 text-sm mb-4 leading-relaxed">
-                Post your request to the network. Verified professionals in your area will
-                respond directly.
+                Post your request to the network. Verified professionals in your area will respond directly.
               </p>
               <button
                 onClick={() => setModalOpen(true)}
@@ -427,28 +542,28 @@ export default function RequestsPage() {
               </button>
             </div>
 
-            {/* Stats block */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted">Open near Tulsa</span>
-                <span className="font-serif font-bold text-navy text-lg">8</span>
+                <span className="text-sm text-muted">Open near {requestUser.city}</span>
+                <span className="font-serif font-bold text-navy text-lg">{openNearCount}</span>
               </div>
               <div className="h-px bg-gray-100" />
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted">With no response yet</span>
-                <span className="font-serif font-bold text-red-500 text-lg">3</span>
+                <span className="font-serif font-bold text-red-500 text-lg">{noResponseCount}</span>
               </div>
             </div>
 
-            {/* Lodge context */}
-            <div className="bg-stone rounded-2xl p-4 border border-gray-100">
-              <p className="text-xs font-semibold text-navy uppercase tracking-[0.08em] mb-2">
-                Browsing as
-              </p>
-              <p className="text-sm font-medium text-navy">{MOCK_USER.name}</p>
-              <p className="text-xs text-muted mt-0.5">{MOCK_USER.lodge}</p>
-              <p className="text-xs text-muted">{MOCK_USER.trade} · {MOCK_USER.city}, {MOCK_USER.state}</p>
-            </div>
+            {requestUser.isLoggedIn && (
+              <div className="bg-stone rounded-2xl p-4 border border-gray-100">
+                <p className="text-xs font-semibold text-navy uppercase tracking-[0.08em] mb-2">Browsing as</p>
+                <p className="text-sm font-medium text-navy">{requestUser.name}</p>
+                {requestUser.lodge && <p className="text-xs text-muted mt-0.5">{requestUser.lodge}</p>}
+                {requestUser.trade && (
+                  <p className="text-xs text-muted">{requestUser.trade} · {requestUser.city}, {requestUser.state}</p>
+                )}
+              </div>
+            )}
           </aside>
         </div>
       </div>
@@ -459,11 +574,13 @@ export default function RequestsPage() {
         <PostRequestModal
           onClose={() => setModalOpen(false)}
           onSubmit={handleNewRequest}
-          defaultLodge={MOCK_USER.lodge}
-          defaultCity={MOCK_USER.city}
-          defaultState={MOCK_USER.state}
-          defaultLat={MOCK_USER.lat}
-          defaultLng={MOCK_USER.lng}
+          defaultLodge={requestUser.lodge || "Your Lodge"}
+          defaultCity={requestUser.city}
+          defaultState={requestUser.state}
+          defaultLat={requestUser.lat}
+          defaultLng={requestUser.lng}
+          defaultEmail={requestUser.email}
+          defaultName={requestUser.name}
         />
       )}
 

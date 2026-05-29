@@ -1,11 +1,14 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CheckCircle, Plus, X, Loader2, Globe } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
+import ListingAccessGate from '@/components/member/ListingAccessGate'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES } from '@/lib/constants/categories'
+import { getMemberAccessState, canCreateListing } from '@/lib/auth/member-access'
+import type { MemberAccessState } from '@/lib/auth/member-access'
 
 const US_STATES = [
   ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
@@ -50,6 +53,28 @@ export default function NewListingPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [googleImporting, setGoogleImporting] = useState(false)
+  const [accessState, setAccessState] = useState<MemberAccessState | null>(null)
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('lodge_id, verification_status')
+        .eq('id', user.id)
+        .single()
+      setAccessState(
+        getMemberAccessState({
+          lodge_id: profile?.lodge_id ?? null,
+          verification_status: profile?.verification_status ?? 'pending',
+        })
+      )
+    })
+  }, [router])
 
   function set<K extends keyof FormState>(key: K, val: FormState[K]) {
     setForm(f => ({ ...f, [key]: val }))
@@ -91,6 +116,21 @@ export default function NewListingPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('lodge_id, verification_status')
+        .eq('id', user.id)
+        .single()
+
+      if (!canCreateListing({
+        lodge_id: profile?.lodge_id ?? null,
+        verification_status: profile?.verification_status ?? 'pending',
+      })) {
+        setError('You must be lodge-verified before publishing a listing.')
+        setSubmitting(false)
+        return
+      }
+
       const { data, error: insertError } = await supabase
         .from('listings')
         .insert({
@@ -122,6 +162,21 @@ export default function NewListingPage() {
   }
 
   const step2Valid = form.businessName.trim() && form.tradeCategory && form.city.trim() && form.state
+
+  if (accessState === null) {
+    return (
+      <div className="flex flex-col min-h-screen bg-stone">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center">
+          <Loader2 size={32} className="text-navy animate-spin" />
+        </div>
+      </div>
+    )
+  }
+
+  if (accessState !== 'verified') {
+    return <ListingAccessGate state={accessState} />
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-stone">

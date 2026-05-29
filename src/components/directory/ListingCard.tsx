@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { Listing } from "@/lib/types";
@@ -30,9 +32,24 @@ export default function ListingCard({ listing }: Props) {
             <MapPin size={13} />
             <span>{listing.location.city}, {listing.location.stateCode}</span>
           </div>
-          <span className="text-xs text-muted/70 font-light">
-            {listing.lodge} #{listing.lodgeNumber}
-          </span>
+          {listing.lodgeSlug ? (
+            <span
+              onClick={(e) => e.preventDefault()}
+              className="text-xs text-muted/70 font-light"
+            >
+              <Link
+                href={`/lodge/${listing.lodgeSlug}`}
+                className="hover:text-navy hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {listing.lodge} #{listing.lodgeNumber}
+              </Link>
+            </span>
+          ) : (
+            <span className="text-xs text-muted/70 font-light">
+              {listing.lodge} #{listing.lodgeNumber}
+            </span>
+          )}
         </div>
       </div>
     </Link>

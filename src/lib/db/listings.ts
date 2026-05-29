@@ -37,8 +37,16 @@ export type DbListingRow = {
   profiles: {
     full_name: string | null
     verification_status: string
-    lodges: { name: string; number: string } | null
+    lodge_id: string | null
+    lodges: { id: string; name: string; number: string; slug: string | null } | null
   } | null
+}
+
+export function isVerifiedPublicListing(row: DbListingRow): boolean {
+  return (
+    row.profiles?.verification_status === 'verified' &&
+    !!row.profiles?.lodge_id
+  )
 }
 
 export function dbListingToListing(row: DbListingRow): Listing {
@@ -50,6 +58,8 @@ export function dbListingToListing(row: DbListingRow): Listing {
     trade: row.trade_category as TradeCategory,
     lodge: row.profiles?.lodges?.name ?? '',
     lodgeNumber: parseInt(row.profiles?.lodges?.number ?? '0'),
+    lodgeSlug: row.profiles?.lodges?.slug ?? null,
+    lodgeId: row.profiles?.lodges?.id ?? row.profiles?.lodge_id ?? null,
     location: {
       city: row.city,
       state: STATE_CODE_TO_NAME[row.state] ?? row.state,
@@ -77,6 +87,8 @@ export function demoListingToListing(dl: typeof demoListings[number]): Listing {
     trade: dl.trade_category as TradeCategory,
     lodge: dl.lodge_name,
     lodgeNumber: parseInt(dl.lodge_number),
+    lodgeSlug: `${dl.lodge_name.toLowerCase().replace(/\s+/g, '-')}-${dl.lodge_number}`,
+    lodgeId: dl.lodge_id,
     location: {
       city: dl.city,
       state: STATE_CODE_TO_NAME[dl.state] ?? dl.state,
@@ -101,7 +113,7 @@ export const DB_LISTING_SELECT = `
   google_rating, google_rating_count,
   services, visibility, is_active, views_count, created_at,
   profiles:profile_id (
-    full_name, verification_status,
-    lodges:lodge_id ( name, number )
+    full_name, verification_status, lodge_id,
+    lodges:lodge_id ( id, name, number, slug )
   )
 ` as const

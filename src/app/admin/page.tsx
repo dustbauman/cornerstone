@@ -19,11 +19,14 @@ interface Lodge {
   number: string
   state: string
   city: string
+  meeting_address: string | null
+  welcome_message: string | null
   tier: string
   status: string
   paid_at: string | null
   claim_code_claimed_at: string | null
   directory_id: string | null
+  slug: string | null
 }
 
 interface Member {
@@ -44,12 +47,12 @@ interface Stats {
   pendingApprovals: number
 }
 
-const SETUP_STEPS = [
-  { key: 'claimed',   label: 'Lodge claimed',              done: true },
-  { key: 'city',      label: 'Add lodge city & address',   done: false },
-  { key: 'welcome',   label: 'Write welcome message',      done: false },
-  { key: 'members',   label: 'Invite first 5 members',     done: false },
-  { key: 'listing',   label: 'First member listing live',  done: false },
+const SETUP_STEP_DEFS = [
+  { key: 'claimed', label: 'Lodge claimed', href: null as string | null, hash: null as string | null },
+  { key: 'city', label: 'Add lodge city & address', href: '/admin/settings', hash: null },
+  { key: 'welcome', label: 'Write welcome message', href: '/admin/settings', hash: 'welcome' },
+  { key: 'members', label: 'Invite first 5 members', href: null, hash: 'invite' },
+  { key: 'listing', label: 'First member listing live', href: '/directory', hash: null },
 ]
 
 function AdminContent() {
@@ -67,16 +70,18 @@ function AdminContent() {
   const [inviteEmail, setInviteEmail] = useState('')
   const [sendingInvite, setSendingInvite] = useState(false)
   const [inviteSent, setInviteSent] = useState(false)
-
-  // Unverified lodges (for platform admin — null directory_id)
   const [unverifiedLodges, setUnverifiedLodges] = useState<Lodge[]>([])
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const supabase = createClient()
+  const showDirectoryReview = process.env.NEXT_PUBLIC_PLATFORM_ADMIN === 'true'
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
+      setCurrentUserId(user.id)
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -94,13 +99,20 @@ function AdminContent() {
         { data: lodgeData },
         { data: membersData },
         { data: listingsData },
-        { data: unverifiedData },
+        unverifiedResult,
       ] = await Promise.all([
         supabase.from('lodges').select('*').eq('id', profile.lodge_id).single(),
         supabase.from('profiles').select('id, full_name, email, trade_category, city, verification_status, is_lodge_admin, is_co_admin').eq('lodge_id', profile.lodge_id),
-        supabase.from('listings').select('id').eq('is_active', true),
-        supabase.from('lodges').select('*').is('directory_id', null).eq('status', 'active'),
+        supabase.from('listings').select('id, profile_id').eq('is_active', true),
+        showDirectoryReview
+          ? supabase.from('lodges').select('*').is('directory_id', null).eq('status', 'active')
+          : Promise.resolve({ data: [] as Lodge[] }),
       ])
+
+      const lodgeMemberIds = new Set((membersData || []).map(m => m.id))
+      const lodgeListings = (listingsData || []).filter(
+        (l: { profile_id: string }) => lodgeMemberIds.has(l.profile_id)
+      )
 
       setLodge(lodgeData)
       const memberList = (membersData || []) as Member[]
@@ -108,16 +120,21 @@ function AdminContent() {
       setStats({
         totalMembers: memberList.length,
         verifiedMembers: memberList.filter(m => m.verification_status === 'verified').length,
-        activeListings: (listingsData || []).length,
-        pendingApprovals: memberList.filter(m => m.verification_status === 'pending').length,
+        activeListings: lodgeListings.length,
+        pendingApprovals: memberList.filter(
+          m => m.verification_status === 'pending' && !m.is_lodge_admin && !m.is_co_admin
+        ).length,
       })
-      setUnverifiedLodges((unverifiedData || []) as Lodge[])
+      if (showDirectoryReview) {
+        setUnverifiedLodges((unverifiedResult.data || []) as Lodge[])
+      }
       setLoading(false)
 
       // Generate QR code URL
       if (lodgeData) {
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
-        const joinUrl = `${appUrl}/join/${lodgeData.id}`
+        const slug = lodgeData.slug ?? lodgeData.id
+        const joinUrl = `${appUrl}/join/${slug}`
         try {
           const QRCode = (await import('qrcode')).default
           const dataUrl = await QRCode.toDataURL(joinUrl, { width: 256, margin: 2, color: { dark: '#1B2A4A', light: '#FFFFFF' } })
@@ -128,12 +145,38 @@ function AdminContent() {
     load()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const inviteLink = lodge ? `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${lodge.id}` : ''
+  const inviteLink = lodge
+    ? `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${lodge.slug ?? lodge.id}`
+    : ''
 
   function copyInviteLink() {
     navigator.clipboard.writeText(inviteLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  async function handleMemberAction(memberId: string, action: 'approve' | 'deny') {
+    setActionLoading(memberId)
+    const res = await fetch('/api/admin/members', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ memberId, action }),
+    })
+    setActionLoading(null)
+    if (res.ok) {
+      setMembers(prev =>
+        prev.map(m =>
+          m.id === memberId
+            ? { ...m, verification_status: action === 'approve' ? 'verified' : 'rejected' }
+            : m
+        )
+      )
+      setStats(prev => prev ? {
+        ...prev,
+        verifiedMembers: action === 'approve' ? prev.verifiedMembers + 1 : prev.verifiedMembers,
+        pendingApprovals: Math.max(0, prev.pendingApprovals - 1),
+      } : prev)
+    }
   }
 
   async function sendInvite(e: React.FormEvent) {
@@ -177,7 +220,21 @@ function AdminContent() {
     )
   }
 
-  const pendingMembers = members.filter(m => m.verification_status === 'pending')
+  const pendingMembers = members.filter(
+    m => m.verification_status === 'pending' && !m.is_lodge_admin && !m.is_co_admin && m.id !== currentUserId
+  )
+
+  const setupSteps = lodge && stats ? SETUP_STEP_DEFS.map(step => {
+    let done = false
+    switch (step.key) {
+      case 'claimed': done = !!lodge.claim_code_claimed_at; break
+      case 'city': done = !!(lodge.city?.trim() && lodge.meeting_address?.trim()); break
+      case 'welcome': done = !!lodge.welcome_message?.trim(); break
+      case 'members': done = stats.totalMembers >= 5; break
+      case 'listing': done = stats.activeListings >= 1; break
+    }
+    return { ...step, done }
+  }) : []
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -197,29 +254,67 @@ function AdminContent() {
               )}
             </p>
           )}
+          {lodge && (
+            <Link
+              href={`/lodge/${lodge.slug ?? lodge.id}`}
+              className="text-sm text-white/70 hover:text-white underline mt-2 inline-block"
+            >
+              View public lodge page →
+            </Link>
+          )}
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
 
         {/* Onboarding checklist */}
-        {showOnboarding && (
+        {showOnboarding && setupSteps.length > 0 && (
           <div className="bg-[#C9A84C]/10 border border-[#C9A84C]/25 rounded-2xl p-6">
             <h2 className="text-lg font-bold text-navy mb-4" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
               Setup checklist
             </h2>
             <div className="space-y-2.5">
-              {SETUP_STEPS.map(step => (
-                <div key={step.key} className="flex items-center gap-3">
-                  {step.done
-                    ? <CheckCircle2 size={18} className="text-[#2D6A4F] flex-shrink-0" />
-                    : <div className="w-[18px] h-[18px] rounded-full border-2 border-[#E5E0D5] flex-shrink-0" />
+              {setupSteps.map(step => {
+                const content = (
+                  <>
+                    {step.done
+                      ? <CheckCircle2 size={18} className="text-[#2D6A4F] flex-shrink-0" />
+                      : <div className="w-[18px] h-[18px] rounded-full border-2 border-[#E5E0D5] flex-shrink-0" />
+                    }
+                    <span className={`text-sm ${step.done ? 'text-muted line-through' : 'text-[#1A1A1A] font-medium'}`}>
+                      {step.label}
+                    </span>
+                    {!step.done && step.href && (
+                      <ChevronRight size={14} className="text-navy ml-auto flex-shrink-0" />
+                    )}
+                  </>
+                )
+
+                if (step.done || !step.href) {
+                  if (!step.done && step.hash === 'invite') {
+                    return (
+                      <a key={step.key} href="#invite" className="flex items-center gap-3 hover:bg-white/50 rounded-lg px-2 py-1 -mx-2 transition-colors">
+                        {content}
+                      </a>
+                    )
                   }
-                  <span className={`text-sm ${step.done ? 'text-[#1A1A1A] line-through text-muted' : 'text-[#1A1A1A]'}`}>
-                    {step.label}
-                  </span>
-                </div>
-              ))}
+                  return (
+                    <div key={step.key} className="flex items-center gap-3 px-2 py-1">
+                      {content}
+                    </div>
+                  )
+                }
+
+                return (
+                  <Link
+                    key={step.key}
+                    href={step.hash ? `${step.href}#${step.hash}` : step.href}
+                    className="flex items-center gap-3 hover:bg-white/50 rounded-lg px-2 py-1 -mx-2 transition-colors"
+                  >
+                    {content}
+                  </Link>
+                )
+              })}
             </div>
           </div>
         )}
@@ -271,10 +366,20 @@ function AdminContent() {
                         )}
                       </div>
                       <div className="flex gap-2 flex-shrink-0">
-                        <button className="text-xs font-semibold text-[#2D6A4F] border border-[#2D6A4F]/30 px-3 py-1.5 rounded-lg hover:bg-[#2D6A4F]/5 transition-colors">
+                        <button
+                          type="button"
+                          disabled={actionLoading === member.id}
+                          onClick={() => handleMemberAction(member.id, 'approve')}
+                          className="text-xs font-semibold text-[#2D6A4F] border border-[#2D6A4F]/30 px-3 py-1.5 rounded-lg hover:bg-[#2D6A4F]/5 transition-colors disabled:opacity-50"
+                        >
                           Approve
                         </button>
-                        <button className="text-xs font-semibold text-muted border border-[#E5E0D5] px-3 py-1.5 rounded-lg hover:bg-stone transition-colors">
+                        <button
+                          type="button"
+                          disabled={actionLoading === member.id}
+                          onClick={() => handleMemberAction(member.id, 'deny')}
+                          className="text-xs font-semibold text-muted border border-[#E5E0D5] px-3 py-1.5 rounded-lg hover:bg-stone transition-colors disabled:opacity-50"
+                        >
                           Deny
                         </button>
                       </div>
@@ -328,7 +433,7 @@ function AdminContent() {
             </div>
 
             {/* Unverified lodges (platform admin view) */}
-            {unverifiedLodges.length > 0 && (
+            {showDirectoryReview && unverifiedLodges.length > 0 && (
               <div className="bg-white rounded-2xl border border-amber-200 shadow-sm overflow-hidden">
                 <div className="px-6 py-5 border-b border-amber-100 bg-amber-50">
                   <h2 className="text-base font-bold text-amber-800 flex items-center gap-2">
@@ -358,7 +463,7 @@ function AdminContent() {
           <div className="space-y-5">
 
             {/* Invite tools */}
-            <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
+            <div id="invite" className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
               <h3 className="font-bold text-navy text-sm mb-4" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                 Invite members
               </h3>

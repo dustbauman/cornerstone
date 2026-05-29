@@ -13,6 +13,7 @@ export const CATEGORIES: readonly TradeCategory[] = [
   'Technology',
   'Home Inspection',
   'Painting',
+  'Other',
 ]
 
 export const FILTER_STATES = ['Florida', 'Oklahoma'] as const

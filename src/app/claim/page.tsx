@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ShieldCheck, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
@@ -18,23 +18,15 @@ function ClaimContent() {
   const [claimState, setClaimState] = useState<ClaimState>('idle')
   const [claimError, setClaimError] = useState<ClaimError | null>(null)
   const [claimedLodge, setClaimedLodge] = useState<{ name: string; number: string } | null>(null)
+  const [autoAttempted, setAutoAttempted] = useState(false)
 
   const [resendEmail, setResendEmail] = useState('')
   const [resendState, setResendState] = useState<'idle' | 'sending' | 'sent'>('idle')
 
-  // Auto-apply code from URL after login redirect
-  useEffect(() => {
-    const storedCode = sessionStorage.getItem('tyrian_claim_code')
-    if (storedCode && !code) {
-      setCode(storedCode.toUpperCase())
-      sessionStorage.removeItem('tyrian_claim_code')
-    }
-  }, [])
-
-  async function handleClaim(e: React.FormEvent) {
-    e.preventDefault()
-    const trimmed = code.trim().toUpperCase()
+  const submitClaim = useCallback(async (claimCode: string) => {
+    const trimmed = claimCode.trim().toUpperCase()
     if (!trimmed) return
+
     setClaimState('submitting')
     setClaimError(null)
 
@@ -42,60 +34,59 @@ function ClaimContent() {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-      // Store code and redirect to login
       sessionStorage.setItem('tyrian_claim_code', trimmed)
-      router.push(`/login?redirect=/claim&code=${encodeURIComponent(trimmed)}`)
+      router.push(`/login?redirect=${encodeURIComponent('/claim')}&code=${encodeURIComponent(trimmed)}`)
+      setClaimState('idle')
       return
     }
 
-    // Look up the claim code
-    const { data: lodge, error: lookupError } = await supabase
-      .from('lodges')
-      .select('id, name, number, status, claim_code_expires_at, claim_code_claimed_at, claim_code_claimed_by')
-      .eq('claim_code', trimmed)
-      .eq('status', 'active')
-      .maybeSingle()
+    const res = await fetch('/api/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ claimCode: trimmed }),
+    })
 
-    if (lookupError || !lodge) {
+    const data = await res.json()
+
+    if (res.status === 401) {
+      sessionStorage.setItem('tyrian_claim_code', trimmed)
+      router.push(`/login?redirect=${encodeURIComponent('/claim')}&code=${encodeURIComponent(trimmed)}`)
+      setClaimState('idle')
+      return
+    }
+
+    if (!res.ok) {
       setClaimState('error')
-      setClaimError('not_found')
+      if (data.error === 'NOT_FOUND') setClaimError('not_found')
+      else if (data.error === 'EXPIRED') setClaimError('expired')
+      else if (data.error === 'ALREADY_CLAIMED') setClaimError('claimed')
+      else setClaimError('unknown')
       return
     }
 
-    if (lodge.claim_code_claimed_at) {
-      setClaimState('error')
-      setClaimError('claimed')
-      return
-    }
-
-    if (lodge.claim_code_expires_at && new Date(lodge.claim_code_expires_at) < new Date()) {
-      setClaimState('error')
-      setClaimError('expired')
-      return
-    }
-
-    // Valid — apply admin access
-    const now = new Date().toISOString()
-
-    const [{ error: profileError }, { error: lodgeError }] = await Promise.all([
-      supabase
-        .from('profiles')
-        .update({ is_lodge_admin: true, lodge_id: lodge.id })
-        .eq('id', user.id),
-      supabase
-        .from('lodges')
-        .update({ claim_code_claimed_at: now, claim_code_claimed_by: user.id })
-        .eq('id', lodge.id),
-    ])
-
-    if (profileError || lodgeError) {
-      setClaimState('error')
-      setClaimError('unknown')
-      return
-    }
-
-    setClaimedLodge({ name: lodge.name, number: lodge.number })
+    setClaimedLodge(data.lodge)
     setClaimState('success')
+    sessionStorage.removeItem('tyrian_claim_code')
+  }, [router])
+
+  // Restore code from sessionStorage / URL, auto-claim after login
+  useEffect(() => {
+    if (autoAttempted) return
+
+    const storedCode = sessionStorage.getItem('tyrian_claim_code')
+    const urlCode = searchParams.get('code')
+    const codeToUse = (storedCode || urlCode || '').toUpperCase()
+
+    if (codeToUse) {
+      setCode(codeToUse)
+      setAutoAttempted(true)
+      submitClaim(codeToUse)
+    }
+  }, [autoAttempted, searchParams, submitClaim])
+
+  async function handleClaim(e: React.FormEvent) {
+    e.preventDefault()
+    await submitClaim(code)
   }
 
   async function handleResend(e: React.FormEvent) {
@@ -116,7 +107,6 @@ function ClaimContent() {
 
       <div className="max-w-lg mx-auto px-4 sm:px-6 py-10 flex-1 w-full space-y-8">
 
-        {/* ── Section A: Claim form ─────────────────────────────────── */}
         <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6 md:p-8">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-full bg-navy/5 flex items-center justify-center flex-shrink-0">
@@ -153,7 +143,8 @@ function ClaimContent() {
                   onChange={e => setCode(e.target.value.toUpperCase())}
                   placeholder="ACE-4471"
                   maxLength={8}
-                  className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-lg font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy uppercase"
+                  disabled={claimState === 'submitting'}
+                  className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-lg font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy uppercase disabled:opacity-50"
                 />
               </div>
 
@@ -185,7 +176,6 @@ function ClaimContent() {
           )}
         </div>
 
-        {/* ── Section B: Resend claim code ──────────────────────────── */}
         <div id="resend" className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6 md:p-8">
           <div className="flex items-center gap-2 mb-1">
             <div className="flex-1 h-px bg-[#E5E0D5]" />

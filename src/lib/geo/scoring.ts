@@ -3,6 +3,7 @@ import { ServiceRequest } from '@/lib/demo/requests'
 export interface MockUserProfile {
   trade: string;
   lodge: string;
+  lodgeId?: string | null;
   lat: number;
   lng: number;
 }
@@ -23,7 +24,8 @@ export function getMatchScore(request: ServiceRequest, user: MockUserProfile): n
   const miles = haversineDistance(user.lat, user.lng, request.lat, request.lng);
   if (miles <= 25) score += 30;
   else if (miles <= 50) score += 15;
-  if (request.lodge === user.lodge) score += 20;
+  if (request.lodgeId && user.lodgeId && request.lodgeId === user.lodgeId) score += 20;
+  else if (request.lodge === user.lodge) score += 20;
   if (request.responses === 0) score += 15;
   if (request.postedHoursAgo <= 48) score += 12;
   if (request.budget && request.budget !== "Flexible") score += 8;

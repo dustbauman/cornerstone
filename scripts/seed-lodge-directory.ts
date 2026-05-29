@@ -25,13 +25,14 @@ const dataDir = resolve(process.cwd(), 'data/lodges')
 // FL — source: docs/florida_lodges.json (lodges.glflamason.org)
 const rawFL = JSON.parse(readFileSync(resolve(dataDir, 'florida_lodges.json'), 'utf8'))
 const floridaLodges = rawFL.map(
-  (l: { number: number; name: string; city: string; county: string }) => ({
+  (l: { number: number; name: string; city: string; county: string; address?: string }) => ({
     name: l.name.endsWith('Lodge') ? l.name : `${l.name} Lodge`,
     number: String(l.number),
     city: l.city || l.county,
     state: 'FL',
     grand_lodge: 'Grand Lodge of Florida',
     source: 'lodges.glflamason.org — May 2026',
+    meeting_address: l.address ?? null,
   })
 )
 
@@ -41,18 +42,8 @@ const oklahomaLodges = JSON.parse(readFileSync(resolve(dataDir, 'oklahoma_lodges
 async function main() {
   console.log('\n🗺  Seeding lodge directory...\n')
 
-  // Delete all existing FL entries — old data had errors, replace entirely
-  const { error: deleteError } = await supabase
-    .from('lodge_directory')
-    .delete()
-    .eq('state', 'FL')
-
-  if (deleteError) {
-    console.error('Failed to clear FL entries:', deleteError.message)
-    process.exit(1)
-  }
-  console.log(`   ✓ Cleared old FL entries`)
-
+  // Upsert in place — do NOT delete FL rows first. Active lodges may reference
+  // lodge_directory rows via directory_id (lodges_directory_id_fkey).
   const allLodges = [...floridaLodges, ...oklahomaLodges]
   const batchSize = 50
   let total = 0
@@ -62,7 +53,7 @@ async function main() {
     const batch = allLodges.slice(i, i + batchSize)
     const { data, error } = await supabase
       .from('lodge_directory')
-      .upsert(batch, { onConflict: 'number,state', ignoreDuplicates: false })
+      .upsert(batch, { onConflict: 'number,state' })
       .select('id')
 
     if (error) {

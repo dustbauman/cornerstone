@@ -10,7 +10,8 @@ export type TradeCategory =
   | "General Contractor"
   | "Technology"
   | "Home Inspection"
-  | "Painting";
+  | "Painting"
+  | "Other";
 
 export interface Listing {
   id: string;
@@ -35,6 +36,8 @@ export interface Listing {
   verified: boolean;
   visibility: "public" | "members_only";
   joinedDate: string;
+  lodgeSlug?: string | null;
+  lodgeId?: string | null;
 }
 
 export interface MockUser {

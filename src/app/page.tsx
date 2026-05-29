@@ -35,26 +35,35 @@ const CATEGORIES = [
 
 const STATS = [
   { value: "1,200+", label: "Verified Professionals" },
-  { value: "48", label: "Lodges Represented" },
+  { value: "48", label: "Lodges on the Network" },
   { value: "12", label: "States Covered" },
-  { value: "12", label: "Service Categories" },
+  { value: "50+", label: "Open Requests" },
 ];
 
 const HOW_IT_WORKS = [
   {
     step: "01",
-    title: "Get verified",
-    body: "Apply through your lodge. A sponsor confirms your membership and standing — the same standard of trust Freemasonry has upheld for centuries.",
+    label: "Looking for a service?",
+    title: "Hire someone you can trust.",
+    body: "Post a request or browse verified lodge professionals. Every listing is backed by a real sponsor confirmation — not an anonymous profile and five stars from strangers.",
+    cta: "Browse the directory",
+    href: "/directory",
   },
   {
     step: "02",
-    title: "List your business",
-    body: "Create your professional profile in minutes. Your lodge affiliation, trade, location, and services — all in one place, visible to members and the public.",
+    label: "Have a skill or trade?",
+    title: "Your brothers need what you know.",
+    body: "The request board shows real demand from real members nearby. You don't need a formal business to list — just a skill and a willingness to help.",
+    cta: "See open requests",
+    href: "/requests",
   },
   {
     step: "03",
-    title: "Get found and referred",
-    body: "Members search for verified professionals. The public finds you through Google. Every connection made on Tyrian is backed by real accountability — not just an algorithm.",
+    label: "Part of the brotherhood?",
+    title: "This is your network.",
+    body: "Browse your lodge's members, listings, and open requests. Connect with lodges in every state. The craft has always been built on mutual support — Tyrian is where that happens.",
+    cta: "Explore the network",
+    href: "/network",
   },
 ];
 
@@ -81,13 +90,12 @@ export default function LandingPage() {
               The professional network for Freemasons
             </div>
             <h1 className="font-serif text-5xl md:text-6xl font-bold leading-tight mb-6">
-              Hire with confidence.
-              <span className="text-gold block mt-1">Get found by your community.</span>
+              Never hire a stranger.
+              <span className="text-gold block mt-1">Never work alone.</span>
             </h1>
             <p className="text-white/70 text-xl leading-relaxed mb-10 max-w-2xl">
-              Every professional on Tyrian is lodge-verified and accountable to their community.
-              Browse trusted service providers across the US — or list your business and start
-              receiving referrals today.
+              Tyrian connects lodge-verified professionals with the brothers who need them — and gives
+              every Mason a place to put their skills to work.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
@@ -127,14 +135,17 @@ export default function LandingPage() {
       <section className="py-20 bg-stone">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-4xl font-bold text-navy mb-3">How Tyrian works</h2>
+            <h2 className="font-serif text-4xl font-bold text-navy mb-3">Built for every member</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {HOW_IT_WORKS.map((item) => (
-              <div key={item.step} className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm">
-                <div className="font-serif text-5xl font-bold text-gold/30 mb-4">{item.step}</div>
+              <div key={item.step} className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm flex flex-col">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gold mb-2">{item.label}</p>
                 <h3 className="font-serif text-xl font-bold text-navy mb-3">{item.title}</h3>
-                <p className="text-muted leading-relaxed">{item.body}</p>
+                <p className="text-muted leading-relaxed flex-1">{item.body}</p>
+                <Link href={item.href} className="mt-5 text-sm font-semibold text-navy hover:text-gold transition-colors">
+                  {item.cta} →
+                </Link>
               </div>
             ))}
           </div>

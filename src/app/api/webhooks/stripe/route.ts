@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { generateUniqueClaimCode } from '@/lib/lodges/claim-code'
+import { generateUniqueLodgeSlug } from '@/lib/lodges/slug'
 import { sendLodgeClaimEmail } from '@/lib/email'
 
 const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
 
   const tier = (foundingCount ?? 0) < FOUNDING_LIMIT ? 'founding' : 'charter'
   const claimCode = await generateUniqueClaimCode(supabase)
+  const slug = await generateUniqueLodgeSlug(supabase, meta.lodge_name, meta.lodge_number)
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + 30)
 
@@ -59,24 +61,28 @@ export async function POST(request: Request) {
       claim_code: claimCode,
       claim_code_expires_at: expiresAt.toISOString(),
       stripe_session_id: session.id,
+      slug,
     })
     .eq('id', meta.lodge_id)
 
   if (updateError) {
     console.error('Failed to activate lodge:', updateError)
-    // Return 200 so Stripe doesn't retry — log for manual review
     return Response.json({ received: true })
   }
 
-  await sendLodgeClaimEmail({
-    to: meta.payer_email,
-    payerName: meta.payer_name,
-    lodgeName: meta.lodge_name,
-    lodgeNumber: meta.lodge_number,
-    claimCode,
-    tier,
-    expiresAt,
-  })
+  try {
+    await sendLodgeClaimEmail({
+      to: meta.payer_email,
+      payerName: meta.payer_name,
+      lodgeName: meta.lodge_name,
+      lodgeNumber: meta.lodge_number,
+      claimCode,
+      tier,
+      expiresAt,
+    })
+  } catch (emailErr) {
+    console.error('Claim email failed after Stripe payment:', emailErr)
+  }
 
   return Response.json({ received: true })
 }

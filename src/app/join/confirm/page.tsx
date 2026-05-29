@@ -65,7 +65,15 @@ function ConfirmContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lodgeName, lodgeNumber, state, size, payerName, payerEmail, directoryId: directoryId || null }),
       })
-      const data = await res.json()
+
+      let data: { error?: string; message?: string; url?: string } = {}
+      try {
+        data = await res.json()
+      } catch {
+        setError('Server error — payment could not start. Check your connection and try again.')
+        setSubmitting(false)
+        return
+      }
 
       if (!res.ok) {
         if (data.error === 'LODGE_ALREADY_EXISTS') {
@@ -75,6 +83,12 @@ function ConfirmContent() {
         } else {
           setError(data.message || 'Something went wrong. Please try again.')
         }
+        setSubmitting(false)
+        return
+      }
+
+      if (!data.url) {
+        setError('Checkout did not return a redirect URL. Please try again.')
         setSubmitting(false)
         return
       }

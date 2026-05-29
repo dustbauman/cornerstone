@@ -8,7 +8,10 @@ import {
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import VerifiedBadge from '@/components/directory/VerifiedBadge'
+import VerificationStatusCard from '@/components/member/VerificationStatusCard'
 import CategoryBadge from '@/components/directory/CategoryBadge'
+import { getMemberAccessState } from '@/lib/auth/member-access'
+import type { MemberAccessState } from '@/lib/auth/member-access'
 import StarRating from '@/components/directory/StarRating'
 import { createClient } from '@/lib/supabase/client'
 import { useDemoMode } from '@/lib/demo/context'
@@ -30,6 +33,7 @@ interface DisplayUser {
   email: string
   lodge: string
   lodgeNumber: string
+  lodgeSlug: string | null
   location: string
   listingSlug: string | null
   referralCode: string
@@ -40,6 +44,7 @@ const DEMO_DISPLAY_USER: DisplayUser = {
   email: demoUser.email,
   lodge: demoUser.lodge_name,
   lodgeNumber: demoUser.lodge_number,
+  lodgeSlug: 'acacia-lodge-123',
   location: `${demoUser.city}, ${demoUser.state}`,
   listingSlug: 'plumb-line-plumbing',
   referralCode: demoUser.referral_code,
@@ -55,6 +60,7 @@ export default function DashboardPage() {
   const { isDemoMode } = useDemoMode()
   const [displayUser, setDisplayUser] = useState<DisplayUser | null>(null)
   const [dbListing, setDbListing] = useState<DbListing | null>(null)
+  const [accessState, setAccessState] = useState<MemberAccessState>('unaffiliated')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -74,7 +80,7 @@ export default function DashboardPage() {
       const [{ data: profile }, { data: listingRow }] = await Promise.all([
         supabase
           .from('profiles')
-          .select('full_name, city, state, referral_code, lodge_id')
+          .select('full_name, city, state, referral_code, lodge_id, verification_status')
           .eq('id', user.id)
           .single(),
         supabase
@@ -85,16 +91,54 @@ export default function DashboardPage() {
           .maybeSingle(),
       ])
 
+      let lodgeName = ''
+      let lodgeNumber = ''
+      let lodgeSlug: string | null = null
+      let paidByName: string | null = null
+
+      if (profile?.lodge_id) {
+        const { data: lodgeRow } = await supabase
+          .from('lodges')
+          .select('name, number, slug, paid_by_name')
+          .eq('id', profile.lodge_id)
+          .maybeSingle()
+        if (lodgeRow) {
+          lodgeName = lodgeRow.name
+          lodgeNumber = lodgeRow.number
+          lodgeSlug = lodgeRow.slug
+          if (!profile?.full_name?.trim()) paidByName = lodgeRow.paid_by_name ?? null
+        }
+      }
+
       if (listingRow) setDbListing(listingRow as DbListing)
+
+      const metaName =
+        (user.user_metadata?.full_name as string) ||
+        (user.user_metadata?.name as string) ||
+        ''
+
       setDisplayUser({
-        fullName: profile?.full_name ?? user.email ?? 'Member',
+        fullName:
+          profile?.full_name?.trim() ||
+          metaName.trim() ||
+          paidByName?.trim() ||
+          'Member',
         email: user.email ?? '',
-        lodge: '',
-        lodgeNumber: '',
+        lodge: lodgeName,
+        lodgeNumber,
+        lodgeSlug,
         location: profile ? [profile.city, profile.state].filter(Boolean).join(', ') : '',
         listingSlug: listingRow ? listingRow.id : null,
         referralCode: profile?.referral_code ?? '',
       })
+      setAccessState(
+        isDemoMode
+          ? 'verified'
+          : getMemberAccessState({
+              lodge_id: profile?.lodge_id ?? null,
+              verification_status: profile?.verification_status ?? 'pending',
+            })
+      )
       setLoading(false)
     })
   }, [isDemoMode])
@@ -120,6 +164,8 @@ export default function DashboardPage() {
   }
 
   if (!displayUser) return null
+
+  const canList = isDemoMode || accessState === 'verified'
 
   const stats = [
     { label: 'Profile Views', value: isDemoMode ? '312' : '—', delta: 'this month', icon: Eye },
@@ -192,7 +238,7 @@ export default function DashboardPage() {
 
                 <div className="flex flex-wrap gap-2 mb-4">
                   <CategoryBadge trade={(listing?.trade ?? demoListing?.trade_category ?? dbListing?.trade_category) as TradeCategory} size="sm" />
-                  <VerifiedBadge size="sm" />
+                  {canList && <VerifiedBadge size="sm" />}
                   <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
                     <Globe size={11} />
                     Public
@@ -245,14 +291,27 @@ export default function DashboardPage() {
                   No listing yet
                 </h3>
                 <p className="text-sm text-muted mb-4">
-                  Create your business listing to appear in the Tyrian directory.
+                  {canList
+                    ? 'Create your business listing to appear in the Tyrian directory.'
+                    : accessState === 'pending'
+                      ? 'Your listing will be available once your sponsor confirms your membership.'
+                      : 'Join a lodge on Tyrian to create a verified business listing.'}
                 </p>
-                <Link
-                  href="/dashboard/listing/new"
-                  className="inline-flex items-center gap-2 bg-navy text-[#C9A84C] text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-navy/90 transition-colors"
-                >
-                  Create your listing
-                </Link>
+                {canList ? (
+                  <Link
+                    href="/dashboard/listing/new"
+                    className="inline-flex items-center gap-2 bg-navy text-[#C9A84C] text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-navy/90 transition-colors"
+                  >
+                    Create your listing
+                  </Link>
+                ) : (
+                  <Link
+                    href={accessState === 'unaffiliated' ? '/network' : '/dashboard'}
+                    className="inline-flex items-center gap-2 border border-[#E5E0D5] text-navy text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-stone transition-colors"
+                  >
+                    {accessState === 'unaffiliated' ? 'Find your lodge' : 'View verification status'}
+                  </Link>
+                )}
               </div>
             )}
 
@@ -335,16 +394,11 @@ export default function DashboardPage() {
             </div>
 
             {/* Verification status */}
-            <div className="bg-[#2D6A4F]/5 border border-[#2D6A4F]/15 rounded-2xl p-5">
-              <VerifiedBadge size="sm" />
-              <p className="text-sm mt-3 leading-relaxed">
-                Your membership is verified through{' '}
-                <span className="font-semibold">
-                  {displayUser.lodge}{displayUser.lodgeNumber ? ` #${displayUser.lodgeNumber}` : ''}
-                </span>.
-              </p>
-              <p className="text-xs text-muted mt-2">Verification renews annually with your lodge dues.</p>
-            </div>
+            <VerificationStatusCard
+              state={accessState}
+              lodgeName={displayUser.lodge || undefined}
+              lodgeNumber={displayUser.lodgeNumber || undefined}
+            />
 
             {/* Profile completion */}
             <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">

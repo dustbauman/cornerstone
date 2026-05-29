@@ -4,11 +4,12 @@ export type RequestStatus = "open" | "active" | "filled";
 export type RequestTimeline = "ASAP" | "Within 1 week" | "Within 2 weeks" | "Within 1 month" | "Flexible";
 
 export interface ServiceRequest {
-  id: number;
+  id: string | number;
   title: string;
   category: TradeCategory;
   name: string;
   lodge: string;
+  lodgeId?: string | null;
   city: string;
   state: string;
   lat: number;

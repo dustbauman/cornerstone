@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { checkMembershipGate, isAuthBootstrapPath } from '@/lib/auth/membership-gate'
 import {
   ShieldCheck,
   Mail,
@@ -42,14 +43,13 @@ function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const redirect = searchParams.get('redirect') ?? '/dashboard'
+  const redirectParam = searchParams.get('redirect')
   const claimCode = searchParams.get('code')
   const authError = searchParams.get('error')
+  const redirect = redirectParam ?? (claimCode ? '/claim' : '/dashboard')
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [isSignUp, setIsSignUp] = useState(false)
   const [showForgot, setShowForgot] = useState(false)
   const [showMagicLink, setShowMagicLink] = useState(false)
   const [view, setView] = useState<View>('main')
@@ -68,10 +68,37 @@ function LoginContent() {
     if (authError === 'auth_callback_failed') {
       setError('Sign in failed. Please try again.')
     }
-  }, [authError])
+    if (authError === 'no_membership') {
+      setError(
+        redirect.startsWith('/claim')
+          ? 'Sign in with the same email you used at checkout, then try claiming again.'
+          : 'No Tyrian account exists for this sign-in. Join through your lodge invite link first.'
+      )
+    }
+  }, [authError, redirect])
 
   function callbackUrl() {
     return `${appUrl}/auth/callback?next=${encodeURIComponent(redirect)}`
+  }
+
+  async function verifySessionOrReject(): Promise<boolean> {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return false
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('lodge_id')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const gate = checkMembershipGate(profile, redirect)
+    if (!gate.allowed && !isAuthBootstrapPath(redirect)) {
+      await supabase.auth.signOut()
+      setError('No Tyrian account exists for this sign-in. Join through your lodge invite link first.')
+      return false
+    }
+    return true
   }
 
   function finishAuth() {
@@ -79,9 +106,21 @@ function LoginContent() {
     router.refresh()
   }
 
+  async function setAuthIntent(intent: 'claim' | 'join') {
+    await fetch('/api/auth/intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ intent }),
+    })
+  }
+
   async function handleGoogle() {
     setLoading('google')
     setError('')
+
+    if (claimCode || redirect.startsWith('/claim')) {
+      await setAuthIntent('claim')
+    }
 
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithOAuth({
@@ -99,42 +138,8 @@ function LoginContent() {
     e.preventDefault()
     setError('')
 
-    if (isSignUp && password !== confirmPassword) {
-      setError('Passwords do not match.')
-      return
-    }
-
-    if (isSignUp && password.length < 8) {
-      setError('Password must be at least 8 characters.')
-      return
-    }
-
     setLoading('password')
     const supabase = createClient()
-
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: callbackUrl() },
-      })
-
-      if (error) {
-        setError(error.message)
-        setLoading(null)
-        return
-      }
-
-      // If email confirmation is off, user may be signed in immediately
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        finishAuth()
-      } else {
-        setView('magic-sent')
-        setLoading(null)
-      }
-      return
-    }
 
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
@@ -143,6 +148,10 @@ function LoginContent() {
       setLoading(null)
       return
     }
+
+    const allowed = await verifySessionOrReject()
+    setLoading(null)
+    if (!allowed) return
 
     finishAuth()
   }
@@ -155,11 +164,18 @@ function LoginContent() {
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: callbackUrl() },
+      options: {
+        emailRedirectTo: callbackUrl(),
+        shouldCreateUser: false,
+      },
     })
 
     if (error) {
-      setError(error.message)
+      setError(
+        error.message.toLowerCase().includes('user')
+          ? 'No Tyrian account exists for this email. Join through your lodge invite link first.'
+          : error.message
+      )
       setLoading(null)
     } else {
       setView('magic-sent')
@@ -214,6 +230,36 @@ function LoginContent() {
           </p>
         </div>
 
+        {/* Primary path: lodge invite */}
+        <div className="bg-navy text-white rounded-2xl p-6 mb-4 border border-navy">
+          <p className="text-xs font-semibold uppercase tracking-wider text-[#C9A84C] mb-2">
+            New to Tyrian?
+          </p>
+          <h2
+            className="text-xl font-bold mb-2"
+            style={{ fontFamily: "'Cormorant Garamond', serif" }}
+          >
+            Join through your lodge
+          </h2>
+          <p className="text-sm text-white/70 leading-relaxed mb-4">
+            Tyrian is lodge-gated. Ask your lodge admin for an invite link, or find your lodge on the network.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Link
+              href="/network"
+              className="inline-flex items-center justify-center bg-[#C9A84C] hover:bg-[#b8943d] text-navy font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+            >
+              Find your lodge
+            </Link>
+            <Link
+              href="/join"
+              className="inline-flex items-center justify-center border border-white/25 hover:bg-white/10 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+            >
+              Unlock your lodge
+            </Link>
+          </div>
+        </div>
+
         <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-8">
           {view === 'magic-sent' ? (
             <div className="text-center">
@@ -227,7 +273,7 @@ function LoginContent() {
                 Check your email
               </h2>
               <p className="text-muted text-sm leading-relaxed mb-4">
-                We sent a {isSignUp ? 'confirmation' : 'sign-in'} link to{' '}
+                We sent a sign-in link to{' '}
                 <span className="font-semibold text-[#1A1A1A]">{email}</span>.
                 Click the link to continue.
               </p>
@@ -325,10 +371,10 @@ function LoginContent() {
                 className="text-2xl font-bold text-navy mb-1"
                 style={{ fontFamily: "'Cormorant Garamond', serif" }}
               >
-                Sign in to Tyrian
+                Sign in
               </h2>
               <p className="text-sm text-muted mb-6">
-                {isSignUp ? 'Create your account to continue.' : 'Welcome back, Brother.'}
+                Returning member? Sign in with the account you created through your lodge invite.
               </p>
 
               <button
@@ -375,18 +421,16 @@ function LoginContent() {
                     <label htmlFor="password" className="block text-sm font-medium text-[#1A1A1A]">
                       Password
                     </label>
-                    {!isSignUp && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowForgot(true)
-                          setError('')
-                        }}
-                        className="text-xs text-navy hover:underline"
-                      >
-                        Forgot password?
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgot(true)
+                        setError('')
+                      }}
+                      className="text-xs text-navy hover:underline"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
                   <div className="relative">
                     <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
@@ -396,33 +440,11 @@ function LoginContent() {
                       required
                       value={password}
                       onChange={e => setPassword(e.target.value)}
-                      placeholder={isSignUp ? 'At least 8 characters' : 'Your password'}
-                      minLength={isSignUp ? 8 : undefined}
+                      placeholder="Your password"
                       className={inputClass}
                     />
                   </div>
                 </div>
-
-                {isSignUp && (
-                  <div>
-                    <label htmlFor="confirm-password" className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-                      Confirm password
-                    </label>
-                    <div className="relative">
-                      <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-                      <input
-                        id="confirm-password"
-                        type="password"
-                        required
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                        placeholder="Re-enter your password"
-                        minLength={8}
-                        className={inputClass}
-                      />
-                    </div>
-                  </div>
-                )}
 
                 {error && (
                   <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
@@ -435,30 +457,9 @@ function LoginContent() {
                   disabled={loading === 'password' || !email || !password}
                   className="w-full bg-navy hover:bg-navy/90 disabled:opacity-50 disabled:cursor-not-allowed text-[#C9A84C] font-semibold py-3 rounded-xl transition-colors text-sm"
                 >
-                  {loading === 'password'
-                    ? isSignUp
-                      ? 'Creating account…'
-                      : 'Signing in…'
-                    : isSignUp
-                      ? 'Create account'
-                      : 'Sign in'}
+                  {loading === 'password' ? 'Signing in…' : 'Sign in'}
                 </button>
               </form>
-
-              <p className="mt-4 text-xs text-center text-muted">
-                {isSignUp ? 'Already have an account?' : 'Need an account?'}{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSignUp(v => !v)
-                    setError('')
-                    setConfirmPassword('')
-                  }}
-                  className="text-navy underline hover:no-underline"
-                >
-                  {isSignUp ? 'Sign in' : 'Create one'}
-                </button>
-              </p>
 
               <div className="mt-5 pt-5 border-t border-[#E5E0D5]">
                 {!showMagicLink ? (
@@ -496,10 +497,11 @@ function LoginContent() {
               </div>
 
               <p className="mt-5 text-xs text-center text-muted leading-relaxed">
-                Don&apos;t have a lodge on Tyrian yet?{' '}
-                <Link href="/join" className="text-navy underline hover:no-underline">
-                  Unlock your lodge →
+                No account yet? You need a lodge invite link to join —{' '}
+                <Link href="/network" className="text-navy underline hover:no-underline">
+                  find your lodge
                 </Link>
+                .
               </p>
             </>
           )}

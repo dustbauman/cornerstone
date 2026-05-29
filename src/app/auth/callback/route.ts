@@ -1,5 +1,13 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { isRecentlyCreatedUser } from '@/lib/auth/membership-gate'
+import {
+  AUTH_INTENT_COOKIE,
+  checkAuthAdmission,
+  parseAuthIntentCookie,
+} from '@/lib/auth/admission'
 
 function sanitizeNextPath(next: string | null): string {
   if (!next || !next.startsWith('/') || next.startsWith('//')) {
@@ -8,16 +16,71 @@ function sanitizeNextPath(next: string | null): string {
   return next
 }
 
+function clearIntentCookie(response: NextResponse) {
+  response.cookies.set(AUTH_INTENT_COOKIE, '', { path: '/', maxAge: 0 })
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
   const next = sanitizeNextPath(searchParams.get('next'))
+  const cookieStore = cookies()
+  const authIntent = parseAuthIntentCookie(cookieStore.get(AUTH_INTENT_COOKIE)?.value)
 
   if (code) {
     const supabase = createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const admin = createAdminClient()
+        const { data: profile } = await admin
+          .from('profiles')
+          .select('full_name, lodge_id')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        const admission = await checkAuthAdmission(admin, user, profile, next, authIntent)
+        if (!admission.allowed) {
+          await supabase.auth.signOut()
+
+          if (isRecentlyCreatedUser(user.created_at)) {
+            try {
+              await admin.auth.admin.deleteUser(user.id)
+            } catch (err) {
+              console.error('Failed to delete unauthorized signup:', err)
+            }
+          }
+
+          const loginUrl = new URL(`${origin}/login`)
+          loginUrl.searchParams.set('error', 'no_membership')
+          if (next !== '/dashboard') {
+            loginUrl.searchParams.set('redirect', next)
+          }
+          const response = NextResponse.redirect(loginUrl.toString())
+          clearIntentCookie(response)
+          return response
+        }
+
+        const metaName =
+          (user.user_metadata?.full_name as string) ||
+          (user.user_metadata?.name as string) ||
+          null
+        if (metaName?.trim() && !profile?.full_name?.trim()) {
+          await admin
+            .from('profiles')
+            .update({ full_name: metaName.trim() })
+            .eq('id', user.id)
+        }
+
+        const response = NextResponse.redirect(`${origin}${next}`)
+        clearIntentCookie(response)
+        return response
+      }
+
+      const response = NextResponse.redirect(`${origin}${next}`)
+      clearIntentCookie(response)
+      return response
     }
   }
 
