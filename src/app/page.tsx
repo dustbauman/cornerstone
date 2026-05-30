@@ -24,7 +24,7 @@ const CATEGORIES = [
   { label: "Plumbing", icon: Droplets },
   { label: "Legal", icon: Scale },
   { label: "HVAC", icon: Wind },
-  { label: "Financial Planning", icon: TrendingUp },
+  { label: "Financial", icon: TrendingUp },
   { label: "General Contractor", icon: HardHat },
   { label: "Technology", icon: Monitor },
   { label: "Home Inspection", icon: Wrench },

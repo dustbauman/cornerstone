@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MapPin } from "lucide-react";
 import { Listing } from "@/lib/types";
 import VerifiedBadge from "./VerifiedBadge";
@@ -12,8 +13,18 @@ interface Props {
 }
 
 export default function ListingCard({ listing }: Props) {
+  const router = useRouter();
+  const href = `/directory/${listing.slug}`;
+
   return (
-    <Link href={`/directory/${listing.slug}`} className="group block">
+    <div
+      className="group block cursor-pointer"
+      onClick={() => router.push(href)}
+      onKeyDown={(e) => e.key === "Enter" && router.push(href)}
+      role="link"
+      tabIndex={0}
+      aria-label={listing.businessName}
+    >
       <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-200 h-full flex flex-col">
         <div className="flex items-start justify-between gap-2 mb-3">
           <CategoryBadge trade={listing.trade} size="sm" />
@@ -33,18 +44,13 @@ export default function ListingCard({ listing }: Props) {
             <span>{listing.location.city}, {listing.location.stateCode}</span>
           </div>
           {listing.lodgeSlug ? (
-            <span
-              onClick={(e) => e.preventDefault()}
-              className="text-xs text-muted/70 font-light"
+            <Link
+              href={`/lodge/${listing.lodgeSlug}`}
+              className="text-xs text-muted/70 font-light hover:text-navy hover:underline"
+              onClick={(e) => e.stopPropagation()}
             >
-              <Link
-                href={`/lodge/${listing.lodgeSlug}`}
-                className="hover:text-navy hover:underline"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {listing.lodge} #{listing.lodgeNumber}
-              </Link>
-            </span>
+              {listing.lodge} #{listing.lodgeNumber}
+            </Link>
           ) : (
             <span className="text-xs text-muted/70 font-light">
               {listing.lodge} #{listing.lodgeNumber}
@@ -52,6 +58,6 @@ export default function ListingCard({ listing }: Props) {
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
