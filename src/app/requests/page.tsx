@@ -109,55 +109,60 @@ export default function RequestsPage() {
         return;
       }
 
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-      let userCtx: RequestUser = { ...ANON_USER };
+        let userCtx: RequestUser = { ...ANON_USER };
 
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name, email, trade_category, city, state, lat, lng, lodge_id, verification_status")
-          .eq("id", user.id)
-          .single();
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("full_name, email, trade_category, city, state, lat, lng, lodge_id, verification_status")
+            .eq("id", user.id)
+            .single();
 
-        let lodgeName = "";
-        const lodgeId: string | null = profile?.lodge_id ?? null;
+          let lodgeName = "";
+          const lodgeId: string | null = profile?.lodge_id ?? null;
 
-        if (profile?.lodge_id) {
-          const { data: lodge } = await supabase
-            .from("lodges")
-            .select("name, number")
-            .eq("id", profile.lodge_id)
-            .maybeSingle();
-          if (lodge) lodgeName = `${lodge.name} #${lodge.number}`;
+          if (profile?.lodge_id) {
+            const { data: lodge } = await supabase
+              .from("lodges")
+              .select("name, number")
+              .eq("id", profile.lodge_id)
+              .maybeSingle();
+            if (lodge) lodgeName = `${lodge.name} #${lodge.number}`;
+          }
+
+          userCtx = {
+            name: profile?.full_name || user.email?.split("@")[0] || "Member",
+            firstName: (profile?.full_name || "Member").split(" ")[0],
+            trade: (profile?.trade_category as TradeCategory) || "",
+            lodge: lodgeName,
+            lodgeId,
+            city: profile?.city || ANON_USER.city,
+            state: profile?.state || ANON_USER.state,
+            lat: profile?.lat ?? ANON_USER.lat,
+            lng: profile?.lng ?? ANON_USER.lng,
+            isVerified: profile?.verification_status === "verified",
+            isLoggedIn: true,
+            email: user.email ?? "",
+          };
         }
 
-        userCtx = {
-          name: profile?.full_name || user.email?.split("@")[0] || "Member",
-          firstName: (profile?.full_name || "Member").split(" ")[0],
-          trade: (profile?.trade_category as TradeCategory) || "",
-          lodge: lodgeName,
-          lodgeId,
-          city: profile?.city || ANON_USER.city,
-          state: profile?.state || ANON_USER.state,
-          lat: profile?.lat ?? ANON_USER.lat,
-          lng: profile?.lng ?? ANON_USER.lng,
-          isVerified: profile?.verification_status === "verified",
-          isLoggedIn: true,
-          email: user.email ?? "",
-        };
+        const { data: rows } = await supabase
+          .from("requests")
+          .select(DB_REQUEST_SELECT)
+          .in("status", ["open", "active", "filled"])
+          .order("created_at", { ascending: false });
+
+        setRequests((rows || []).map(dbRequestToServiceRequest));
+        setRequestUser(userCtx);
+      } catch (err) {
+        console.error("Requests load error:", err);
+      } finally {
+        setLoading(false);
       }
-
-      const { data: rows } = await supabase
-        .from("requests")
-        .select(DB_REQUEST_SELECT)
-        .in("status", ["open", "active", "filled"])
-        .order("created_at", { ascending: false });
-
-      setRequests((rows || []).map(dbRequestToServiceRequest));
-      setRequestUser(userCtx);
-      setLoading(false);
     }
 
     load();
