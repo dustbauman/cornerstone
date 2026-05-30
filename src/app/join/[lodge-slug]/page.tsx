@@ -15,6 +15,7 @@ interface LodgeInfo {
   city: string
   state: string
   welcome_message: string | null
+  meeting_schedule: string | null
   slug: string | null
 }
 
@@ -44,7 +45,7 @@ export default function MemberJoinPage() {
 
       let query = supabase
         .from('lodges')
-        .select('id, name, number, city, state, welcome_message, slug')
+        .select('id, name, number, city, state, welcome_message, meeting_schedule, slug')
         .eq('status', 'active')
 
       if (uuidPattern.test(lodgeSlug)) {
@@ -177,6 +178,9 @@ export default function MemberJoinPage() {
           </h1>
           {lodge?.city && (
             <p className="text-sm text-muted">{lodge.city}, {lodge.state}</p>
+          )}
+          {lodge?.meeting_schedule && (
+            <p className="text-sm text-muted mt-1">{lodge.meeting_schedule}</p>
           )}
           {lodge?.welcome_message && (
             <p className="text-sm text-[#1A1A1A] mt-4 bg-white border border-[#E5E0D5] rounded-xl p-4 leading-relaxed">

@@ -38,8 +38,10 @@ function ConfirmContent() {
   const payerEmail   = searchParams.get('payerEmail') || ''
   const directoryId  = searchParams.get('directoryId') || ''
   const isManual     = searchParams.get('isManualEntry') === '1'
+  const isFoundingEligible = searchParams.get('foundingEligible') === '1'
 
-  const price = SIZE_PRICES[size] ?? 499
+  const listPrice = SIZE_PRICES[size] ?? 499
+  const price = isFoundingEligible ? 1 : listPrice
 
   if (!lodgeName || !lodgeNumber || !state) {
     return (
@@ -131,7 +133,14 @@ function ConfirmContent() {
           <div className="px-6 py-4 border-t border-[#E5E0D5] bg-stone/50 flex items-center justify-between">
             <span className="text-sm text-muted">Platform fee</span>
             <span className="text-lg font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              ${price} <span className="text-sm font-normal text-muted">(one-time)</span>
+              {isFoundingEligible && (
+                <span className="text-sm font-normal text-muted line-through mr-2">${listPrice}</span>
+              )}
+              ${price}{' '}
+              <span className="text-sm font-normal text-muted">(one-time)</span>
+              {isFoundingEligible && (
+                <span className="block text-xs font-normal text-[#92400E] mt-0.5">Founding Lodge pricing</span>
+              )}
             </span>
           </div>
           <div className="px-6 py-3 border-t border-[#E5E0D5] flex items-center justify-between text-sm">

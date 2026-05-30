@@ -5,23 +5,14 @@ import Link from 'next/link'
 import { ArrowLeft, Plus, X, Loader2 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import ListingAccessGate from '@/components/member/ListingAccessGate'
+import RemoteToggle from '@/components/ui/RemoteToggle'
+import PhoneInput from '@/components/ui/PhoneInput'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES } from '@/lib/constants/categories'
+import { US_STATES } from '@/lib/constants/states'
+import { validatePhone, validateEmail, validateWebsite, formatPhoneDisplay } from '@/lib/contact-fields'
 import { getMemberAccessState, canCreateListing } from '@/lib/auth/member-access'
 import type { MemberAccessState } from '@/lib/auth/member-access'
-
-const US_STATES = [
-  ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
-  ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['FL','Florida'],['GA','Georgia'],
-  ['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],
-  ['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],
-  ['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],
-  ['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],
-  ['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],
-  ['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],
-  ['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],
-  ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
-]
 
 export default function EditListingPage() {
   const router = useRouter()
@@ -33,6 +24,7 @@ export default function EditListingPage() {
   const [error, setError] = useState('')
   const [serviceInput, setServiceInput] = useState('')
   const [accessState, setAccessState] = useState<MemberAccessState | null>(null)
+  const [contactErrors, setContactErrors] = useState<{ phone?: string; email?: string; website?: string }>({})
 
   const [form, setForm] = useState({
     businessName: '', tradeCategory: '', city: '', state: '', description: '',
@@ -70,7 +62,7 @@ export default function EditListingPage() {
         state: listing.state ?? '',
         description: listing.description ?? '',
         services: listing.services ?? [],
-        phone: listing.phone ?? '',
+        phone: listing.phone ? formatPhoneDisplay(listing.phone) : '',
         email: listing.email ?? '',
         website: listing.website ?? '',
         travelRadius: listing.travel_radius_miles ?? 25,
@@ -99,6 +91,22 @@ export default function EditListingPage() {
     e.preventDefault()
     setSubmitting(true)
     setError('')
+    setContactErrors({})
+
+    const phoneResult = validatePhone(form.phone)
+    const emailResult = validateEmail(form.email)
+    const websiteResult = validateWebsite(form.website)
+    if (!phoneResult.ok || !emailResult.ok || !websiteResult.ok) {
+      setContactErrors({
+        phone: phoneResult.ok ? undefined : phoneResult.error,
+        email: emailResult.ok ? undefined : emailResult.error,
+        website: websiteResult.ok ? undefined : websiteResult.error,
+      })
+      setError('Fix the contact fields below before saving.')
+      setSubmitting(false)
+      return
+    }
+
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -127,18 +135,27 @@ export default function EditListingPage() {
           trade_category: form.tradeCategory,
           city: form.city,
           state: form.state,
-          phone: form.phone || null,
-          email: form.email || null,
-          website: form.website || null,
+          phone: phoneResult.value,
+          email: emailResult.value,
+          website: websiteResult.value,
           services: form.services.length ? form.services : null,
           travel_radius_miles: form.travelRadius,
           remote_eligible: form.remoteEligible,
           visibility: form.visibility,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', id)
 
       if (updateError) throw updateError
+
+      await fetch('/api/listings/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      })
+
       router.push(`/directory/${id}`)
+      router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Update failed. Please try again.')
       setSubmitting(false)
@@ -187,7 +204,6 @@ export default function EditListingPage() {
               className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy bg-white">
               <option value="">Select…</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-              <option value="Other">Other</option>
             </select>
           </div>
 
@@ -239,18 +255,28 @@ export default function EditListingPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Phone</label>
-              <input type="tel" value={form.phone} onChange={e => set('phone', e.target.value)}
-                className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy" />
+              <PhoneInput
+                value={form.phone}
+                onChange={val => {
+                  set('phone', val)
+                  setContactErrors(c => ({ ...c, phone: undefined }))
+                }}
+                error={contactErrors.phone}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Email</label>
-              <input type="email" value={form.email} onChange={e => set('email', e.target.value)}
+              <input type="email" value={form.email} onChange={e => { set('email', e.target.value); setContactErrors(c => ({ ...c, email: undefined })) }}
+                placeholder="you@yourbusiness.com"
                 className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy" />
+              {contactErrors.email && <p className="text-xs text-red-600 mt-1">{contactErrors.email}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Website</label>
-              <input type="url" value={form.website} onChange={e => set('website', e.target.value)}
+              <input type="text" inputMode="url" value={form.website} onChange={e => { set('website', e.target.value); setContactErrors(c => ({ ...c, website: undefined })) }}
+                placeholder="yourbusiness.com"
                 className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy" />
+              {contactErrors.website && <p className="text-xs text-red-600 mt-1">{contactErrors.website}</p>}
             </div>
           </div>
 
@@ -267,10 +293,7 @@ export default function EditListingPage() {
               <p className="text-sm font-medium text-[#1A1A1A]">Remote / virtual work</p>
               <p className="text-xs text-muted">I can serve clients outside my local area</p>
             </div>
-            <button type="button" onClick={() => set('remoteEligible', !form.remoteEligible)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${form.remoteEligible ? 'bg-navy' : 'bg-gray-200'}`}>
-              <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.remoteEligible ? 'translate-x-5' : 'translate-x-0.5'}`} />
-            </button>
+            <RemoteToggle checked={form.remoteEligible} onChange={val => set('remoteEligible', val)} />
           </div>
 
           <div>

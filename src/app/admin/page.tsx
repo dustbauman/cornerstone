@@ -11,6 +11,8 @@ import {
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { createClient } from '@/lib/supabase/client'
+import ProfileAvatar from '@/components/ui/ProfileAvatar'
+import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
 import { Suspense } from 'react'
 
 interface Lodge {
@@ -21,6 +23,8 @@ interface Lodge {
   city: string
   meeting_address: string | null
   welcome_message: string | null
+  meeting_schedule: string | null
+  website: string | null
   tier: string
   status: string
   paid_at: string | null
@@ -49,8 +53,8 @@ interface Stats {
 
 const SETUP_STEP_DEFS = [
   { key: 'claimed', label: 'Lodge claimed', href: null as string | null, hash: null as string | null },
-  { key: 'city', label: 'Add lodge city & address', href: '/admin/settings', hash: null },
-  { key: 'welcome', label: 'Write welcome message', href: '/admin/settings', hash: 'welcome' },
+  { key: 'city', label: 'Add lodge city & address', href: '/admin/settings?from=onboarding', hash: null },
+  { key: 'details', label: 'Write welcome message, meeting schedule, website', href: '/admin/settings?from=onboarding', hash: 'welcome' },
   { key: 'members', label: 'Invite first 5 members', href: null, hash: 'invite' },
   { key: 'listing', label: 'First member listing live', href: '/directory', hash: null },
 ]
@@ -229,7 +233,11 @@ function AdminContent() {
     switch (step.key) {
       case 'claimed': done = !!lodge.claim_code_claimed_at; break
       case 'city': done = !!(lodge.city?.trim() && lodge.meeting_address?.trim()); break
-      case 'welcome': done = !!lodge.welcome_message?.trim(); break
+      case 'details': done = !!(
+        lodge.welcome_message?.trim() &&
+        lodge.meeting_schedule?.trim() &&
+        lodge.website?.trim()
+      ); break
       case 'members': done = stats.totalMembers >= 5; break
       case 'listing': done = stats.activeListings >= 1; break
     }
@@ -250,7 +258,9 @@ function AdminContent() {
             <p className="text-white/60 mt-1 text-sm">
               {lodge.city ? `${lodge.city}, ` : ''}{lodge.state}
               {lodge.tier === 'founding' && (
-                <span className="ml-2 text-[#C9A84C] font-semibold">⭐ Founding Lodge</span>
+                <span className="ml-2">
+                  <FoundingLodgeBadge variant="inline" />
+                </span>
               )}
             </p>
           )}
@@ -358,12 +368,15 @@ function AdminContent() {
                 <div className="space-y-3">
                   {pendingMembers.map(member => (
                     <div key={member.id} className="flex items-center justify-between gap-3 py-3 border-b border-gray-50 last:border-0">
-                      <div>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <ProfileAvatar name={member.full_name || 'Member'} size="md" />
+                        <div>
                         <p className="text-sm font-semibold text-[#1A1A1A]">{member.full_name || 'Unknown'}</p>
                         <p className="text-xs text-muted">{member.email}</p>
                         {member.trade_category && (
                           <p className="text-xs text-muted mt-0.5">{member.trade_category}</p>
                         )}
+                        </div>
                       </div>
                       <div className="flex gap-2 flex-shrink-0">
                         <button
@@ -405,7 +418,9 @@ function AdminContent() {
                 <div className="divide-y divide-gray-50">
                   {members.map(member => (
                     <div key={member.id} className="flex items-center justify-between gap-3 px-6 py-3.5 hover:bg-stone/50 transition-colors">
-                      <div className="min-w-0">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <ProfileAvatar name={member.full_name || 'Member'} size="md" />
+                        <div className="min-w-0">
                         <p className="text-sm font-semibold text-[#1A1A1A] truncate">
                           {member.full_name || member.email || 'Unknown'}
                           {(member.is_lodge_admin || member.is_co_admin) && (
@@ -413,6 +428,7 @@ function AdminContent() {
                           )}
                         </p>
                         <p className="text-xs text-muted truncate">{member.email}</p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${

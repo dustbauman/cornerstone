@@ -5,6 +5,8 @@ import Footer from '@/components/layout/Footer'
 import ListingCard from '@/components/directory/ListingCard'
 import RequestCard from '@/components/requests/RequestCard'
 import { MemberCard } from '@/components/lodge/LodgeCard'
+import LodgeAvatar from '@/components/ui/LodgeAvatar'
+import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
 import { createClient } from '@/lib/supabase/server'
 import { dbListingToListing, DB_LISTING_SELECT, type DbListingRow } from '@/lib/db/listings'
 import { DB_REQUEST_SELECT, dbRequestToServiceRequest } from '@/lib/db/requests'
@@ -19,7 +21,7 @@ async function getLodge(slug: string) {
 
   let query = supabase
     .from('lodges')
-    .select('id, name, number, city, state, tier, slug, paid_at, welcome_message, directory_id')
+    .select('id, name, number, city, state, tier, slug, paid_at, welcome_message, website, meeting_schedule, meeting_address, directory_id')
     .eq('status', 'active')
 
   if (uuidPattern.test(slug)) {
@@ -125,16 +127,35 @@ export default async function LodgeCommunityPage({ params }: PageProps) {
       <div className="bg-navy text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+            <div className="flex items-start gap-4">
+              <LodgeAvatar number={lodge.number} tier={lodge.tier} size="lg" />
+              <div>
               <h1 className="text-4xl font-bold mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                 {lodge.name}
               </h1>
               <p className="text-white/60">
                 #{lodge.number} · {lodge.city ? `${lodge.city}, ` : ''}{lodge.state}
               </p>
+              {(lodge.meeting_schedule || lodge.meeting_address) && (
+                <p className="text-sm text-white/50 mt-2">
+                  {lodge.meeting_schedule}
+                  {lodge.meeting_schedule && lodge.meeting_address && ' · '}
+                  {lodge.meeting_address}
+                </p>
+              )}
+              {lodge.website && (
+                <a
+                  href={lodge.website.startsWith('http') ? lodge.website : `https://${lodge.website}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-[#C9A84C] hover:underline mt-1 inline-block"
+                >
+                  {lodge.website.replace(/^https?:\/\//, '')}
+                </a>
+              )}
               <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-white/70">
                 {lodge.tier === 'founding' && (
-                  <span className="text-[#C9A84C] font-semibold">⭐ Founding Lodge</span>
+                  <FoundingLodgeBadge variant="inline" />
                 )}
                 <span>{visibleMembers.length} verified members</span>
                 <span>·</span>
@@ -149,6 +170,7 @@ export default async function LodgeCommunityPage({ params }: PageProps) {
               {isOwnLodge && (
                 <p className="mt-3 text-sm text-[#2D6A4F] font-semibold">✓ Your lodge</p>
               )}
+              </div>
             </div>
             <Link
               href={`/admin`}

@@ -36,7 +36,7 @@ export async function sendLodgeClaimEmail(args: LodgeClaimEmailArgs) {
 
       ${isFounding ? `
       <div style="background: #FEF3C7; border: 1px solid #C9A84C; border-radius: 8px; padding: 16px; margin: 24px 0;">
-        <p style="margin: 0; font-weight: 600; color: #92400E;">⭐ You've secured a Founding Lodge designation.</p>
+        <p style="margin: 0; font-weight: 600; color: #92400E;">Founding Lodge — you've secured a permanent designation.</p>
         <p style="margin: 8px 0 0; font-size: 14px; color: #78350F;">This status is permanent and will appear on your lodge page and every member's verified profile.</p>
       </div>
       ` : ''}

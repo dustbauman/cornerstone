@@ -5,26 +5,17 @@ import Link from 'next/link'
 import { ArrowLeft, ArrowRight, CheckCircle, Plus, X, Loader2, Globe } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import ListingAccessGate from '@/components/member/ListingAccessGate'
+import RemoteToggle from '@/components/ui/RemoteToggle'
+import PhoneInput from '@/components/ui/PhoneInput'
 import { createClient } from '@/lib/supabase/client'
 import { CATEGORIES } from '@/lib/constants/categories'
+import { US_STATES } from '@/lib/constants/states'
+import { validatePhone, validateEmail, validateWebsite, formatPhoneDisplay } from '@/lib/contact-fields'
 import { getMemberAccessState, canCreateListing } from '@/lib/auth/member-access'
 import type { MemberAccessState } from '@/lib/auth/member-access'
 
-const US_STATES = [
-  ['AL','Alabama'],['AK','Alaska'],['AZ','Arizona'],['AR','Arkansas'],['CA','California'],
-  ['CO','Colorado'],['CT','Connecticut'],['DE','Delaware'],['FL','Florida'],['GA','Georgia'],
-  ['HI','Hawaii'],['ID','Idaho'],['IL','Illinois'],['IN','Indiana'],['IA','Iowa'],
-  ['KS','Kansas'],['KY','Kentucky'],['LA','Louisiana'],['ME','Maine'],['MD','Maryland'],
-  ['MA','Massachusetts'],['MI','Michigan'],['MN','Minnesota'],['MS','Mississippi'],['MO','Missouri'],
-  ['MT','Montana'],['NE','Nebraska'],['NV','Nevada'],['NH','New Hampshire'],['NJ','New Jersey'],
-  ['NM','New Mexico'],['NY','New York'],['NC','North Carolina'],['ND','North Dakota'],['OH','Ohio'],
-  ['OK','Oklahoma'],['OR','Oregon'],['PA','Pennsylvania'],['RI','Rhode Island'],['SC','South Carolina'],
-  ['SD','South Dakota'],['TN','Tennessee'],['TX','Texas'],['UT','Utah'],['VT','Vermont'],
-  ['VA','Virginia'],['WA','Washington'],['WV','West Virginia'],['WI','Wisconsin'],['WY','Wyoming'],
-]
-
 interface FormState {
-  googleUrl: string
+  scanUrl: string
   businessName: string
   tradeCategory: string
   city: string
@@ -40,7 +31,7 @@ interface FormState {
 }
 
 const EMPTY_FORM: FormState = {
-  googleUrl: '', businessName: '', tradeCategory: '', city: '', state: '',
+  scanUrl: '', businessName: '', tradeCategory: '', city: '', state: '',
   description: '', services: [], phone: '', email: '', website: '',
   travelRadius: 25, remoteEligible: false, visibility: 'public',
 }
@@ -53,6 +44,8 @@ export default function NewListingPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [googleImporting, setGoogleImporting] = useState(false)
+  const [scanError, setScanError] = useState('')
+  const [contactErrors, setContactErrors] = useState<{ phone?: string; email?: string; website?: string }>({})
   const [accessState, setAccessState] = useState<MemberAccessState | null>(null)
 
   useEffect(() => {
@@ -99,18 +92,68 @@ export default function NewListingPage() {
     }
   }
 
-  function handleGoogleImport() {
-    if (!form.googleUrl.trim()) return
+  async function handleWebsiteScan() {
+    if (!form.scanUrl.trim()) return
     setGoogleImporting(true)
-    setTimeout(() => {
+    setScanError('')
+    try {
+      const res = await fetch('/api/listing/scan-website', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: form.scanUrl.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setScanError(data.error || 'Could not scan that website.')
+        return
+      }
+
+      const r = data.result
+      setForm(f => ({
+        ...f,
+        businessName: r.businessName || f.businessName,
+        tradeCategory: r.tradeCategory || f.tradeCategory,
+        city: r.city || f.city,
+        state: r.state || f.state,
+        description: r.description || f.description,
+        services: r.services?.length ? r.services : f.services,
+        phone: r.phone ? formatPhoneDisplay(r.phone) : f.phone,
+        email: r.email || f.email,
+        website: r.website || f.website,
+      }))
+      setStep(2)
+    } catch {
+      setScanError('Network error. Please try again.')
+    } finally {
       setGoogleImporting(false)
-      // Stub — real import wired on Day 5+
-    }, 1400)
+    }
   }
 
   async function handleSubmit() {
     setSubmitting(true)
     setError('')
+    setContactErrors({})
+
+    const phoneResult = validatePhone(form.phone)
+    const emailResult = validateEmail(form.email)
+    const websiteResult = validateWebsite(form.website)
+    if (!phoneResult.ok || !emailResult.ok || !websiteResult.ok) {
+      setContactErrors({
+        phone: phoneResult.ok ? undefined : phoneResult.error,
+        email: emailResult.ok ? undefined : emailResult.error,
+        website: websiteResult.ok ? undefined : websiteResult.error,
+      })
+      setError('Fix the contact fields below before publishing.')
+      setSubmitting(false)
+      return
+    }
+
+    const contact = {
+      ok: true as const,
+      phone: phoneResult.value,
+      email: emailResult.value,
+      website: websiteResult.value,
+    }
     try {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
@@ -140,9 +183,9 @@ export default function NewListingPage() {
           trade_category: form.tradeCategory,
           city: form.city,
           state: form.state,
-          phone: form.phone || null,
-          email: form.email || null,
-          website: form.website || null,
+          phone: contact.phone,
+          email: contact.email,
+          website: contact.website,
           services: form.services.length ? form.services : null,
           travel_radius_miles: form.travelRadius,
           remote_eligible: form.remoteEligible,
@@ -154,7 +197,15 @@ export default function NewListingPage() {
         .single()
 
       if (insertError) throw insertError
+
+      await fetch('/api/listings/revalidate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: data.id }),
+      })
+
       router.push(`/directory/${data.id}`)
+      router.refresh()
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
       setSubmitting(false)
@@ -211,47 +262,54 @@ export default function NewListingPage() {
 
         <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6 md:p-8">
 
-          {/* ── Step 1: Google Business URL ── */}
+          {/* ── Step 1: Website scan ── */}
           {step === 1 && (
             <div className="space-y-5">
               <div>
                 <h2 className="text-xl font-bold text-navy mb-1" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                  Import from Google (optional)
+                  Start from your website (optional)
                 </h2>
-                <p className="text-sm text-muted">Paste your Google Business Profile URL to pre-fill your listing details.</p>
+                <p className="text-sm text-muted">
+                  Paste your business website and we&apos;ll pull name, location, description, services, and contact info to pre-fill your listing.
+                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">
-                  Google Business Profile URL
+                  Business website
                 </label>
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
                     <input
-                      type="url"
-                      value={form.googleUrl}
-                      onChange={e => set('googleUrl', e.target.value)}
-                      placeholder="https://business.google.com/..."
+                      type="text"
+                      inputMode="url"
+                      value={form.scanUrl}
+                      onChange={e => set('scanUrl', e.target.value)}
+                      placeholder="yourbusiness.com"
                       className="w-full pl-9 pr-4 py-3 border border-[#E5E0D5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
                     />
                   </div>
                   <button
-                    onClick={handleGoogleImport}
-                    disabled={!form.googleUrl.trim() || googleImporting}
+                    type="button"
+                    onClick={handleWebsiteScan}
+                    disabled={!form.scanUrl.trim() || googleImporting}
                     className="px-4 py-3 bg-navy text-white text-sm font-semibold rounded-xl hover:bg-navy/90 disabled:opacity-50 transition-colors"
                   >
-                    {googleImporting ? <Loader2 size={16} className="animate-spin" /> : 'Import'}
+                    {googleImporting ? <Loader2 size={16} className="animate-spin" /> : 'Scan'}
                   </button>
                 </div>
                 {googleImporting && (
                   <p className="text-xs text-muted mt-2 flex items-center gap-1.5">
                     <Loader2 size={12} className="animate-spin" />
-                    Importing from Google Business Profile…
+                    Reading your website and filling in details…
                   </p>
                 )}
+                {scanError && (
+                  <p className="text-xs text-red-600 mt-2">{scanError}</p>
+                )}
                 <p className="text-xs text-muted mt-2">
-                  We&apos;ll pull your business name, category, location, and reviews. You can edit everything before publishing.
+                  You can edit everything before publishing.
                 </p>
               </div>
 
@@ -302,7 +360,6 @@ export default function NewListingPage() {
                 >
                   <option value="">Select a category…</option>
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  <option value="Other">Other</option>
                 </select>
               </div>
 
@@ -401,12 +458,13 @@ export default function NewListingPage() {
 
               <div>
                 <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Phone</label>
-                <input
-                  type="tel"
+                <PhoneInput
                   value={form.phone}
-                  onChange={e => set('phone', e.target.value)}
-                  placeholder="(918) 555-0000"
-                  className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
+                  onChange={val => {
+                    set('phone', val)
+                    setContactErrors(c => ({ ...c, phone: undefined }))
+                  }}
+                  error={contactErrors.phone}
                 />
               </div>
 
@@ -415,21 +473,25 @@ export default function NewListingPage() {
                 <input
                   type="email"
                   value={form.email}
-                  onChange={e => set('email', e.target.value)}
+                  onChange={e => { set('email', e.target.value); setContactErrors(c => ({ ...c, email: undefined })) }}
                   placeholder="you@yourbusiness.com"
                   className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
                 />
+                {contactErrors.email && <p className="text-xs text-red-600 mt-1">{contactErrors.email}</p>}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-[#1A1A1A] mb-1.5">Website</label>
                 <input
-                  type="url"
+                  type="text"
+                  inputMode="url"
                   value={form.website}
-                  onChange={e => set('website', e.target.value)}
-                  placeholder="https://yourbusiness.com"
+                  onChange={e => { set('website', e.target.value); setContactErrors(c => ({ ...c, website: undefined })) }}
+                  placeholder="yourbusiness.com"
                   className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy"
                 />
+                {contactErrors.website && <p className="text-xs text-red-600 mt-1">{contactErrors.website}</p>}
+                <p className="text-xs text-muted mt-1">https:// is added automatically if omitted.</p>
               </div>
 
               <div>
@@ -453,13 +515,10 @@ export default function NewListingPage() {
                   <p className="text-sm font-medium text-[#1A1A1A]">Remote / virtual work</p>
                   <p className="text-xs text-muted">I can serve clients outside my local area</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => set('remoteEligible', !form.remoteEligible)}
-                  className={`relative w-11 h-6 rounded-full transition-colors ${form.remoteEligible ? 'bg-navy' : 'bg-gray-200'}`}
-                >
-                  <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.remoteEligible ? 'translate-x-5' : 'translate-x-0.5'}`} />
-                </button>
+                <RemoteToggle
+                  checked={form.remoteEligible}
+                  onChange={val => set('remoteEligible', val)}
+                />
               </div>
 
               <div>

@@ -10,8 +10,8 @@ import StarRating from '@/components/directory/StarRating'
 import ListingCard from '@/components/directory/ListingCard'
 import { getDemoListingBySlug, getDemoRelatedListings, demoListingSlugs } from '@/lib/demo/listings'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { dbListingToListing, DB_LISTING_SELECT, isVerifiedPublicListing } from '@/lib/db/listings'
-import type { DbListingRow } from '@/lib/db/listings'
+import { phoneToTelHref } from '@/lib/contact-fields'
+import { dbListingToListing, DB_LISTING_SELECT, isVerifiedPublicListing, type DbListingRow } from '@/lib/db/listings'
 import type { Listing } from '@/lib/types'
 
 interface Props {
@@ -27,8 +27,14 @@ function adminClient() {
 }
 
 async function getListing(slug: string): Promise<Listing | null> {
-  const demo = getDemoListingBySlug(slug)
-  if (demo) return demo
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const isUuid = uuidPattern.test(slug)
+
+  if (!isUuid) {
+    const demo = getDemoListingBySlug(slug)
+    if (demo) return demo
+  }
+
   const supabase = adminClient()
   const { data } = await supabase
     .from('listings')
@@ -42,8 +48,16 @@ async function getListing(slug: string): Promise<Listing | null> {
     if (!isVerifiedPublicListing(row) || row.visibility !== 'public') return null
     return dbListingToListing(row)
   }
+
+  if (!isUuid) {
+    return getDemoListingBySlug(slug) ?? null
+  }
+
   return null
 }
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export async function generateStaticParams() {
   const demo = demoListingSlugs.map(slug => ({ slug }))
@@ -209,7 +223,7 @@ export default async function BusinessProfilePage({ params }: Props) {
               </h3>
               <div className="space-y-3">
                 {listing.phone && (
-                  <a href={`tel:${listing.phone}`} className="flex items-center gap-3 text-sm hover:text-navy transition-colors group">
+                  <a href={phoneToTelHref(listing.phone)} className="flex items-center gap-3 text-sm hover:text-navy transition-colors group">
                     <div className="w-9 h-9 rounded-full bg-navy/5 flex items-center justify-center group-hover:bg-[#C9A84C]/10 transition-colors">
                       <Phone size={15} className="text-navy" />
                     </div>

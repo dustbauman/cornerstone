@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, UserCircle, LogOut, LayoutDashboard, ClipboardList, Network, Shield } from 'lucide-react'
+import { Menu, X, LogOut, ClipboardList, Network } from 'lucide-react'
 import Logo from './Logo'
+import DashboardNavDropdown from './DashboardNavDropdown'
+import ProfileAvatar from '@/components/ui/ProfileAvatar'
 import { createClient } from '@/lib/supabase/client'
 import type { Session } from '@supabase/supabase-js'
 
@@ -21,7 +23,6 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   const networkActive = pathname === '/network' || pathname.startsWith('/lodge/')
-  const adminActive = pathname.startsWith('/admin')
 
   useEffect(() => {
     const supabase = createClient()
@@ -97,26 +98,11 @@ export default function Navbar() {
             >
               Network
             </Link>
-            {isLoggedIn && profile?.isLodgeAdmin && profile.lodgeSlug && (
-              <Link
-                href={`/lodge/${profile.lodgeSlug}`}
-                className={`text-sm font-medium transition-colors ${pathname.startsWith('/lodge/') ? 'text-white' : 'text-white/80 hover:text-white'}`}
-              >
-                My Lodge
-              </Link>
-            )}
-            {isLoggedIn && profile?.isLodgeAdmin && (
-              <Link
-                href="/admin"
-                className={`text-sm font-medium transition-colors ${adminActive ? 'text-white' : 'text-white/80 hover:text-white'}`}
-              >
-                Lodge Admin
-              </Link>
-            )}
             {isLoggedIn && (
-              <Link href="/dashboard" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
-                My Dashboard
-              </Link>
+              <DashboardNavDropdown
+                isLodgeAdmin={!!profile?.isLodgeAdmin}
+                lodgeSlug={profile?.lodgeSlug ?? null}
+              />
             )}
           </div>
 
@@ -124,7 +110,11 @@ export default function Navbar() {
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 text-white/90 text-sm">
-                  <UserCircle size={18} />
+                  <ProfileAvatar
+                    name={userLabel}
+                    size="sm"
+                    tone="inverse"
+                  />
                   <span className="font-medium max-w-[160px] truncate">{userLabel}</span>
                 </div>
                 <button
@@ -177,23 +167,13 @@ export default function Navbar() {
             <Network size={16} />
             Network
           </Link>
-          {isLoggedIn && profile?.isLodgeAdmin && profile.lodgeSlug && (
-            <Link href={`/lodge/${profile.lodgeSlug}`} className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2" onClick={() => setMenuOpen(false)}>
-              <Shield size={16} />
-              My Lodge
-            </Link>
-          )}
-          {isLoggedIn && profile?.isLodgeAdmin && (
-            <Link href="/admin" className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2" onClick={() => setMenuOpen(false)}>
-              <Shield size={16} />
-              Lodge Admin
-            </Link>
-          )}
           {isLoggedIn && (
-            <Link href="/dashboard" className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2" onClick={() => setMenuOpen(false)}>
-              <LayoutDashboard size={16} />
-              My Dashboard
-            </Link>
+            <DashboardNavDropdown
+              isLodgeAdmin={!!profile?.isLodgeAdmin}
+              lodgeSlug={profile?.lodgeSlug ?? null}
+              variant="mobile"
+              onNavigate={() => setMenuOpen(false)}
+            />
           )}
           <div className="pt-2 border-t border-white/10">
             {isLoggedIn ? (

@@ -142,7 +142,12 @@ export default function LodgeSearch({ onSelect, defaultState = '', defaultNumber
       <select
         value={state}
         onChange={handleStateChange}
-        className="w-full px-4 py-3 border border-[#E5E0D5] rounded-xl text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy mb-2"
+        disabled={!!selected}
+        className={`w-full px-4 py-3 border rounded-xl text-sm mb-2 focus:outline-none focus:ring-2 transition ${
+          selected
+            ? 'border-[#2D6A4F] bg-[#E1F5EE] text-[#0F6E56] cursor-not-allowed'
+            : 'border-[#E5E0D5] bg-white focus:ring-navy/20 focus:border-navy'
+        }`}
       >
         <option value="">Select your state</option>
         {US_STATES.map(s => (

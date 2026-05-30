@@ -35,7 +35,7 @@ function ClaimContent() {
 
     if (!user) {
       sessionStorage.setItem('tyrian_claim_code', trimmed)
-      router.push(`/login?redirect=${encodeURIComponent('/claim')}&code=${encodeURIComponent(trimmed)}`)
+      router.push(`/login?redirect=${encodeURIComponent('/claim')}&code=${encodeURIComponent(trimmed)}&mode=claim`)
       setClaimState('idle')
       return
     }
@@ -50,7 +50,7 @@ function ClaimContent() {
 
     if (res.status === 401) {
       sessionStorage.setItem('tyrian_claim_code', trimmed)
-      router.push(`/login?redirect=${encodeURIComponent('/claim')}&code=${encodeURIComponent(trimmed)}`)
+      router.push(`/login?redirect=${encodeURIComponent('/claim')}&code=${encodeURIComponent(trimmed)}&mode=claim`)
       setClaimState('idle')
       return
     }

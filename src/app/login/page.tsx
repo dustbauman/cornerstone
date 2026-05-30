@@ -47,6 +47,10 @@ function LoginContent() {
   const claimCode = searchParams.get('code')
   const authError = searchParams.get('error')
   const redirect = redirectParam ?? (claimCode ? '/claim' : '/dashboard')
+  const isClaimFlow =
+    searchParams.get('mode') === 'claim' ||
+    redirect.startsWith('/claim') ||
+    !!claimCode
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -95,7 +99,11 @@ function LoginContent() {
     const gate = checkMembershipGate(profile, redirect)
     if (!gate.allowed && !isAuthBootstrapPath(redirect)) {
       await supabase.auth.signOut()
-      setError('No Tyrian account exists for this sign-in. Join through your lodge invite link first.')
+      setError(
+        isClaimFlow
+          ? 'Sign in with the same email you used at checkout, then try claiming again.'
+          : 'No Tyrian account exists for this sign-in. Join through your lodge invite link first.'
+      )
       return false
     }
     return true
@@ -118,7 +126,7 @@ function LoginContent() {
     setLoading('google')
     setError('')
 
-    if (claimCode || redirect.startsWith('/claim')) {
+    if (isClaimFlow) {
       await setAuthIntent('claim')
     }
 
@@ -137,6 +145,10 @@ function LoginContent() {
   async function handlePassword(e: React.FormEvent) {
     e.preventDefault()
     setError('')
+
+    if (isClaimFlow) {
+      await setAuthIntent('claim')
+    }
 
     setLoading('password')
     const supabase = createClient()
@@ -161,19 +173,25 @@ function LoginContent() {
     setLoading('magic')
     setError('')
 
+    if (isClaimFlow) {
+      await setAuthIntent('claim')
+    }
+
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
         emailRedirectTo: callbackUrl(),
-        shouldCreateUser: false,
+        shouldCreateUser: isClaimFlow,
       },
     })
 
     if (error) {
       setError(
         error.message.toLowerCase().includes('user')
-          ? 'No Tyrian account exists for this email. Join through your lodge invite link first.'
+          ? isClaimFlow
+            ? 'Could not send a sign-in link. Use the same email from checkout, or try Google sign-in.'
+            : 'No Tyrian account exists for this email. Join through your lodge invite link first.'
           : error.message
       )
       setLoading(null)
@@ -230,35 +248,52 @@ function LoginContent() {
           </p>
         </div>
 
-        {/* Primary path: lodge invite */}
-        <div className="bg-navy text-white rounded-2xl p-6 mb-4 border border-navy">
-          <p className="text-xs font-semibold uppercase tracking-wider text-[#C9A84C] mb-2">
-            New to Tyrian?
-          </p>
-          <h2
-            className="text-xl font-bold mb-2"
-            style={{ fontFamily: "'Cormorant Garamond', serif" }}
-          >
-            Join through your lodge
-          </h2>
-          <p className="text-sm text-white/70 leading-relaxed mb-4">
-            Tyrian is lodge-gated. Ask your lodge admin for an invite link, or find your lodge on the network.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Link
-              href="/network"
-              className="inline-flex items-center justify-center bg-[#C9A84C] hover:bg-[#b8943d] text-navy font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+        {isClaimFlow ? (
+          <div className="bg-navy text-white rounded-2xl p-6 mb-4 border border-navy">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#C9A84C] mb-2">
+              Lodge admin claim
+            </p>
+            <h2
+              className="text-xl font-bold mb-2"
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
             >
-              Find your lodge
-            </Link>
-            <Link
-              href="/join"
-              className="inline-flex items-center justify-center border border-white/25 hover:bg-white/10 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
-            >
-              Unlock your lodge
-            </Link>
+              Sign in to claim admin access
+            </h2>
+            <p className="text-sm text-white/70 leading-relaxed">
+              Use the same email address you used at checkout. After signing in, you&apos;ll return to
+              your claim code — no need to look up your lodge again.
+            </p>
           </div>
-        </div>
+        ) : (
+          <div className="bg-navy text-white rounded-2xl p-6 mb-4 border border-navy">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#C9A84C] mb-2">
+              New to Tyrian?
+            </p>
+            <h2
+              className="text-xl font-bold mb-2"
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            >
+              Join through your lodge
+            </h2>
+            <p className="text-sm text-white/70 leading-relaxed mb-4">
+              Tyrian is lodge-gated. Ask your lodge admin for an invite link, or find your lodge on the network.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Link
+                href="/network"
+                className="inline-flex items-center justify-center bg-[#C9A84C] hover:bg-[#b8943d] text-navy font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+              >
+                Find your lodge
+              </Link>
+              <Link
+                href="/join"
+                className="inline-flex items-center justify-center border border-white/25 hover:bg-white/10 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
+              >
+                Unlock your lodge
+              </Link>
+            </div>
+          </div>
+        )}
 
         <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-8">
           {view === 'magic-sent' ? (
@@ -371,10 +406,12 @@ function LoginContent() {
                 className="text-2xl font-bold text-navy mb-1"
                 style={{ fontFamily: "'Cormorant Garamond', serif" }}
               >
-                Sign in
+                {isClaimFlow ? 'Sign in to continue' : 'Sign in'}
               </h2>
               <p className="text-sm text-muted mb-6">
-                Returning member? Sign in with the account you created through your lodge invite.
+                {isClaimFlow
+                  ? 'Sign in with the email you used when paying the lodge fee. We\'ll take you straight back to claim admin access.'
+                  : 'Returning member? Sign in with the account you created through your lodge invite.'}
               </p>
 
               <button
@@ -496,13 +533,22 @@ function LoginContent() {
                 )}
               </div>
 
-              <p className="mt-5 text-xs text-center text-muted leading-relaxed">
-                No account yet? You need a lodge invite link to join —{' '}
-                <Link href="/network" className="text-navy underline hover:no-underline">
-                  find your lodge
-                </Link>
-                .
-              </p>
+              {isClaimFlow ? (
+                <p className="mt-5 text-xs text-center text-muted leading-relaxed">
+                  No account yet? Use the same checkout email with Google or a magic link above.{' '}
+                  <Link href="mailto:hello@tyrian.work" className="text-navy underline hover:no-underline">
+                    Need help?
+                  </Link>
+                </p>
+              ) : (
+                <p className="mt-5 text-xs text-center text-muted leading-relaxed">
+                  No account yet? You need a lodge invite link to join —{' '}
+                  <Link href="/network" className="text-navy underline hover:no-underline">
+                    find your lodge
+                  </Link>
+                  .
+                </p>
+              )}
             </>
           )}
         </div>

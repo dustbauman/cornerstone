@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { CheckCircle2, Copy, Check, Mail, Loader2 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
@@ -89,8 +90,8 @@ function SuccessContent() {
 
         {isFounding && (
           <div className="mb-5 p-4 bg-[#FEF3C7] border border-[#C9A84C]/40 rounded-xl">
-            <p className="text-sm font-semibold text-[#92400E]">⭐ You&apos;re a Founding Lodge — one of the first 10 nationally.</p>
-            <p className="text-sm text-[#78350F] mt-1">Your lodge will carry the Founding Lodge designation permanently.</p>
+            <FoundingLodgeBadge variant="callout" label="You're a Founding Lodge — one of the first 10 nationally." />
+            <p className="text-sm text-[#78350F] mt-2">Your lodge will carry the Founding Lodge designation permanently.</p>
           </div>
         )}
 

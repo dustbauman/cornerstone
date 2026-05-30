@@ -6,6 +6,7 @@ import { AlertCircle, CheckCircle2, Clock, Search } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import LodgeSearch, { US_STATES, type LodgeResult } from '@/components/lodge/LodgeSearch'
+import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
 
 const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
 
@@ -84,6 +85,7 @@ function JoinContent() {
       payerEmail: payerEmail.trim(),
       directoryId: selectedLodge.id || '',
       isManualEntry: selectedLodge.isManualEntry ? '1' : '0',
+      ...(isFoundingEligible ? { foundingEligible: '1' } : {}),
     })
 
     router.push(`/join/confirm?${params}`)
@@ -91,6 +93,7 @@ function JoinContent() {
 
   const selectedSize = SIZE_OPTIONS.find(o => o.value === size)
   const canSubmit = selectedLodge && size && payerName.trim() && payerEmail.trim() && confirmed
+  const isFoundingEligible = foundingSlots !== null && foundingSlots > 0
 
   return (
     <div className="flex flex-col min-h-screen bg-stone">
@@ -206,14 +209,11 @@ function JoinContent() {
 
             {/* Founding callout */}
             {foundingSlots !== null && foundingSlots > 0 && (
-              <div className="flex items-start gap-3 p-4 bg-[#FEF3C7] border border-[#C9A84C]/40 rounded-xl">
-                <span className="text-lg flex-shrink-0">⭐</span>
-                <div>
-                  <p className="text-sm font-semibold text-[#92400E]">Founding Lodge pricing available</p>
-                  <p className="text-sm text-[#78350F] mt-0.5">
-                    Only {foundingSlots} of {FOUNDING_LIMIT} founding slots remain. Founding lodges pay $1 and receive permanent recognition and locked-in pricing forever.
-                  </p>
-                </div>
+              <div className="p-4 bg-[#FEF3C7] border border-[#C9A84C]/40 rounded-xl">
+                <FoundingLodgeBadge variant="callout" label="Founding Lodge pricing available" />
+                <p className="text-sm text-[#78350F] mt-2">
+                  Only {foundingSlots} of {FOUNDING_LIMIT} founding slots remain. Founding lodges pay $1 and receive permanent recognition and locked-in pricing forever.
+                </p>
               </div>
             )}
 
@@ -242,14 +242,27 @@ function JoinContent() {
                         <input type="radio" name="size" value={opt.value} checked={size === opt.value} onChange={() => setSize(opt.value)} className="accent-navy" />
                         <span className="text-sm font-medium text-[#1A1A1A]">{opt.label}</span>
                       </div>
-                      <span className="text-sm font-semibold text-navy">${opt.price}</span>
+                      {isFoundingEligible ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted line-through">${opt.price}</span>
+                          <span className="text-sm font-semibold text-[#92400E]">$1</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm font-semibold text-navy">${opt.price}</span>
+                      )}
                     </label>
                   ))}
                 </div>
                 <p className="text-sm text-muted mt-2">
-                  One-time platform fee: <span className="font-semibold text-navy">${selectedSize?.price}</span>
-                  {foundingSlots !== null && foundingSlots > 0 && (
-                    <span className="text-[#92400E] ml-2">(Founding pricing will be applied at checkout)</span>
+                  One-time platform fee:{' '}
+                  {isFoundingEligible ? (
+                    <>
+                      <span className="line-through text-muted">${selectedSize?.price}</span>{' '}
+                      <span className="font-semibold text-[#92400E]">$1</span>
+                      <span className="text-[#92400E] ml-2">(Founding Lodge pricing)</span>
+                    </>
+                  ) : (
+                    <span className="font-semibold text-navy">${selectedSize?.price}</span>
                   )}
                 </p>
               </div>
