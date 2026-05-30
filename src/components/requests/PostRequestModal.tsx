@@ -287,7 +287,7 @@ export default function PostRequestModal({
           {/* Email */}
           <div>
             <label className="block text-sm font-semibold text-navy mb-1.5">
-              Where should providers reach you? <span className="text-red-400">*</span>
+              Where should verified members reach you? <span className="text-red-400">*</span>
             </label>
             <input
               type="email"
@@ -297,7 +297,10 @@ export default function PostRequestModal({
               required
               className={field}
             />
-            <p className="text-xs text-muted mt-1">We won&apos;t use this for anything else.</p>
+            <p className="text-xs text-muted mt-1">
+              Your contact details are shared only with lodge-verified members who respond through
+              Tyrian — never publicly.
+            </p>
           </div>
 
           {submitError && (
@@ -322,7 +325,8 @@ export default function PostRequestModal({
             </button>
           </div>
           <p className="text-xs text-muted text-center pb-2">
-            Your request is visible to verified Tyrian members. Your contact details are only shared when you choose to respond.
+            Your request is visible to verified Tyrian members. Contact details are shared only when
+            a verified member responds through Tyrian.
           </p>
         </form>
       </div>

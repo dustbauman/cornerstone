@@ -272,6 +272,120 @@ export async function sendMemberVerifiedEmail(args: MemberVerifiedEmailArgs) {
   await resend.emails.send({ from: FROM, to, subject, html })
 }
 
+export interface ResponseNotificationArgs {
+  requesterEmail: string
+  requesterName: string
+  notifyToken: string
+  requestTitle: string
+  requestId: string
+  responderName: string
+  responderTrade: string | null
+  responderLodge: string
+  responderCity: string | null
+  responderState: string | null
+  responderPhone: string | null
+  responderEmail: string | null
+  message: string | null
+  otherResponseCount: number
+}
+
+export async function sendResponseNotification(args: ResponseNotificationArgs) {
+  const {
+    requesterEmail,
+    requesterName,
+    notifyToken,
+    requestTitle,
+    requestId,
+    responderName,
+    responderTrade,
+    responderLodge,
+    responderCity,
+    responderState,
+    responderPhone,
+    responderEmail,
+    message,
+    otherResponseCount,
+  } = args
+
+  const firstName = requesterName.split(' ')[0] || requesterName
+  const responderFirst = responderName.split(' ')[0] || responderName
+  const location =
+    responderCity && responderState ? `${responderCity}, ${responderState}` : null
+  const viewUrl = `${APP_URL}/requests/${requestId}/responses?token=${notifyToken}`
+
+  const subject = `${responderName} from ${responderLodge} responded to your Tyrian request`
+
+  const messageBlock = message
+    ? `<p style="font-style: italic; color: #4B5563; margin: 16px 0;">&ldquo;${message.replace(/</g, '&lt;')}&rdquo;</p>`
+    : ''
+
+  const contactLines = [
+    responderPhone ? `<p style="margin: 4px 0;">📞 ${responderPhone}</p>` : '',
+    responderEmail ? `<p style="margin: 4px 0;">✉ ${responderEmail}</p>` : '',
+  ]
+    .filter(Boolean)
+    .join('')
+
+  const contactBlock = contactLines
+    ? `<p style="font-weight: 600; margin: 16px 0 8px;">Contact ${responderFirst}:</p>${contactLines}`
+    : `<p style="font-size: 14px; color: #6B7280;">View their profile in the Tyrian directory to connect.</p>`
+
+  const socialProof =
+    otherResponseCount === 0
+      ? `<p style="font-size: 14px; color: #4B5563;">${responderName} is the first to respond. Reply soon — great professionals get hired fast.</p>`
+      : `<p style="font-size: 14px; color: #4B5563;">${otherResponseCount} other verified member${otherResponseCount === 1 ? '' : 's'} have also responded. <a href="${viewUrl}" style="color: #1B2A4A;">View all responses →</a></p>`
+
+  const html = `
+    <div style="font-family: 'DM Sans', sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px; color: #1A1A1A;">
+      <div style="margin-bottom: 32px;">
+        <span style="font-size: 20px; font-weight: 700; color: #1B2A4A; font-family: 'Cormorant Garamond', Georgia, serif;">Tyrian</span>
+      </div>
+
+      <p>Hi ${firstName},</p>
+      <p>A verified Masonic professional has responded to your request on Tyrian.</p>
+
+      <div style="border-top: 1px solid #E5E0D5; border-bottom: 1px solid #E5E0D5; padding: 16px 0; margin: 24px 0;">
+        <p style="margin: 0; font-size: 13px; color: #6B7280;">Your request:</p>
+        <p style="margin: 4px 0 0; font-weight: 600; color: #1B2A4A;">&ldquo;${requestTitle.replace(/</g, '&lt;')}&rdquo;</p>
+      </div>
+
+      <p style="font-weight: 700; margin: 0 0 4px;">${responderName}</p>
+      ${responderTrade ? `<p style="margin: 0 0 4px; color: #4B5563;">${responderTrade}</p>` : ''}
+      <p style="margin: 0 0 8px; color: #4B5563;">${responderLodge}${location ? ` · ${location}` : ''}</p>
+      <p style="display: inline-block; background: #E1F5EE; color: #0F6E56; font-size: 11px; font-weight: 600; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.06em; text-transform: uppercase;">✓ Lodge-Verified Member</p>
+
+      ${messageBlock}
+      ${contactBlock}
+
+      <div style="margin: 32px 0;">
+        <a href="${viewUrl}" style="background: #C9A84C; color: #1B2A4A; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px;">
+          View all responses to your request →
+        </a>
+      </div>
+
+      ${socialProof}
+
+      <hr style="border: none; border-top: 1px solid #E5E0D5; margin: 32px 0;" />
+
+      <p style="font-size: 14px; color: #4B5563;">Are you a Freemason? Create a free account to post requests, respond to others, and connect with your lodge network.</p>
+      <p style="margin: 16px 0;"><a href="${APP_URL}/login" style="color: #1B2A4A; font-weight: 600;">Join Tyrian →</a></p>
+
+      <p style="font-size: 12px; color: #9CA3AF; margin-top: 32px; font-style: italic;">Built on trust. Proven by the craft.<br>Tyrian · tyrian.work</p>
+    </div>
+  `
+
+  if (!resend) {
+    console.log('[Email stub — no RESEND_API_KEY] Response notification')
+    console.log(`  To: ${requesterEmail}`)
+    console.log(`  Subject: ${subject}`)
+    console.log(`  View: ${viewUrl}`)
+    return
+  }
+
+  const { error } = await resend.emails.send({ from: FROM, to: requesterEmail, subject, html })
+  if (error) throw new Error(error.message)
+}
+
 export function sponsorResponsePage(title: string, message: string) {
   return `<!DOCTYPE html>
 <html lang="en">

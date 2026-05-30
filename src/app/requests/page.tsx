@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import RequestCard from "@/components/requests/RequestCard";
 import SectionDivider from "@/components/ui/SectionDivider";
 import PostRequestModal from "@/components/requests/PostRequestModal";
+import RespondModal, { type ResponderPreview } from "@/components/requests/RespondModal";
 import ToastNotification from "@/components/ui/ToastNotification";
 import { requests as demoRequests, ServiceRequest } from "@/lib/demo/requests";
 import { haversineDistance, getMatchScore } from "@/lib/geo/scoring";
@@ -21,6 +22,7 @@ interface RequestUser {
   name: string;
   firstName: string;
   trade: TradeCategory | "";
+  occupation: string;
   lodge: string;
   lodgeId: string | null;
   city: string;
@@ -30,12 +32,15 @@ interface RequestUser {
   isVerified: boolean;
   isLoggedIn: boolean;
   email: string;
+  contactPhone: string | null;
+  contactEmail: string | null;
 }
 
 const DEMO_REQUEST_USER: RequestUser = {
   name: demoUser.full_name,
   firstName: demoUser.full_name.split(" ")[0],
   trade: demoUser.trade_category as TradeCategory,
+  occupation: "",
   lodge: `${demoUser.lodge_name} #${demoUser.lodge_number}`,
   lodgeId: demoUser.lodge_id,
   city: demoUser.city,
@@ -45,12 +50,15 @@ const DEMO_REQUEST_USER: RequestUser = {
   isVerified: true,
   isLoggedIn: true,
   email: demoUser.email,
+  contactPhone: "(918) 555-0477",
+  contactEmail: demoUser.email,
 };
 
 const ANON_USER: RequestUser = {
   name: "Guest",
   firstName: "Guest",
   trade: "",
+  occupation: "",
   lodge: "",
   lodgeId: null,
   city: "Tulsa",
@@ -60,6 +68,8 @@ const ANON_USER: RequestUser = {
   isVerified: false,
   isLoggedIn: false,
   email: "",
+  contactPhone: null,
+  contactEmail: null,
 };
 
 type TabType = "for-you" | "your-lodge" | "your-area" | "all";
@@ -91,6 +101,9 @@ export default function RequestsPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<TabType>("for-you");
   const [modalOpen, setModalOpen] = useState(false);
+  const [respondTarget, setRespondTarget] = useState<ServiceRequest | null>(null);
+  const [respondedIds, setRespondedIds] = useState<Set<string>>(new Set());
+  const [respondSuccessIds, setRespondSuccessIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
 
   const [filterCategory, setFilterCategory] = useState("");
@@ -105,6 +118,8 @@ export default function RequestsPage() {
       if (isDemoMode) {
         setRequests(demoRequests);
         setRequestUser(DEMO_REQUEST_USER);
+        setRespondedIds(new Set());
+        setRespondSuccessIds(new Set());
         setLoading(false);
         return;
       }
@@ -116,11 +131,19 @@ export default function RequestsPage() {
         let userCtx: RequestUser = { ...ANON_USER };
 
         if (user) {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("full_name, email, trade_category, city, state, lat, lng, lodge_id, verification_status")
-            .eq("id", user.id)
-            .single();
+          const [{ data: profile }, { data: listing }] = await Promise.all([
+            supabase
+              .from("profiles")
+              .select("full_name, email, trade_category, occupation, city, state, lat, lng, lodge_id, verification_status")
+              .eq("id", user.id)
+              .single(),
+            supabase
+              .from("listings")
+              .select("phone, email")
+              .eq("profile_id", user.id)
+              .eq("is_active", true)
+              .maybeSingle(),
+          ]);
 
           let lodgeName = "";
           const lodgeId: string | null = profile?.lodge_id ?? null;
@@ -138,6 +161,7 @@ export default function RequestsPage() {
             name: profile?.full_name || user.email?.split("@")[0] || "Member",
             firstName: (profile?.full_name || "Member").split(" ")[0],
             trade: (profile?.trade_category as TradeCategory) || "",
+            occupation: profile?.occupation || "",
             lodge: lodgeName,
             lodgeId,
             city: profile?.city || ANON_USER.city,
@@ -147,7 +171,21 @@ export default function RequestsPage() {
             isVerified: profile?.verification_status === "verified",
             isLoggedIn: true,
             email: user.email ?? "",
+            contactPhone: listing?.phone?.trim() || null,
+            contactEmail: listing?.email?.trim() || profile?.email?.trim() || user.email || null,
           };
+
+          if (profile?.verification_status === "verified") {
+            const { data: myResponses } = await supabase
+              .from("request_responses")
+              .select("request_id")
+              .eq("responder_id", user.id);
+            setRespondedIds(new Set((myResponses ?? []).map((r) => r.request_id)));
+          } else {
+            setRespondedIds(new Set());
+          }
+        } else {
+          setRespondedIds(new Set());
         }
 
         const { data: rows } = await supabase
@@ -259,6 +297,89 @@ export default function RequestsPage() {
     setToast("Your request has been posted. Verified professionals in your area have been notified.");
   }
 
+  function requestIdKey(id: string | number): string {
+    return String(id);
+  }
+
+  function cardProps(
+    r: ServiceRequest,
+    extra?: { matchScore?: number; isMatchingTrade?: boolean }
+  ) {
+    const id = requestIdKey(r.id);
+    return {
+      request: r,
+      isLoggedIn: requestUser.isLoggedIn,
+      isVerified: requestUser.isVerified,
+      hasResponded: respondedIds.has(id),
+      respondSuccess: respondSuccessIds.has(id),
+      onRespond: (req: ServiceRequest) => setRespondTarget(req),
+      userLodge: requestUser.lodge,
+      ...extra,
+    };
+  }
+
+  function responderPreview(): ResponderPreview {
+    return {
+      fullName: requestUser.name,
+      trade: requestUser.trade || requestUser.occupation || "",
+      lodge: requestUser.lodge,
+      city: requestUser.city,
+      state: requestUser.state,
+      phone: requestUser.contactPhone,
+      email: requestUser.contactEmail,
+    };
+  }
+
+  async function submitResponse(message: string) {
+    if (!respondTarget) return;
+    const id = requestIdKey(respondTarget.id);
+
+    if (isDemoMode) {
+      setRespondSuccessIds((prev) => new Set(prev).add(id));
+      setRespondedIds((prev) => new Set(prev).add(id));
+      setRequests((prev) =>
+        prev.map((r) =>
+          requestIdKey(r.id) === id
+            ? {
+                ...r,
+                responses: r.responses + 1,
+                status: r.status === "open" ? "active" : r.status,
+              }
+            : r
+        )
+      );
+      setRespondTarget(null);
+      setToast("Response sent. The requester will be notified.");
+      return;
+    }
+
+    const res = await fetch(`/api/requests/${respondTarget.id}/respond`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: message || undefined }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || "Failed to submit response");
+    }
+
+    setRespondedIds((prev) => new Set(prev).add(id));
+    setRespondSuccessIds((prev) => new Set(prev).add(id));
+    setRequests((prev) =>
+      prev.map((r) =>
+        requestIdKey(r.id) === id
+          ? {
+              ...r,
+              responses: r.responses + 1,
+              status: r.status === "open" ? "active" : r.status,
+            }
+          : r
+      )
+    );
+    setRespondTarget(null);
+    setToast("Response sent. The requester will be notified.");
+  }
+
   function renderForYou() {
     const { nationwide, nearYou, inYourArea, nearYouOther, acrossState } = forYouBands;
     const empty =
@@ -277,11 +398,10 @@ export default function RequestsPage() {
             {nationwide.map((r) => (
               <RequestCard
                 key={r.id}
-                request={r}
-                isLoggedIn={requestUser.isLoggedIn}
-                matchScore={getMatchScore(r, requestUser)}
-                isMatchingTrade={!!requestUser.trade && r.category === requestUser.trade}
-                userLodge={requestUser.lodge}
+                {...cardProps(r, {
+                  matchScore: getMatchScore(r, requestUser),
+                  isMatchingTrade: !!requestUser.trade && r.category === requestUser.trade,
+                })}
               />
             ))}
           </>
@@ -290,14 +410,7 @@ export default function RequestsPage() {
           <>
             <SectionDivider label="📍  Near you · within 25 miles" />
             {nearYou.map((r) => (
-              <RequestCard
-                key={r.id}
-                request={r}
-                isLoggedIn={requestUser.isLoggedIn}
-                matchScore={getMatchScore(r, requestUser)}
-                isMatchingTrade
-                userLodge={requestUser.lodge}
-              />
+              <RequestCard key={r.id} {...cardProps(r, { matchScore: getMatchScore(r, requestUser), isMatchingTrade: true })} />
             ))}
           </>
         )}
@@ -307,11 +420,10 @@ export default function RequestsPage() {
             {inYourArea.map((r) => (
               <RequestCard
                 key={r.id}
-                request={r}
-                isLoggedIn={requestUser.isLoggedIn}
-                matchScore={getMatchScore(r, requestUser)}
-                isMatchingTrade={!!requestUser.trade && r.category === requestUser.trade}
-                userLodge={requestUser.lodge}
+                {...cardProps(r, {
+                  matchScore: getMatchScore(r, requestUser),
+                  isMatchingTrade: !!requestUser.trade && r.category === requestUser.trade,
+                })}
               />
             ))}
           </>
@@ -320,14 +432,7 @@ export default function RequestsPage() {
           <>
             <SectionDivider label="🗺  Other needs nearby" />
             {nearYouOther.map((r) => (
-              <RequestCard
-                key={r.id}
-                request={r}
-                isLoggedIn={requestUser.isLoggedIn}
-                matchScore={getMatchScore(r, requestUser)}
-                isMatchingTrade={false}
-                userLodge={requestUser.lodge}
-              />
+              <RequestCard key={r.id} {...cardProps(r, { matchScore: getMatchScore(r, requestUser), isMatchingTrade: false })} />
             ))}
           </>
         )}
@@ -337,11 +442,10 @@ export default function RequestsPage() {
             {acrossState.map((r) => (
               <RequestCard
                 key={r.id}
-                request={r}
-                isLoggedIn={requestUser.isLoggedIn}
-                matchScore={getMatchScore(r, requestUser)}
-                isMatchingTrade={!!requestUser.trade && r.category === requestUser.trade}
-                userLodge={requestUser.lodge}
+                {...cardProps(r, {
+                  matchScore: getMatchScore(r, requestUser),
+                  isMatchingTrade: !!requestUser.trade && r.category === requestUser.trade,
+                })}
               />
             ))}
           </>
@@ -370,12 +474,7 @@ export default function RequestsPage() {
     return (
       <div className="space-y-3">
         {lodgeRequests.map((r) => (
-          <RequestCard
-            key={r.id}
-            request={r}
-            isLoggedIn={requestUser.isLoggedIn}
-            userLodge={requestUser.lodge}
-          />
+          <RequestCard key={r.id} {...cardProps(r)} />
         ))}
       </div>
     );
@@ -390,7 +489,7 @@ export default function RequestsPage() {
           <>
             <SectionDivider label="🌐  Available nationwide" />
             {nationwide.map((r) => (
-              <RequestCard key={r.id} request={r} isLoggedIn={requestUser.isLoggedIn} userLodge={requestUser.lodge} />
+              <RequestCard key={r.id} {...cardProps(r)} />
             ))}
           </>
         )}
@@ -398,7 +497,7 @@ export default function RequestsPage() {
           <>
             <SectionDivider label={`📍  Within 50 miles of ${requestUser.city}`} />
             {local.map((r) => (
-              <RequestCard key={r.id} request={r} isLoggedIn={requestUser.isLoggedIn} userLodge={requestUser.lodge} />
+              <RequestCard key={r.id} {...cardProps(r)} />
             ))}
           </>
         )}
@@ -447,7 +546,7 @@ export default function RequestsPage() {
         {allFiltered.length > 0 ? (
           <div className="space-y-3">
             {allFiltered.map((r) => (
-              <RequestCard key={r.id} request={r} isLoggedIn={requestUser.isLoggedIn} userLodge={requestUser.lodge} />
+              <RequestCard key={r.id} {...cardProps(r)} />
             ))}
           </div>
         ) : (
@@ -525,6 +624,14 @@ export default function RequestsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-trust/10 rounded-lg mb-6 border border-trust/15">
+          <span className="text-trust text-sm">✓</span>
+          <p className="text-sm text-trust m-0">
+            Only lodge-verified members can respond to requests. Contact details are kept private
+            until a member responds.
+          </p>
+        </div>
+
         <div className="flex gap-8">
           <div className="flex-1 min-w-0">
             {activeTab === "for-you" && renderForYou()}
@@ -586,6 +693,15 @@ export default function RequestsPage() {
           defaultLng={requestUser.lng}
           defaultEmail={requestUser.email}
           defaultName={requestUser.name}
+        />
+      )}
+
+      {respondTarget && (
+        <RespondModal
+          request={respondTarget}
+          preview={responderPreview()}
+          onClose={() => setRespondTarget(null)}
+          onSubmit={submitResponse}
         />
       )}
 
