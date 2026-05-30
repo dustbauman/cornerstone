@@ -378,7 +378,7 @@ export async function sendResponseNotification(args: ResponseNotificationArgs) {
     console.log('[Email stub — no RESEND_API_KEY] Response notification')
     console.log(`  To: ${requesterEmail}`)
     console.log(`  Subject: ${subject}`)
-    console.log(`  View: ${viewUrl}`)
+    console.log(`  View: ${APP_URL}/requests/${requestId}/responses?token=[redacted]`)
     return
   }
 

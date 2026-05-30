@@ -51,7 +51,13 @@ export default function ResponseCard({ response, onMarkHired, showMarkHired }: P
     }
   }
 
-  if (!contact) return null;
+  if (!contact) {
+    return (
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6 text-center text-sm text-muted">
+        Responder information is no longer available.
+      </div>
+    );
+  }
 
   const lodgeLocation =
     contact.lodgeLabel && contact.city && contact.state

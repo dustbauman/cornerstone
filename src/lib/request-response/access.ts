@@ -10,6 +10,7 @@ export interface RequestRow {
   status: string
   responses_count: number
   requester_notify_token: string | null
+  notify_token_sent_at: string | null
 }
 
 export async function loadRequest(requestId: string): Promise<RequestRow | null> {
@@ -17,12 +18,14 @@ export async function loadRequest(requestId: string): Promise<RequestRow | null>
   const { data } = await admin
     .from('requests')
     .select(
-      'id, profile_id, posted_by_email, posted_by_name, title, status, responses_count, requester_notify_token'
+      'id, profile_id, posted_by_email, posted_by_name, title, status, responses_count, requester_notify_token, notify_token_sent_at'
     )
     .eq('id', requestId)
     .maybeSingle()
   return data as RequestRow | null
 }
+
+const TOKEN_EXPIRY_MS = 180 * 24 * 60 * 60 * 1000 // 180 days
 
 export function isRequesterAuthorized(
   req: RequestRow,
@@ -30,13 +33,17 @@ export function isRequesterAuthorized(
   token: string | null
 ): boolean {
   if (token && req.requester_notify_token && token === req.requester_notify_token) {
+    if (req.notify_token_sent_at) {
+      const sentAt = new Date(req.notify_token_sent_at).getTime()
+      if (Date.now() - sentAt > TOKEN_EXPIRY_MS) return false
+    }
     return true
   }
   if (!user) return false
   if (req.profile_id && req.profile_id === user.id) return true
-  const userEmail = user.email?.trim().toLowerCase()
-  const postedEmail = req.posted_by_email?.trim().toLowerCase()
-  return !!(userEmail && postedEmail && userEmail === postedEmail)
+  // Email-match removed: posted_by_email is free-text and unverified; any user
+  // with that auth email could access another guest's responses.
+  return false
 }
 
 export async function assertRequesterAuthorized(

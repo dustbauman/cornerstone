@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { assertRequesterAuthorized } from '@/lib/request-response/access'
-import { getResponderContact } from '@/lib/db/responder-contact'
+import { getResponderContacts } from '@/lib/db/responder-contact'
 
 export async function GET(
   request: Request,
@@ -23,7 +23,11 @@ export async function GET(
     .from('requests')
     .select('id, title, status, posted_by_name, responses_count')
     .eq('id', params.requestId)
-    .single()
+    .maybeSingle()
+
+  if (!reqRow) {
+    return Response.json({ error: 'Request not found' }, { status: 404 })
+  }
 
   const { data: rows } = await admin
     .from('request_responses')
@@ -42,18 +46,16 @@ export async function GET(
       .in('id', sentIds)
   }
 
-  const responses = await Promise.all(
-    (rows ?? []).map(async (row) => {
-      const contact = await getResponderContact(admin, row.responder_id)
-      return {
-        id: row.id,
-        message: row.message,
-        status: sentIds.includes(row.id) ? 'viewed' : row.status,
-        created_at: row.created_at,
-        responder: contact,
-      }
-    })
-  )
+  const responderIds = (rows ?? []).map((r) => r.responder_id)
+  const contactMap = await getResponderContacts(admin, responderIds)
+
+  const responses = (rows ?? []).map((row) => ({
+    id: row.id,
+    message: row.message,
+    status: sentIds.includes(row.id) ? 'viewed' : row.status,
+    created_at: row.created_at,
+    responder: contactMap.get(row.responder_id) ?? null,
+  }))
 
   return Response.json({
     request: reqRow,

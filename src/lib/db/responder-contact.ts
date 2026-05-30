@@ -11,6 +11,56 @@ export interface ResponderContact {
   isVerified: boolean
 }
 
+/** Batch variant — fetches contacts for multiple responders in 3 queries instead of 3N. */
+export async function getResponderContacts(
+  supabase: SupabaseClient,
+  profileIds: string[]
+): Promise<Map<string, ResponderContact>> {
+  if (!profileIds.length) return new Map()
+
+  const [{ data: profiles }, { data: listings }] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, full_name, email, trade_category, occupation, lodge_id, city, state, verification_status')
+      .in('id', profileIds),
+    supabase
+      .from('listings')
+      .select('profile_id, phone, email')
+      .in('profile_id', profileIds)
+      .eq('is_active', true),
+  ])
+
+  if (!profiles?.length) return new Map()
+
+  const lodgeIds = Array.from(new Set(profiles.filter((p) => p.lodge_id).map((p) => p.lodge_id as string)))
+  const { data: lodges } = lodgeIds.length
+    ? await supabase.from('lodges').select('id, name, number').in('id', lodgeIds)
+    : { data: [] }
+
+  const lodgeMap = new Map((lodges ?? []).map((l) => [l.id, l]))
+  const listingMap = new Map((listings ?? []).map((l) => [l.profile_id, l]))
+
+  return new Map(
+    profiles.map((profile) => {
+      const lodge = profile.lodge_id ? lodgeMap.get(profile.lodge_id) : null
+      const listing = listingMap.get(profile.id)
+      return [
+        profile.id,
+        {
+          fullName: profile.full_name?.trim() || 'Verified Member',
+          trade: profile.trade_category || profile.occupation || null,
+          lodgeLabel: lodge ? `${lodge.name} #${lodge.number}` : null,
+          city: profile.city,
+          state: profile.state,
+          phone: listing?.phone?.trim() || null,
+          email: listing?.email?.trim() || profile.email?.trim() || null,
+          isVerified: profile.verification_status === 'verified',
+        } as ResponderContact,
+      ]
+    })
+  )
+}
+
 /** Contact shown to requesters: profile identity + listing phone/email when available. */
 export async function getResponderContact(
   supabase: SupabaseClient,

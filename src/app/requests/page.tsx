@@ -192,7 +192,8 @@ export default function RequestsPage() {
           .from("requests")
           .select(DB_REQUEST_SELECT)
           .in("status", ["open", "active", "filled"])
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false })
+          .limit(300);
 
         setRequests((rows || []).map(dbRequestToServiceRequest));
         setRequestUser(userCtx);

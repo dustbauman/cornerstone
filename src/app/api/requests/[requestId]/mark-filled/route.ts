@@ -48,11 +48,18 @@ export async function POST(
     .eq('id', params.requestId)
 
   if (responseId) {
-    await admin
+    const { count: updatedCount } = await admin
       .from('request_responses')
-      .update({ status: 'accepted' })
+      .update({ status: 'accepted' }, { count: 'exact' })
       .eq('id', responseId)
       .eq('request_id', params.requestId)
+
+    if (!updatedCount) {
+      return Response.json(
+        { error: 'Response not found on this request' },
+        { status: 400 }
+      )
+    }
   }
 
   return Response.json({ success: true })

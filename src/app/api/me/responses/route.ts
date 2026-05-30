@@ -25,10 +25,15 @@ export async function GET() {
 
   const requestIds = Array.from(new Set(rows.map((r) => r.request_id)))
 
-  const { data: requests } = await admin
+  const { data: requests, error: reqError } = await admin
     .from('requests')
     .select('id, title, posted_by_name, city, state, lodge_display, status')
     .in('id', requestIds)
+
+  if (reqError) {
+    console.error('Failed to load request details for responses:', reqError)
+    return Response.json({ error: 'Failed to load responses' }, { status: 500 })
+  }
 
   const requestMap = new Map((requests ?? []).map((r) => [r.id, r]))
 

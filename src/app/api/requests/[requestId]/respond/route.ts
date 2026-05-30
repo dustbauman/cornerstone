@@ -41,7 +41,7 @@ export async function POST(
   const { data: req } = await admin
     .from('requests')
     .select(
-      'id, title, status, responses_count, posted_by_email, posted_by_name, requester_notify_token'
+      'id, profile_id, title, status, responses_count, posted_by_email, posted_by_name, requester_notify_token'
     )
     .eq('id', params.requestId)
     .in('status', ['open', 'active'])
@@ -52,6 +52,10 @@ export async function POST(
       { error: 'Request not found or no longer accepting responses' },
       { status: 404 }
     )
+  }
+
+  if (req.profile_id === user.id) {
+    return Response.json({ error: 'You cannot respond to your own request' }, { status: 403 })
   }
 
   const { data: existing } = await admin
@@ -91,20 +95,25 @@ export async function POST(
     return Response.json({ error: 'Failed to submit response' }, { status: 500 })
   }
 
+  // Count after insert so concurrent submits don't clobber each other.
+  const { count: responseCount } = await admin
+    .from('request_responses')
+    .select('id', { count: 'exact', head: true })
+    .eq('request_id', params.requestId)
+
   await admin
     .from('requests')
     .update({
-      responses_count: (req.responses_count ?? 0) + 1,
+      responses_count: responseCount ?? 1,
       status: req.status === 'open' ? 'active' : req.status,
+      notify_token_sent_at: new Date().toISOString(),
     })
     .eq('id', params.requestId)
 
   const contact = await getResponderContact(admin, user.id)
-  const { data: lodge } = profile.lodge_id
-    ? await admin.from('lodges').select('name, number').eq('id', profile.lodge_id).single()
-    : { data: null }
 
-  const otherCount = Math.max(0, (req.responses_count ?? 0))
+  // otherCount = responses before this one (responseCount already includes this insert)
+  const otherCount = Math.max(0, (responseCount ?? 1) - 1)
 
   try {
     await sendResponseNotification({
@@ -115,7 +124,7 @@ export async function POST(
       requestId: req.id,
       responderName: contact?.fullName ?? profile.full_name ?? 'Verified Member',
       responderTrade: contact?.trade ?? null,
-      responderLodge: lodge ? `${lodge.name} #${lodge.number}` : 'Verified Member',
+      responderLodge: contact?.lodgeLabel ?? 'Verified Member',
       responderCity: contact?.city ?? null,
       responderState: contact?.state ?? null,
       responderPhone: contact?.phone ?? null,

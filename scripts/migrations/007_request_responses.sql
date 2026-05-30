@@ -36,6 +36,14 @@ create policy "responses_verified_insert" on request_responses
     and auth.uid() in (
       select id from profiles where verification_status = 'verified'
     )
+    -- Prevent responses on filled/closed requests even under race conditions
+    and request_id in (
+      select id from requests where status in ('open', 'active')
+    )
+    -- Prevent responding to your own request
+    and request_id not in (
+      select id from requests where profile_id = auth.uid()
+    )
   );
 
 create policy "responses_responder_update" on request_responses
@@ -47,6 +55,10 @@ create policy "responses_responder_update" on request_responses
 -- ─── REQUEST COLUMNS ───────────────────────────────────────────────────────
 alter table requests
   add column if not exists filled_at timestamptz;
+
+-- Tracks when the notify token was last emailed; used to enforce a 180-day expiry.
+alter table requests
+  add column if not exists notify_token_sent_at timestamptz;
 
 alter table requests
   add column if not exists requester_notify_token text unique
