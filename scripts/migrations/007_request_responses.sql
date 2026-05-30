@@ -44,7 +44,10 @@ create policy "responses_responder_update" on request_responses
 -- Guest/member requesters view responses via API (service role) using notify token.
 -- Email-matched members use the same API path after server-side auth check.
 
--- ─── REQUEST NOTIFY TOKEN ──────────────────────────────────────────────────
+-- ─── REQUEST COLUMNS ───────────────────────────────────────────────────────
+alter table requests
+  add column if not exists filled_at timestamptz;
+
 alter table requests
   add column if not exists requester_notify_token text unique
     default encode(gen_random_bytes(32), 'hex');
@@ -55,6 +58,15 @@ where requester_notify_token is null;
 
 alter table requests
   alter column requester_notify_token set not null;
+
+-- ─── TIMESTAMP FUNCTION ────────────────────────────────────────────────────
+create or replace function update_updated_at()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
 
 -- ─── TIMESTAMP + INDEXES ───────────────────────────────────────────────────
 create trigger request_responses_updated_at
