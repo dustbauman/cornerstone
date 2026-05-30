@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { X } from "lucide-react";
 import { CATEGORIES } from "@/lib/constants/categories";
+import { US_STATES } from "@/lib/constants/states";
 import { ServiceRequest, RequestTimeline } from "@/lib/demo/requests";
 import { TradeCategory } from "@/lib/types";
 
@@ -18,7 +19,7 @@ interface Props {
   defaultName?: string;
 }
 
-const TIMELINES: RequestTimeline[] = ["ASAP", "Within 1 week", "Within 2 weeks", "Within 1 month", "Flexible"];
+const TIMELINES: RequestTimeline[] = ["ASAP", "Within 1 week", "Within 1 month", "Flexible"];
 
 export default function PostRequestModal({
   onClose,
@@ -191,10 +192,9 @@ export default function PostRequestModal({
                 onChange={(e) => setForm({ ...form, state: e.target.value })}
                 className={`${field} bg-white`}
               >
-                <option value="OK">Oklahoma</option>
-                <option value="FL">Florida</option>
-                <option value="TX">Texas</option>
-                <option value="CA">California</option>
+                {US_STATES.map(([code, name]) => (
+                  <option key={code} value={code}>{name}</option>
+                ))}
               </select>
             </div>
           </div>
