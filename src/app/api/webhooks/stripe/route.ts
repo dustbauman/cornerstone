@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import { generateUniqueClaimCode } from '@/lib/lodges/claim-code'
 import { generateUniqueLodgeSlug } from '@/lib/lodges/slug'
 import { sendLodgeClaimEmail } from '@/lib/email'
+import { INVITE_CAPS } from '@/lib/invites'
 
 const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
 
@@ -39,14 +40,36 @@ export async function POST(request: Request) {
   const meta = session.metadata!
   const supabase = adminClient()
 
-  // Assign tier server-side — never trust frontend
+  // Handle upgrade checkouts separately
+  if (meta.upgrade === 'true') {
+    const newTier = meta.to_tier
+    const newCap = INVITE_CAPS[newTier] ?? null
+    await supabase.from('lodges').update({
+      tier:                        newTier,
+      invite_cap:                  newCap,
+      upgraded_at:                 new Date().toISOString(),
+      upgrade_stripe_session_id:   session.id,
+    }).eq('id', meta.lodge_id)
+    return Response.json({ received: true })
+  }
+
+  // Assign tier server-side — never trust the frontend
   const { count: foundingCount } = await supabase
     .from('lodges')
     .select('*', { count: 'exact', head: true })
     .eq('tier', 'founding')
     .eq('status', 'active')
 
-  const tier = (foundingCount ?? 0) < FOUNDING_LIMIT ? 'founding' : 'charter'
+  const isFoundingEligible = (foundingCount ?? 0) < FOUNDING_LIMIT
+  const size = meta.lodge_size as string // 'small' | 'standard' | 'large'
+
+  const tier = isFoundingEligible ? 'founding'
+    : size === 'small'    ? 'small'
+    : size === 'large'    ? 'large'
+    : 'standard'
+
+  const inviteCap = INVITE_CAPS[tier] ?? null
+
   const claimCode = await generateUniqueClaimCode(supabase)
   const slug = await generateUniqueLodgeSlug(supabase, meta.lodge_name, meta.lodge_number)
   const expiresAt = new Date()
@@ -55,12 +78,15 @@ export async function POST(request: Request) {
   const { error: updateError } = await supabase
     .from('lodges')
     .update({
-      status: 'active',
+      status:                'active',
       tier,
-      paid_at: new Date().toISOString(),
-      claim_code: claimCode,
+      original_tier:         tier,
+      invite_cap:            inviteCap,
+      invites_sent:          0,
+      paid_at:               new Date().toISOString(),
+      claim_code:            claimCode,
       claim_code_expires_at: expiresAt.toISOString(),
-      stripe_session_id: session.id,
+      stripe_session_id:     session.id,
       slug,
     })
     .eq('id', meta.lodge_id)
@@ -72,9 +98,9 @@ export async function POST(request: Request) {
 
   try {
     await sendLodgeClaimEmail({
-      to: meta.payer_email,
-      payerName: meta.payer_name,
-      lodgeName: meta.lodge_name,
+      to:          meta.payer_email,
+      payerName:   meta.payer_name,
+      lodgeName:   meta.lodge_name,
       lodgeNumber: meta.lodge_number,
       claimCode,
       tier,

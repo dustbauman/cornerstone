@@ -17,6 +17,8 @@ interface LodgeInfo {
   welcome_message: string | null
   meeting_schedule: string | null
   slug: string | null
+  invite_cap: number | null
+  invites_sent: number
 }
 
 export default function MemberJoinPage() {
@@ -45,7 +47,7 @@ export default function MemberJoinPage() {
 
       let query = supabase
         .from('lodges')
-        .select('id, name, number, city, state, welcome_message, meeting_schedule, slug')
+        .select('id, name, number, city, state, welcome_message, meeting_schedule, slug, invite_cap, invites_sent')
         .eq('status', 'active')
 
       if (uuidPattern.test(lodgeSlug)) {
@@ -128,6 +130,32 @@ export default function MemberJoinPage() {
             </h1>
             <p className="text-sm text-muted mb-4">This invite link doesn&apos;t match an active lodge on Tyrian.</p>
             <Link href="/join" className="text-sm font-semibold text-navy underline">Unlock your lodge →</Link>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    )
+  }
+
+  const atCap = lodge && lodge.invite_cap !== null && lodge.invites_sent >= lodge.invite_cap
+
+  if (atCap) {
+    return (
+      <div className="flex flex-col min-h-screen bg-stone">
+        <Navbar />
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center max-w-md">
+            <AlertCircle size={40} className="text-gold mx-auto mb-3" />
+            <h1 className="text-2xl font-bold text-navy mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Lodge is currently full
+            </h1>
+            <p className="text-sm text-muted mb-4 leading-relaxed">
+              {lodge!.name} has reached its current member invite limit.
+              Ask your lodge admin to upgrade the plan to continue adding members.
+            </p>
+            <Link href="/network" className="text-sm font-semibold text-navy underline">
+              Browse the network →
+            </Link>
           </div>
         </div>
         <Footer />

@@ -1,14 +1,16 @@
 'use client'
-import { useState, Suspense } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { ArrowLeft, AlertCircle } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
+import { TierNudge } from '@/components/TierNudge'
+import { createClient } from '@/lib/supabase/client'
 
 const SIZE_LABELS: Record<string, string> = {
-  small: 'Under 40 members',
+  small:    'Under 40 members',
   standard: '40–100 members',
-  large: '100+ members',
+  large:    '100+ members',
 }
 const SIZE_PRICES: Record<string, number> = { small: 299, standard: 499, large: 799 }
 
@@ -29,19 +31,36 @@ function ConfirmContent() {
   const searchParams = useSearchParams()
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [memberCount, setMemberCount] = useState<number | null>(null)
 
   const lodgeName    = searchParams.get('lodgeName') || ''
   const lodgeNumber  = searchParams.get('lodgeNumber') || ''
   const state        = searchParams.get('state') || ''
-  const size         = searchParams.get('size') || 'standard'
+  const directoryId  = searchParams.get('directoryId') || ''
   const payerName    = searchParams.get('payerName') || ''
   const payerEmail   = searchParams.get('payerEmail') || ''
-  const directoryId  = searchParams.get('directoryId') || ''
   const isManual     = searchParams.get('isManualEntry') === '1'
   const isFoundingEligible = searchParams.get('foundingEligible') === '1'
 
+  // size is mutable — TierNudge may change it before checkout
+  const [size, setSize] = useState(searchParams.get('size') || 'standard')
+
   const listPrice = SIZE_PRICES[size] ?? 499
   const price = isFoundingEligible ? 1 : listPrice
+
+  // Fetch member count from lodge_directory when a directoryId is present
+  useEffect(() => {
+    if (!directoryId) return
+    const supabase = createClient()
+    supabase
+      .from('lodge_directory')
+      .select('member_count')
+      .eq('id', directoryId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.member_count) setMemberCount(data.member_count)
+      })
+  }, [directoryId])
 
   if (!lodgeName || !lodgeNumber || !state) {
     return (
@@ -148,6 +167,15 @@ function ConfirmContent() {
             <span className="font-medium text-[#1A1A1A]">{payerEmail}</span>
           </div>
         </div>
+
+        {/* Tier nudge — only shows when member_count is available and there's a mismatch */}
+        {!isFoundingEligible && (
+          <TierNudge
+            memberCount={memberCount}
+            selectedSize={size}
+            onTierChange={setSize}
+          />
+        )}
 
         {isManual && (
           <div className="mb-5 px-4 py-3 bg-[#FAF3E0] border border-[#C9A84C]/30 rounded-xl text-xs text-[#7A5C00]">

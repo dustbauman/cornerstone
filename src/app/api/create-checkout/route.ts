@@ -2,6 +2,7 @@ import { generateUniqueClaimCode } from '@/lib/lodges/claim-code'
 import { generateUniqueLodgeSlug } from '@/lib/lodges/slug'
 import { sendLodgeClaimEmail } from '@/lib/email'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { INVITE_CAPS } from '@/lib/invites'
 
 const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
 
@@ -164,7 +165,11 @@ export async function POST(request: Request) {
       return Response.json({ url: session.url })
     }
 
-    const tier = isFoundingEligible ? 'founding' : 'charter'
+    const tier = isFoundingEligible ? 'founding'
+      : size === 'small'  ? 'small'
+      : size === 'large'  ? 'large'
+      : 'standard'
+    const inviteCap = INVITE_CAPS[tier] ?? null
     const claimCode = await generateUniqueClaimCode(supabase)
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30)
@@ -173,10 +178,13 @@ export async function POST(request: Request) {
     const { error: activateError } = await supabase
       .from('lodges')
       .update({
-        status: 'active',
+        status:                'active',
         tier,
-        paid_at: new Date().toISOString(),
-        claim_code: claimCode,
+        original_tier:         tier,
+        invite_cap:            inviteCap,
+        invites_sent:          0,
+        paid_at:               new Date().toISOString(),
+        claim_code:            claimCode,
         claim_code_expires_at: expiresAt.toISOString(),
         slug: lodge.slug ?? (await generateUniqueLodgeSlug(supabase, lodgeName, lodgeNumber, lodge.id)),
       })

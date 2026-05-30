@@ -31,6 +31,8 @@ interface Lodge {
   claim_code_claimed_at: string | null
   directory_id: string | null
   slug: string | null
+  invite_cap: number | null
+  invites_sent: number
 }
 
 interface Member {
@@ -479,64 +481,125 @@ function AdminContent() {
           <div className="space-y-5">
 
             {/* Invite tools */}
-            <div id="invite" className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
-              <h3 className="font-bold text-navy text-sm mb-4" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                Invite members
-              </h3>
+            {(() => {
+              const cap = lodge?.invite_cap ?? null
+              const used = lodge?.invites_sent ?? 0
+              const remaining = cap !== null ? cap - used : null
+              const atCap = cap !== null && used >= cap
+              const runningLow = cap !== null && remaining !== null && remaining <= Math.ceil(cap * 0.2)
+              const upgradeDiff = lodge?.tier === 'small' ? 200 : lodge?.tier === 'standard' ? 300 : null
 
-              {/* Invite link */}
-              <p className="text-xs text-muted mb-2 font-medium">Lodge invite link</p>
-              <div className="flex items-center gap-2 bg-stone rounded-lg px-3 py-2 mb-3">
-                <span className="text-xs text-muted font-mono flex-1 truncate">{inviteLink}</span>
-                <button onClick={copyInviteLink} className="flex-shrink-0 text-navy hover:text-[#C9A84C] transition-colors">
-                  <Copy size={14} />
-                </button>
-              </div>
-              <button
-                onClick={copyInviteLink}
-                className="w-full py-2.5 bg-navy text-white text-xs font-semibold rounded-xl hover:bg-navy/90 transition-colors mb-4"
-              >
-                {copied ? '✓ Copied!' : 'Copy invite link'}
-              </button>
+              return (
+                <div id="invite" className={`bg-white rounded-2xl border shadow-sm p-5 ${atCap ? 'border-amber-300' : 'border-[#E5E0D5]'}`}>
+                  <h3 className="font-bold text-navy text-sm mb-1" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                    Invite members
+                  </h3>
 
-              {/* QR code */}
-              {qrUrl && (
-                <div className="mb-4">
-                  <p className="text-xs text-muted mb-2 font-medium">QR code</p>
-                  <div className="flex items-center gap-3">
-                    <Image src={qrUrl} alt="Lodge invite QR code" width={64} height={64} className="rounded-lg border border-[#E5E0D5]" unoptimized />
-                    <a
-                      href={qrUrl}
-                      download={`tyrian-${lodge?.name?.toLowerCase().replace(/\s+/g, '-')}-qr.png`}
-                      className="text-xs text-navy font-semibold underline flex items-center gap-1"
-                    >
-                      <QrCode size={12} />
-                      Download PNG
-                    </a>
-                  </div>
+                  {/* Invite count */}
+                  {cap !== null && (
+                    <div className={`flex items-center justify-between text-xs mb-4 mt-1 px-3 py-2 rounded-lg ${
+                      atCap        ? 'bg-amber-50 text-amber-700'
+                      : runningLow ? 'bg-amber-50 text-amber-700'
+                      : 'bg-stone text-muted'
+                    }`}>
+                      <span>
+                        {atCap ? '⚠ Invite limit reached' : runningLow ? `⚠ ${used} of ${cap} invites used` : `${used} of ${cap} invites used`}
+                      </span>
+                      {remaining !== null && !atCap && (
+                        <span className="font-semibold">{remaining} left</span>
+                      )}
+                    </div>
+                  )}
+
+                  {atCap ? (
+                    /* State 3: cap reached — disable all tools */
+                    <div className="space-y-3">
+                      <p className="text-xs text-[#1A1A1A] leading-relaxed">
+                        To invite more brothers, upgrade your plan. You&apos;ll only be charged the difference from your original payment.
+                      </p>
+                      {upgradeDiff !== null && (
+                        <Link
+                          href="/admin/upgrade"
+                          className="block w-full text-center py-2.5 bg-gold hover:bg-[#b8943d] text-navy text-xs font-bold rounded-xl transition-colors"
+                        >
+                          Upgrade — pay ${upgradeDiff} more →
+                        </Link>
+                      )}
+                      <div className="space-y-2 opacity-40 pointer-events-none select-none">
+                        <div className="w-full py-2.5 bg-navy/30 text-white text-xs font-semibold rounded-xl text-center">Copy invite link</div>
+                        <div className="w-full py-2.5 bg-navy/30 text-white text-xs font-semibold rounded-xl text-center">Invite by email</div>
+                      </div>
+                    </div>
+                  ) : (
+                    /* State 1 & 2: tools active */
+                    <>
+                      {/* Invite link */}
+                      <p className="text-xs text-muted mb-2 font-medium">Lodge invite link</p>
+                      <div className="flex items-center gap-2 bg-stone rounded-lg px-3 py-2 mb-3">
+                        <span className="text-xs text-muted font-mono flex-1 truncate">{inviteLink}</span>
+                        <button onClick={copyInviteLink} className="flex-shrink-0 text-navy hover:text-[#C9A84C] transition-colors">
+                          <Copy size={14} />
+                        </button>
+                      </div>
+                      <button
+                        onClick={copyInviteLink}
+                        className="w-full py-2.5 bg-navy text-white text-xs font-semibold rounded-xl hover:bg-navy/90 transition-colors mb-4"
+                      >
+                        {copied ? '✓ Copied!' : 'Copy invite link'}
+                      </button>
+
+                      {/* QR code */}
+                      {qrUrl && (
+                        <div className="mb-4">
+                          <p className="text-xs text-muted mb-2 font-medium">QR code</p>
+                          <div className="flex items-center gap-3">
+                            <Image src={qrUrl} alt="Lodge invite QR code" width={64} height={64} className="rounded-lg border border-[#E5E0D5]" unoptimized />
+                            <a
+                              href={qrUrl}
+                              download={`tyrian-${lodge?.name?.toLowerCase().replace(/\s+/g, '-')}-qr.png`}
+                              className="text-xs text-navy font-semibold underline flex items-center gap-1"
+                            >
+                              <QrCode size={12} />
+                              Download PNG
+                            </a>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Low count upgrade nudge */}
+                      {runningLow && upgradeDiff !== null && (
+                        <Link
+                          href="/admin/upgrade"
+                          className="block w-full text-center py-2 border border-gold/40 text-navy text-xs font-semibold rounded-xl hover:bg-gold/10 transition-colors mb-4"
+                        >
+                          Reaching your limit? Upgrade — pay ${upgradeDiff} more →
+                        </Link>
+                      )}
+
+                      {/* Email invite */}
+                      <p className="text-xs text-muted mb-2 font-medium">Invite by email</p>
+                      <form onSubmit={sendInvite} className="flex gap-2">
+                        <input
+                          type="email"
+                          value={inviteEmail}
+                          onChange={e => setInviteEmail(e.target.value)}
+                          placeholder="brother@email.com"
+                          className="flex-1 px-3 py-2 border border-[#E5E0D5] rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-navy/20 focus:border-navy"
+                        />
+                        <button
+                          type="submit"
+                          disabled={sendingInvite || !inviteEmail.trim()}
+                          className="px-3 py-2 bg-navy text-white text-xs font-semibold rounded-lg disabled:opacity-50 hover:bg-navy/90 transition-colors flex-shrink-0"
+                        >
+                          {sendingInvite ? <Loader2 size={12} className="animate-spin" /> : inviteSent ? '✓' : <Mail size={12} />}
+                        </button>
+                      </form>
+                      {inviteSent && <p className="text-xs text-[#2D6A4F] mt-1">Invite sent!</p>}
+                    </>
+                  )}
                 </div>
-              )}
-
-              {/* Email invite */}
-              <p className="text-xs text-muted mb-2 font-medium">Invite by email</p>
-              <form onSubmit={sendInvite} className="flex gap-2">
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={e => setInviteEmail(e.target.value)}
-                  placeholder="brother@email.com"
-                  className="flex-1 px-3 py-2 border border-[#E5E0D5] rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-navy/20 focus:border-navy"
-                />
-                <button
-                  type="submit"
-                  disabled={sendingInvite || !inviteEmail.trim()}
-                  className="px-3 py-2 bg-navy text-white text-xs font-semibold rounded-lg disabled:opacity-50 hover:bg-navy/90 transition-colors flex-shrink-0"
-                >
-                  {sendingInvite ? <Loader2 size={12} className="animate-spin" /> : inviteSent ? '✓' : <Mail size={12} />}
-                </button>
-              </form>
-              {inviteSent && <p className="text-xs text-[#2D6A4F] mt-1">Invite sent!</p>}
-            </div>
+              )
+            })()}
 
             {/* Lodge info */}
             <div className="bg-[#2D6A4F]/5 border border-[#2D6A4F]/15 rounded-2xl p-5">
