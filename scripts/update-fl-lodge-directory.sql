@@ -1,266 +1,251 @@
--- FL lodge directory update — Official Grand Lodge source — May 2026
-delete from lodge_directory where state = 'FL';
+-- FL lodge directory — member_count update — Official Grand Lodge source — May 2026
+-- Uses UPDATE only; safe against FK constraints on lodge_directory.
+-- Rows with no Grand Lodge member count are left unchanged.
 
-insert into lodge_directory
-  (name, number, city, state, grand_lodge, member_count, member_count_source, member_count_updated_at, source)
-values
-  ('Jackson Lodge', '1', 'TALLAHASSEE', 'FL', 'Grand Lodge of Florida', 181, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Washington Lodge', '2', 'Quincy', 'FL', 'Grand Lodge of Florida', 45, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Harmony Lodge', '3', 'MARIANNA', 'FL', 'Grand Lodge of Florida', 61, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Joppa Lodge', '4', 'OLD TOWN', 'FL', 'Grand Lodge of Florida', 27, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Hiram Lodge', '5', 'MONTICELLO', 'FL', 'Grand Lodge of Florida', 51, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Tuscan Lodge', '6', 'BARTOW', 'FL', 'Grand Lodge of Florida', 40, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Pine Hill Lodge', '9', 'BROOKER', 'FL', 'Grand Lodge of Florida', 23, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Waldo Lodge', '10', 'WALDO', 'FL', 'Grand Lodge of Florida', 25, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Madison Lodge', '11', 'MADISON', 'FL', 'Grand Lodge of Florida', 131, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Cherry Hill Lodge', '12', 'FORT WHITE', 'FL', 'Grand Lodge of Florida', 48, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Wellborn Lodge', '13', 'WELLBORN', 'FL', 'Grand Lodge of Florida', 67, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Escambia Lodge', '15', 'PENSACOLA', 'FL', 'Grand Lodge of Florida', 264, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Santa Rosa Lodge', '16', 'MILTON', 'FL', 'Grand Lodge of Florida', 62, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Wauchula Lodge', '17', 'WAUCHULA', 'FL', 'Grand Lodge of Florida', 60, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Marion-Dunn Lodge', '19', 'OCALA', 'FL', 'Grand Lodge of Florida', 162, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Solomon Lodge', '20', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 174, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Gee Lodge', '21', 'CHATTAHOOCHEE', 'FL', 'Grand Lodge of Florida', 24, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Temple Lodge', '23', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 85, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Naval Lodge', '24', 'PENSACOLA', 'FL', 'Grand Lodge of Florida', 143, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Hillsborough Lodge', '25', 'TAMPA', 'FL', 'Grand Lodge of Florida', 375, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Lake City Lodge', '27', 'LAKE CITY', 'FL', 'Grand Lodge of Florida', 87, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Greenville Lodge', '28', 'GREENVILLE', 'FL', 'Grand Lodge of Florida', 34, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Micanopy Lodge', '29', 'Micanopy', 'FL', 'Grand Lodge of Florida', 82, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Bushnell-Hernando Lodge', '30', 'BUSHNELL', 'FL', 'Grand Lodge of Florida', 75, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Manatee Lodge', '31', 'BRADENTON', 'FL', 'Grand Lodge of Florida', 154, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Callahan Lodge', '32', 'CALLAHAN', 'FL', 'Grand Lodge of Florida', 150, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Palatka Lodge', '34', 'PALATKA', 'FL', 'Grand Lodge of Florida', 69, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Bradford Lodge', '35', 'STARKE', 'FL', 'Grand Lodge of Florida', 70, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Orange Lodge', '36', 'APOPKA', 'FL', 'Grand Lodge of Florida', 127, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Saint Johns Lodge', '37', 'DELAND', 'FL', 'Grand Lodge of Florida', 106, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Wausau Lodge', '39', 'WAUSAU', 'FL', 'Grand Lodge of Florida', 56, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Orion Lodge', '40', 'CHIPLEY', 'FL', 'Grand Lodge of Florida', 37, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Gainesville Lodge', '41', 'GAINESVILLE', 'FL', 'Grand Lodge of Florida', 127, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Pensacola Lodge', '42', 'PENSACOLA', 'FL', 'Grand Lodge of Florida', 154, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Barrett Lodge', '43', 'LIVE OAK', 'FL', 'Grand Lodge of Florida', 68, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Laurel Hill Lodge', '44', 'LAUREL HILL', 'FL', 'Grand Lodge of Florida', 26, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Amelia Lodge', '47', 'FERNANDINA BEACH', 'FL', 'Grand Lodge of Florida', 165, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Dade City Lodge', '48', 'Dade City', 'FL', 'Grand Lodge of Florida', 42, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Marston Lodge', '49', 'FORT MCCOY', 'FL', 'Grand Lodge of Florida', 89, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Concord Lodge', '50', 'CRESTVIEW', 'FL', 'Grand Lodge of Florida', 88, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Brown Lodge', '51', 'CHIEFLAND', 'FL', 'Grand Lodge of Florida', 63, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Lake Butler Lodge', '52', 'LAKE BUTLER', 'FL', 'Grand Lodge of Florida', 40, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Friendship Lodge', '53', 'OCALA', 'FL', 'Grand Lodge of Florida', 126, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Tropical Lodge', '56', 'FORT MYERS', 'FL', 'Grand Lodge of Florida', 226, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Leesburg Lodge', '58', 'LEESBURG', 'FL', 'Grand Lodge of Florida', 98, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Dawkins Lodge', '60', 'SANDERSON', 'FL', 'Grand Lodge of Florida', 41, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Moore Haven Lodge', '61', 'MOORE HAVEN', 'FL', 'Grand Lodge of Florida', 50, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Sanford Lodge', '62', 'SANFORD', 'FL', 'Grand Lodge of Florida', 100, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Key West Lodge', '64', 'KEY WEST', 'FL', 'Grand Lodge of Florida', 221, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Umatilla Lodge', '65', 'UMATILLA', 'FL', 'Grand Lodge of Florida', 62, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Peace River Lodge', '66', 'ARCADIA', 'FL', 'Grand Lodge of Florida', 45, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Orlando Lodge', '69', 'ORLANDO', 'FL', 'Grand Lodge of Florida', 149, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('John M. Caldwell Lodge', '70', 'JASPER', 'FL', 'Grand Lodge of Florida', 20, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Lake Lodge', '72', 'LAKE COMO', 'FL', 'Grand Lodge of Florida', 53, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Curfew Lodge', '73', 'CARRABELLE', 'FL', 'Grand Lodge of Florida', 53, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Apalachicola Lodge', '76', 'APALACHICOLA', 'FL', 'Grand Lodge of Florida', 48, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Volusia Lodge', '77', 'Pierson', 'FL', 'Grand Lodge of Florida', 66, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Star Lodge', '78', 'Largo', 'FL', 'Grand Lodge of Florida', 89, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Olin S. Wright Lodge', '79', 'PLANT CITY', 'FL', 'Grand Lodge of Florida', 83, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Orange Blossom Lodge', '80', 'KISSIMMEE', 'FL', 'Grand Lodge of Florida', 142, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Raiford Lodge', '82', 'RAIFORD', 'FL', 'Grand Lodge of Florida', 51, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Peninsular Lodge', '85', 'TAVARES', 'FL', 'Grand Lodge of Florida', 84, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Pineland Lodge', '86', 'PALATKA', 'FL', 'Grand Lodge of Florida', 110, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Fort Pierce Lodge', '87', 'Fort Pierce', 'FL', 'Grand Lodge of Florida', 156, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Melrose Lodge', '89', 'KEYSTONE HEIGHTS', 'FL', 'Grand Lodge of Florida', 74, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Indian River Lodge', '90', 'TITUSVILLE', 'FL', 'Grand Lodge of Florida', 203, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Lakeland Lodge', '91', 'LAKELAND', 'FL', 'Grand Lodge of Florida', 206, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Wildwood Lodge', '92', 'WILDWOOD', 'FL', 'Grand Lodge of Florida', 71, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Corinth Lodge', '93', 'WELLBORN', 'FL', 'Grand Lodge of Florida', 26, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Morning Star Lodge', '94', 'SILVER SPRINGS', 'FL', 'Grand Lodge of Florida', 60, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Belleview Lodge', '95', 'BELLEVIEW', 'FL', 'Grand Lodge of Florida', 66, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Red Rock Lodge', '96', 'Milton', 'FL', 'Grand Lodge of Florida', 19, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Ashlar Lodge', '98', 'HASTINGS', 'FL', 'Grand Lodge of Florida', 243, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Royal Palm Lodge', '100', 'HOMESTEAD', 'FL', 'Grand Lodge of Florida', 94, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Ionic Lodge', '101', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 93, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Hawthorne Lodge', '103', 'HAWTHORNE', 'FL', 'Grand Lodge of Florida', 29, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('De Soto Lodge', '105', 'Riverview', 'FL', 'Grand Lodge of Florida', 202, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Middleburg Lodge', '107', 'MIDDLEBURG', 'FL', 'Grand Lodge of Florida', 133, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Herman Lodge', '108', 'FREEPORT', 'FL', 'Grand Lodge of Florida', 43, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Dixie Lodge', '109', 'BLOUNTSTOWN', 'FL', 'Grand Lodge of Florida', 47, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Tarpon Lodge', '112', 'TARPON SPRINGS', 'FL', 'Grand Lodge of Florida', 93, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Brevard Lodge', '113', 'COCOA', 'FL', 'Grand Lodge of Florida', 112, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Brandon Lodge', '114', 'BRANDON', 'FL', 'Grand Lodge of Florida', 329, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Punta Gorda Lodge', '115', 'PUNTA GORDA', 'FL', 'Grand Lodge of Florida', 120, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Cabul Lodge', '116', 'GREEN COVE SPRINGS', 'FL', 'Grand Lodge of Florida', 97, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Ornan Lodge', '117', 'WILLISTON', 'FL', 'Grand Lodge of Florida', 35, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Mayo Lodge', '119', 'MAYO', 'FL', 'Grand Lodge of Florida', 25, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Perry Lodge', '123', 'PERRY', 'FL', 'Grand Lodge of Florida', 80, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Biscayne Bay Lodge', '124', 'MIAMI', 'FL', 'Grand Lodge of Florida', 122, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Albert J. Russell Lodge', '126', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 191, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Clearwater Lodge', '127', 'Clearwater', 'FL', 'Grand Lodge of Florida', 171, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Branford Lodge', '130', 'BRANFORD', 'FL', 'Grand Lodge of Florida', 25, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Mount Ewell Lodge', '131', 'BAKER', 'FL', 'Grand Lodge of Florida', 39, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Red Level Lodge', '134', 'MARIANNA', 'FL', 'Grand Lodge of Florida', 34, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('High Springs Lodge', '137', 'HIGH SPRINGS', 'FL', 'Grand Lodge of Florida', 73, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Harmonia Lodge', '138', 'West Palm Beach', 'FL', 'Grand Lodge of Florida', 184, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('St. Petersburg Lodge', '139', 'SAINT PETERSBURG', 'FL', 'Grand Lodge of Florida', 231, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Doric Lodge', '140', 'FORT LAUDERDALE', 'FL', 'Grand Lodge of Florida', 486, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Trilby Lodge', '141', 'Dade City', 'FL', 'Grand Lodge of Florida', 59, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Parker Lodge', '142', 'PARKER', 'FL', 'Grand Lodge of Florida', 91, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Melbourne Lodge', '143', 'WEST MELBOURNE', 'FL', 'Grand Lodge of Florida', 180, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Oleeta-West Dade Lodge', '145', 'MIAMI SPRINGS', 'FL', 'Grand Lodge of Florida', 129, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Pearl of the West Lodge', '146', 'NEW PORT RICHEY', 'FL', 'Grand Lodge of Florida', 173, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Sarasota Lodge', '147', 'SARASOTA', 'FL', 'Grand Lodge of Florida', 270, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('New Smyrna Lodge', '149', 'EDGEWATER', 'FL', 'Grand Lodge of Florida', 287, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('PTF United Lodge', '153', 'TAMPA', 'FL', 'Grand Lodge of Florida', 155, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Ponce de Leon Lodge', '157', 'WESTVILLE', 'FL', 'Grand Lodge of Florida', 38, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Duval Lodge', '159', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 102, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Fort Meade Lodge', '160', 'FORT MEADE', 'FL', 'Grand Lodge of Florida', 43, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Acacia Lodge', '163', 'STUART', 'FL', 'Grand Lodge of Florida', 287, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Vernon Lodge', '164', 'VERNON', 'FL', 'Grand Lodge of Florida', 15, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Winter Garden Lodge', '165', 'WINTER GARDEN', 'FL', 'Grand Lodge of Florida', 168, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Havana Lodge', '167', 'Havana', 'FL', 'Grand Lodge of Florida', 24, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('DeFuniak Lodge', '170', 'DEFUNIAK SPRINGS', 'FL', 'Grand Lodge of Florida', 61, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Boca-Delray Lodge', '171', 'BOCA RATON', 'FL', 'Grand Lodge of Florida', 161, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Alpha Lodge', '172', 'FORT WALTON BEACH', 'FL', 'Grand Lodge of Florida', 97, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Sutherland Lodge', '174', 'DUNEDIN', 'FL', 'Grand Lodge of Florida', 46, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Jay Lodge', '176', 'JAY', 'FL', 'Grand Lodge of Florida', 40, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Universal Lodge', '178', 'TAMPA', 'FL', 'Grand Lodge of Florida', 101, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Hastings Lodge', '183', 'HASTINGS', 'FL', 'Grand Lodge of Florida', 87, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('A.W. Windhorst Lodge', '185', 'TAMPA', 'FL', 'Grand Lodge of Florida', 115, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Winter Haven Lodge', '186', 'WINTER HAVEN', 'FL', 'Grand Lodge of Florida', 113, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('William B. Barnett Lodge', '187', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 145, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Nitram Lodge', '188', 'SAINT PETERSBURG', 'FL', 'Grand Lodge of Florida', 178, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Groveland Lodge', '190', 'GROVELAND', 'FL', 'Grand Lodge of Florida', 69, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Corinthian Lodge', '191', 'MULBERRY', 'FL', 'Grand Lodge of Florida', 47, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Dunedin Lodge', '192', 'PALM HARBOR', 'FL', 'Grand Lodge of Florida', 127, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Archer Lodge', '197', 'Archer', 'FL', 'Grand Lodge of Florida', 63, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Zephyr Lodge', '198', 'ZEPHYRHILLS', 'FL', 'Grand Lodge of Florida', 90, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Bunnell Lodge', '200', 'BUNNELL', 'FL', 'Grand Lodge of Florida', 84, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Etna Lodge', '202', 'WESTVILLE', 'FL', 'Grand Lodge of Florida', 11, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Cottondale Lodge', '206', 'COTTONDALE', 'FL', 'Grand Lodge of Florida', 43, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Eola Lodge', '207', 'Orlando', 'FL', 'Grand Lodge of Florida', 189, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Saint Andrews Lodge', '212', 'PANAMA CITY', 'FL', 'Grand Lodge of Florida', 77, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Century Lodge', '213', 'Century', 'FL', 'Grand Lodge of Florida', 36, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Baldwin Lodge', '217', 'BALDWIN', 'FL', 'Grand Lodge of Florida', 31, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Haines City Lodge', '219', 'Lake Alfred', 'FL', 'Grand Lodge of Florida', 62, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Saint Cloud Lodge', '221', 'SAINT CLOUD', 'FL', 'Grand Lodge of Florida', 90, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Acme Lodge', '222', 'PANAMA CITY', 'FL', 'Grand Lodge of Florida', 79, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Glendale Lodge', '225', 'DEFUNIAK SPRINGS', 'FL', 'Grand Lodge of Florida', 66, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Clermont Lodge', '226', 'CLERMONT', 'FL', 'Grand Lodge of Florida', 80, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Poinciana Lodge', '227', 'AVON PARK', 'FL', 'Grand Lodge of Florida', 52, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Frostproof Lodge', '229', 'FROSTPROOF', 'FL', 'Grand Lodge of Florida', 27, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Beaver Creek Lodge', '230', 'BAKER', 'FL', 'Grand Lodge of Florida', 26, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Sebastian Masonic Lodge', '232', 'SEBASTIAN', 'FL', 'Grand Lodge of Florida', 74, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Boynton Lodge', '236', 'BOYNTON BEACH', 'FL', 'Grand Lodge of Florida', 130, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Okeechobee Lodge', '237', 'OKEECHOBEE', 'FL', 'Grand Lodge of Florida', 161, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Mount Dora Lodge', '238', 'MOUNT DORA', 'FL', 'Grand Lodge of Florida', 101, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Winter Park Lodge', '239', 'WINTER PARK', 'FL', 'Grand Lodge of Florida', 253, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Tampa Lodge', '240', 'Temple Terrace', 'FL', 'Grand Lodge of Florida', 53, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Lake Wales Lodge', '242', 'LAKE WALES', 'FL', 'Grand Lodge of Florida', 87, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Oviedo Lodge', '243', 'OVIEDO', 'FL', 'Grand Lodge of Florida', 92, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Gulf Stream Lodge', '245', 'Greenacres', 'FL', 'Grand Lodge of Florida', 71, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Vero Beach Masonic Lodge', '250', 'VERO BEACH', 'FL', 'Grand Lodge of Florida', 104, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('J. F. Swartsel Lodge', '251', 'LUTZ', 'FL', 'Grand Lodge of Florida', 259, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Tampa Bay Lodge', '252', 'PALM HARBOR', 'FL', 'Grand Lodge of Florida', 137, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('West Broward Lodge', '253', 'PEMBROKE PINES', 'FL', 'Grand Lodge of Florida', 268, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Luz de America Lodge', '255', 'MIAMI', 'FL', 'Grand Lodge of Florida', 275, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Holyrood Lodge', '257', 'Tampa', 'FL', 'Grand Lodge of Florida', 118, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Coconut Grove Lodge', '258', 'SOUTH MIAMI', 'FL', 'Grand Lodge of Florida', 61, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Coral Gables Lodge', '260', 'CORAL GABLES', 'FL', 'Grand Lodge of Florida', 117, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Riverside Lodge', '266', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 142, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Orange Park Lodge', '267', 'ORANGE PARK', 'FL', 'Grand Lodge of Florida', 227, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Shamrock Lodge', '268', 'CROSS CITY', 'FL', 'Grand Lodge of Florida', 56, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Eureka-North Shore Lodge', '269', 'DANIA', 'FL', 'Grand Lodge of Florida', 117, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Hibiscus Lodge', '275', 'MIAMI', 'FL', 'Grand Lodge of Florida', 76, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Bethlehem Lodge', '276', 'BONIFAY', 'FL', 'Grand Lodge of Florida', 112, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Ensley Lodge', '278', 'PENSACOLA', 'FL', 'Grand Lodge of Florida', 143, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Sugarland Lodge', '281', 'CLEWISTON', 'FL', 'Grand Lodge of Florida', 38, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Placid Lodge', '282', 'LAKE PLACID', 'FL', 'Grand Lodge of Florida', 106, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Tupelo Lodge', '289', 'WEWAHITCHKA', 'FL', 'Grand Lodge of Florida', 59, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Gulf Beach Lodge', '291', 'Madeira Beach', 'FL', 'Grand Lodge of Florida', 164, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Crawford Lodge', '294', 'CRAWFORDVILLE', 'FL', 'Grand Lodge of Florida', 83, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Cypress Lodge', '295', 'NAPLES', 'FL', 'Grand Lodge of Florida', 217, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Wesconnett Lodge', '297', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 103, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Roe Fulkerson Lodge', '299', 'HOLLYWOOD', 'FL', 'Grand Lodge of Florida', 143, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Venice Lodge', '301', 'VENICE', 'FL', 'Grand Lodge of Florida', 139, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Palmwood Lodge', '303', 'WEST PALM BEACH', 'FL', 'Grand Lodge of Florida', 67, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Robert Butler Lodge', '305', 'TALLAHASSEE', 'FL', 'Grand Lodge of Florida', 104, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('South Miami Lodge', '308', 'SOUTH MIAMI', 'FL', 'Grand Lodge of Florida', 145, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Arlington Lodge', '309', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 155, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Okaloosa Lodge', '312', 'NICEVILLE', 'FL', 'Grand Lodge of Florida', 132, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Harry Jackson Lodge', '314', 'LYNN HAVEN', 'FL', 'Grand Lodge of Florida', 226, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Village Lodge', '315', 'MIAMI', 'FL', 'Grand Lodge of Florida', 58, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Harbor City Lodge', '318', 'MELBOURNE', 'FL', 'Grand Lodge of Florida', 134, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Cantonment Lodge', '322', 'CANTONMENT', 'FL', 'Grand Lodge of Florida', 96, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Marathon Lodge', '323', 'MARATHON', 'FL', 'Grand Lodge of Florida', 108, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Inglis Lodge', '324', 'INGLIS', 'FL', 'Grand Lodge of Florida', 120, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Ormond Beach Lodge', '326', 'ORMOND BEACH', 'FL', 'Grand Lodge of Florida', 78, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Mokanna Lodge', '329', 'ORLANDO', 'FL', 'Grand Lodge of Florida', 171, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Temple Terrace Lodge', '330', 'TEMPLE TERRACE', 'FL', 'Grand Lodge of Florida', 96, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('J Dewey Hawkins Lodge', '331', 'OAKLAND PARK', 'FL', 'Grand Lodge of Florida', 113, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Bykota Lodge', '333', 'GREENACRES', 'FL', 'Grand Lodge of Florida', 128, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Florida Keys Lodge', '336', 'TAVERNIER', 'FL', 'Grand Lodge of Florida', 64, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Kathleen Lodge', '338', 'KATHLEEN', 'FL', 'Grand Lodge of Florida', 167, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Canaveral Lodge', '339', 'COCOA BEACH', 'FL', 'Grand Lodge of Florida', 74, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Jupiter Light Lodge', '340', 'JUPITER', 'FL', 'Grand Lodge of Florida', 189, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Stafford Caldwell Lodge', '342', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 56, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Mandarin Lodge', '343', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 125, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Phoenix Lodge', '346', 'SARASOTA', 'FL', 'Grand Lodge of Florida', 192, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Gulf Breeze Lodge', '347', 'Gulf Breeze', 'FL', 'Grand Lodge of Florida', 79, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Pace Lodge', '349', 'PACE', 'FL', 'Grand Lodge of Florida', 92, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('R. T. Schafer Lodge', '350', 'ALACHUA', 'FL', 'Grand Lodge of Florida', 80, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Myrtle Grove Lodge', '352', 'PENSACOLA', 'FL', 'Grand Lodge of Florida', 164, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Merritt Island Lodge', '353', 'MERRITT ISLAND', 'FL', 'Grand Lodge of Florida', 146, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Beach Lodge', '354', 'INDIALANTIC', 'FL', 'Grand Lodge of Florida', 81, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Noah Lodge', '357', 'North Fort Myers', 'FL', 'Grand Lodge of Florida', 71, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Pythagoras Lodge', '358', 'PANAMA CITY BEACH', 'FL', 'Grand Lodge of Florida', 114, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Englewood Lodge', '360', 'ENGLEWOOD', 'FL', 'Grand Lodge of Florida', 104, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('J Edwin Larson Lodge', '361', 'TALLAHASSEE', 'FL', 'Grand Lodge of Florida', 103, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Fort Myers Beach Lodge', '362', 'FORT MYERS BEACH', 'FL', 'Grand Lodge of Florida', 197, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('South Seminole Lodge', '364', 'CASSELBERRY', 'FL', 'Grand Lodge of Florida', 148, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Garden Lodge', '366', 'PALM BEACH GARDENS', 'FL', 'Grand Lodge of Florida', 92, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Cape Coral Lodge', '367', 'FORT MYERS', 'FL', 'Grand Lodge of Florida', 109, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Pine Castle Lodge', '368', 'PINE CASTLE', 'FL', 'Grand Lodge of Florida', 131, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Callaway Lodge', '369', 'PANAMA CITY', 'FL', 'Grand Lodge of Florida', 100, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Hyde Park Lodge', '370', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 76, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Lantana Lodge', '372', 'Boynton Beach', 'FL', 'Grand Lodge of Florida', 36, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('LaBelle Lodge', '379', 'LABELLE', 'FL', 'Grand Lodge of Florida', 75, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Omega Lodge', '380', 'FORT WALTON BEACH', 'FL', 'Grand Lodge of Florida', 82, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Landmark Lodge', '383', 'ORANGE CITY', 'FL', 'Grand Lodge of Florida', 80, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Gateway Lodge', '384', 'MIMS', 'FL', 'Grand Lodge of Florida', 133, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Fort King Daylight Lodge', '389', 'OCALA', 'FL', 'Grand Lodge of Florida', 38, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Travelers Lodge', '390', 'LAKE ALFRED', 'FL', 'Grand Lodge of Florida', 53, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Hialeah-Opa Locka Lodge', '391', 'HIALEAH', 'FL', 'Grand Lodge of Florida', 61, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('The Villages Masonic Lodge', '394', 'LEESBURG', 'FL', 'Grand Lodge of Florida', 127, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Clyde S. McLaren Lodge', '395', 'SUNRISE', 'FL', 'Grand Lodge of Florida', 80, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Palm Bay Lodge', '397', 'MALABAR', 'FL', 'Grand Lodge of Florida', 48, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Hurricane Lodge', '401', 'MIAMI SPRINGS', 'FL', 'Grand Lodge of Florida', 38, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Lewis A. Armistead Lodge', '403', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 39, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Hirams'' Daylight Lodge', '407', 'CASSELBERRY', 'FL', 'Grand Lodge of Florida', 34, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Oceanview Lodge', '408', 'JACKSONVILLE', 'FL', 'Grand Lodge of Florida', 105, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('West Coast Lodge', '409', 'Palmetto', 'FL', 'Grand Lodge of Florida', 68, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Renacer Lodge', '410', 'MIAMI SPRINGS', 'FL', 'Grand Lodge of Florida', 124, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Miami-Dade Hispano-Americana Lodge', '411', 'SOUTH MIAMI', 'FL', 'Grand Lodge of Florida', 69, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Liberty Lodge', '412', 'BRADENTON', 'FL', 'Grand Lodge of Florida', 37, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Perseverancia Lodge', '413', 'HIALEAH', 'FL', 'Grand Lodge of Florida', 65, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Fraternidad Lodge', '414', 'HIALEAH', 'FL', 'Grand Lodge of Florida', 74, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Nuevos Horizontes Lodge', '415', 'HIALEAH', 'FL', 'Grand Lodge of Florida', 41, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Cornerstone Lodge', '416', 'Deerfield Beach', 'FL', 'Grand Lodge of Florida', 97, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('John E. Karroum Lodge', '417', 'HOMESTEAD', 'FL', 'Grand Lodge of Florida', 47, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Nature Coast Masonic Lodge', '418', 'INVERNESS', 'FL', 'Grand Lodge of Florida', 137, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Paul Revere Lodge', '419', 'BROOKSVILLE', 'FL', 'Grand Lodge of Florida', 93, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Neptune Beach Lodge', '421', 'NEPTUNE BEACH', 'FL', 'Grand Lodge of Florida', 223, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '910', 'GAINESVILLE', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '912', 'OCALA', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '913', 'Daytona Beach', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '914', 'HOMOSASSA', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '915', 'Tavares', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '916', 'SAINT CLOUD', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '918', 'TARPON SPRINGS', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '920', 'TAMPA', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '926', 'AVENTURA', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '927', 'HOMESTEAD', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '934', 'Hialeah', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('Memorial Lodge', '936', 'KEY WEST', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026'),
-  ('FLOR Lodge', '999', 'Jacksonville', 'FL', 'Grand Lodge of Florida', 0, 'lodges.glflamason.org', now(), 'lodges.glflamason.org — May 2026');
+update lodge_directory set member_count = 181, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '1' and state = 'FL';
+update lodge_directory set member_count = 45, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '2' and state = 'FL';
+update lodge_directory set member_count = 61, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '3' and state = 'FL';
+update lodge_directory set member_count = 27, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '4' and state = 'FL';
+update lodge_directory set member_count = 51, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '5' and state = 'FL';
+update lodge_directory set member_count = 40, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '6' and state = 'FL';
+update lodge_directory set member_count = 23, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '9' and state = 'FL';
+update lodge_directory set member_count = 25, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '10' and state = 'FL';
+update lodge_directory set member_count = 131, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '11' and state = 'FL';
+update lodge_directory set member_count = 48, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '12' and state = 'FL';
+update lodge_directory set member_count = 67, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '13' and state = 'FL';
+update lodge_directory set member_count = 264, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '15' and state = 'FL';
+update lodge_directory set member_count = 62, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '16' and state = 'FL';
+update lodge_directory set member_count = 60, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '17' and state = 'FL';
+update lodge_directory set member_count = 162, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '19' and state = 'FL';
+update lodge_directory set member_count = 174, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '20' and state = 'FL';
+update lodge_directory set member_count = 24, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '21' and state = 'FL';
+update lodge_directory set member_count = 85, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '23' and state = 'FL';
+update lodge_directory set member_count = 143, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '24' and state = 'FL';
+update lodge_directory set member_count = 375, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '25' and state = 'FL';
+update lodge_directory set member_count = 87, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '27' and state = 'FL';
+update lodge_directory set member_count = 34, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '28' and state = 'FL';
+update lodge_directory set member_count = 82, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '29' and state = 'FL';
+update lodge_directory set member_count = 75, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '30' and state = 'FL';
+update lodge_directory set member_count = 154, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '31' and state = 'FL';
+update lodge_directory set member_count = 150, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '32' and state = 'FL';
+update lodge_directory set member_count = 69, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '34' and state = 'FL';
+update lodge_directory set member_count = 70, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '35' and state = 'FL';
+update lodge_directory set member_count = 127, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '36' and state = 'FL';
+update lodge_directory set member_count = 106, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '37' and state = 'FL';
+update lodge_directory set member_count = 56, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '39' and state = 'FL';
+update lodge_directory set member_count = 37, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '40' and state = 'FL';
+update lodge_directory set member_count = 127, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '41' and state = 'FL';
+update lodge_directory set member_count = 154, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '42' and state = 'FL';
+update lodge_directory set member_count = 68, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '43' and state = 'FL';
+update lodge_directory set member_count = 26, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '44' and state = 'FL';
+update lodge_directory set member_count = 165, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '47' and state = 'FL';
+update lodge_directory set member_count = 42, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '48' and state = 'FL';
+update lodge_directory set member_count = 89, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '49' and state = 'FL';
+update lodge_directory set member_count = 88, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '50' and state = 'FL';
+update lodge_directory set member_count = 63, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '51' and state = 'FL';
+update lodge_directory set member_count = 40, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '52' and state = 'FL';
+update lodge_directory set member_count = 126, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '53' and state = 'FL';
+update lodge_directory set member_count = 226, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '56' and state = 'FL';
+update lodge_directory set member_count = 98, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '58' and state = 'FL';
+update lodge_directory set member_count = 41, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '60' and state = 'FL';
+update lodge_directory set member_count = 50, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '61' and state = 'FL';
+update lodge_directory set member_count = 100, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '62' and state = 'FL';
+update lodge_directory set member_count = 221, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '64' and state = 'FL';
+update lodge_directory set member_count = 62, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '65' and state = 'FL';
+update lodge_directory set member_count = 45, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '66' and state = 'FL';
+update lodge_directory set member_count = 149, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '69' and state = 'FL';
+update lodge_directory set member_count = 20, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '70' and state = 'FL';
+update lodge_directory set member_count = 53, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '72' and state = 'FL';
+update lodge_directory set member_count = 53, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '73' and state = 'FL';
+update lodge_directory set member_count = 48, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '76' and state = 'FL';
+update lodge_directory set member_count = 66, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '77' and state = 'FL';
+update lodge_directory set member_count = 89, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '78' and state = 'FL';
+update lodge_directory set member_count = 83, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '79' and state = 'FL';
+update lodge_directory set member_count = 142, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '80' and state = 'FL';
+update lodge_directory set member_count = 51, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '82' and state = 'FL';
+update lodge_directory set member_count = 84, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '85' and state = 'FL';
+update lodge_directory set member_count = 110, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '86' and state = 'FL';
+update lodge_directory set member_count = 156, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '87' and state = 'FL';
+update lodge_directory set member_count = 74, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '89' and state = 'FL';
+update lodge_directory set member_count = 203, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '90' and state = 'FL';
+update lodge_directory set member_count = 206, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '91' and state = 'FL';
+update lodge_directory set member_count = 71, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '92' and state = 'FL';
+update lodge_directory set member_count = 26, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '93' and state = 'FL';
+update lodge_directory set member_count = 60, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '94' and state = 'FL';
+update lodge_directory set member_count = 66, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '95' and state = 'FL';
+update lodge_directory set member_count = 19, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '96' and state = 'FL';
+update lodge_directory set member_count = 243, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '98' and state = 'FL';
+update lodge_directory set member_count = 94, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '100' and state = 'FL';
+update lodge_directory set member_count = 93, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '101' and state = 'FL';
+update lodge_directory set member_count = 29, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '103' and state = 'FL';
+update lodge_directory set member_count = 202, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '105' and state = 'FL';
+update lodge_directory set member_count = 133, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '107' and state = 'FL';
+update lodge_directory set member_count = 43, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '108' and state = 'FL';
+update lodge_directory set member_count = 47, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '109' and state = 'FL';
+update lodge_directory set member_count = 93, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '112' and state = 'FL';
+update lodge_directory set member_count = 112, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '113' and state = 'FL';
+update lodge_directory set member_count = 329, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '114' and state = 'FL';
+update lodge_directory set member_count = 120, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '115' and state = 'FL';
+update lodge_directory set member_count = 97, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '116' and state = 'FL';
+update lodge_directory set member_count = 35, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '117' and state = 'FL';
+update lodge_directory set member_count = 25, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '119' and state = 'FL';
+update lodge_directory set member_count = 80, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '123' and state = 'FL';
+update lodge_directory set member_count = 122, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '124' and state = 'FL';
+update lodge_directory set member_count = 191, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '126' and state = 'FL';
+update lodge_directory set member_count = 171, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '127' and state = 'FL';
+update lodge_directory set member_count = 25, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '130' and state = 'FL';
+update lodge_directory set member_count = 39, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '131' and state = 'FL';
+update lodge_directory set member_count = 34, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '134' and state = 'FL';
+update lodge_directory set member_count = 73, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '137' and state = 'FL';
+update lodge_directory set member_count = 184, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '138' and state = 'FL';
+update lodge_directory set member_count = 231, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '139' and state = 'FL';
+update lodge_directory set member_count = 486, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '140' and state = 'FL';
+update lodge_directory set member_count = 59, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '141' and state = 'FL';
+update lodge_directory set member_count = 91, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '142' and state = 'FL';
+update lodge_directory set member_count = 180, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '143' and state = 'FL';
+update lodge_directory set member_count = 129, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '145' and state = 'FL';
+update lodge_directory set member_count = 173, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '146' and state = 'FL';
+update lodge_directory set member_count = 270, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '147' and state = 'FL';
+update lodge_directory set member_count = 287, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '149' and state = 'FL';
+update lodge_directory set member_count = 155, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '153' and state = 'FL';
+update lodge_directory set member_count = 38, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '157' and state = 'FL';
+update lodge_directory set member_count = 102, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '159' and state = 'FL';
+update lodge_directory set member_count = 43, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '160' and state = 'FL';
+update lodge_directory set member_count = 287, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '163' and state = 'FL';
+update lodge_directory set member_count = 15, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '164' and state = 'FL';
+update lodge_directory set member_count = 168, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '165' and state = 'FL';
+update lodge_directory set member_count = 24, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '167' and state = 'FL';
+update lodge_directory set member_count = 61, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '170' and state = 'FL';
+update lodge_directory set member_count = 161, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '171' and state = 'FL';
+update lodge_directory set member_count = 97, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '172' and state = 'FL';
+update lodge_directory set member_count = 46, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '174' and state = 'FL';
+update lodge_directory set member_count = 40, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '176' and state = 'FL';
+update lodge_directory set member_count = 101, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '178' and state = 'FL';
+update lodge_directory set member_count = 87, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '183' and state = 'FL';
+update lodge_directory set member_count = 115, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '185' and state = 'FL';
+update lodge_directory set member_count = 113, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '186' and state = 'FL';
+update lodge_directory set member_count = 145, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '187' and state = 'FL';
+update lodge_directory set member_count = 178, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '188' and state = 'FL';
+update lodge_directory set member_count = 69, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '190' and state = 'FL';
+update lodge_directory set member_count = 47, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '191' and state = 'FL';
+update lodge_directory set member_count = 127, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '192' and state = 'FL';
+update lodge_directory set member_count = 63, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '197' and state = 'FL';
+update lodge_directory set member_count = 90, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '198' and state = 'FL';
+update lodge_directory set member_count = 84, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '200' and state = 'FL';
+update lodge_directory set member_count = 11, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '202' and state = 'FL';
+update lodge_directory set member_count = 43, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '206' and state = 'FL';
+update lodge_directory set member_count = 189, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '207' and state = 'FL';
+update lodge_directory set member_count = 77, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '212' and state = 'FL';
+update lodge_directory set member_count = 36, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '213' and state = 'FL';
+update lodge_directory set member_count = 31, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '217' and state = 'FL';
+update lodge_directory set member_count = 62, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '219' and state = 'FL';
+update lodge_directory set member_count = 90, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '221' and state = 'FL';
+update lodge_directory set member_count = 79, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '222' and state = 'FL';
+update lodge_directory set member_count = 66, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '225' and state = 'FL';
+update lodge_directory set member_count = 80, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '226' and state = 'FL';
+update lodge_directory set member_count = 52, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '227' and state = 'FL';
+update lodge_directory set member_count = 27, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '229' and state = 'FL';
+update lodge_directory set member_count = 26, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '230' and state = 'FL';
+update lodge_directory set member_count = 74, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '232' and state = 'FL';
+update lodge_directory set member_count = 130, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '236' and state = 'FL';
+update lodge_directory set member_count = 161, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '237' and state = 'FL';
+update lodge_directory set member_count = 101, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '238' and state = 'FL';
+update lodge_directory set member_count = 253, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '239' and state = 'FL';
+update lodge_directory set member_count = 53, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '240' and state = 'FL';
+update lodge_directory set member_count = 87, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '242' and state = 'FL';
+update lodge_directory set member_count = 92, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '243' and state = 'FL';
+update lodge_directory set member_count = 71, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '245' and state = 'FL';
+update lodge_directory set member_count = 104, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '250' and state = 'FL';
+update lodge_directory set member_count = 259, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '251' and state = 'FL';
+update lodge_directory set member_count = 137, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '252' and state = 'FL';
+update lodge_directory set member_count = 268, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '253' and state = 'FL';
+update lodge_directory set member_count = 275, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '255' and state = 'FL';
+update lodge_directory set member_count = 118, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '257' and state = 'FL';
+update lodge_directory set member_count = 61, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '258' and state = 'FL';
+update lodge_directory set member_count = 117, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '260' and state = 'FL';
+update lodge_directory set member_count = 142, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '266' and state = 'FL';
+update lodge_directory set member_count = 227, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '267' and state = 'FL';
+update lodge_directory set member_count = 56, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '268' and state = 'FL';
+update lodge_directory set member_count = 117, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '269' and state = 'FL';
+update lodge_directory set member_count = 76, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '275' and state = 'FL';
+update lodge_directory set member_count = 112, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '276' and state = 'FL';
+update lodge_directory set member_count = 143, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '278' and state = 'FL';
+update lodge_directory set member_count = 38, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '281' and state = 'FL';
+update lodge_directory set member_count = 106, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '282' and state = 'FL';
+update lodge_directory set member_count = 59, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '289' and state = 'FL';
+update lodge_directory set member_count = 164, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '291' and state = 'FL';
+update lodge_directory set member_count = 83, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '294' and state = 'FL';
+update lodge_directory set member_count = 217, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '295' and state = 'FL';
+update lodge_directory set member_count = 103, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '297' and state = 'FL';
+update lodge_directory set member_count = 143, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '299' and state = 'FL';
+update lodge_directory set member_count = 139, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '301' and state = 'FL';
+update lodge_directory set member_count = 67, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '303' and state = 'FL';
+update lodge_directory set member_count = 104, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '305' and state = 'FL';
+update lodge_directory set member_count = 145, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '308' and state = 'FL';
+update lodge_directory set member_count = 155, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '309' and state = 'FL';
+update lodge_directory set member_count = 132, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '312' and state = 'FL';
+update lodge_directory set member_count = 226, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '314' and state = 'FL';
+update lodge_directory set member_count = 58, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '315' and state = 'FL';
+update lodge_directory set member_count = 134, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '318' and state = 'FL';
+update lodge_directory set member_count = 96, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '322' and state = 'FL';
+update lodge_directory set member_count = 108, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '323' and state = 'FL';
+update lodge_directory set member_count = 120, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '324' and state = 'FL';
+update lodge_directory set member_count = 78, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '326' and state = 'FL';
+update lodge_directory set member_count = 171, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '329' and state = 'FL';
+update lodge_directory set member_count = 96, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '330' and state = 'FL';
+update lodge_directory set member_count = 113, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '331' and state = 'FL';
+update lodge_directory set member_count = 128, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '333' and state = 'FL';
+update lodge_directory set member_count = 64, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '336' and state = 'FL';
+update lodge_directory set member_count = 167, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '338' and state = 'FL';
+update lodge_directory set member_count = 74, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '339' and state = 'FL';
+update lodge_directory set member_count = 189, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '340' and state = 'FL';
+update lodge_directory set member_count = 56, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '342' and state = 'FL';
+update lodge_directory set member_count = 125, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '343' and state = 'FL';
+update lodge_directory set member_count = 192, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '346' and state = 'FL';
+update lodge_directory set member_count = 79, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '347' and state = 'FL';
+update lodge_directory set member_count = 92, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '349' and state = 'FL';
+update lodge_directory set member_count = 80, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '350' and state = 'FL';
+update lodge_directory set member_count = 164, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '352' and state = 'FL';
+update lodge_directory set member_count = 146, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '353' and state = 'FL';
+update lodge_directory set member_count = 81, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '354' and state = 'FL';
+update lodge_directory set member_count = 71, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '357' and state = 'FL';
+update lodge_directory set member_count = 114, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '358' and state = 'FL';
+update lodge_directory set member_count = 104, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '360' and state = 'FL';
+update lodge_directory set member_count = 103, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '361' and state = 'FL';
+update lodge_directory set member_count = 197, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '362' and state = 'FL';
+update lodge_directory set member_count = 148, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '364' and state = 'FL';
+update lodge_directory set member_count = 92, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '366' and state = 'FL';
+update lodge_directory set member_count = 109, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '367' and state = 'FL';
+update lodge_directory set member_count = 131, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '368' and state = 'FL';
+update lodge_directory set member_count = 100, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '369' and state = 'FL';
+update lodge_directory set member_count = 76, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '370' and state = 'FL';
+update lodge_directory set member_count = 36, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '372' and state = 'FL';
+update lodge_directory set member_count = 75, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '379' and state = 'FL';
+update lodge_directory set member_count = 82, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '380' and state = 'FL';
+update lodge_directory set member_count = 80, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '383' and state = 'FL';
+update lodge_directory set member_count = 133, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '384' and state = 'FL';
+update lodge_directory set member_count = 38, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '389' and state = 'FL';
+update lodge_directory set member_count = 53, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '390' and state = 'FL';
+update lodge_directory set member_count = 61, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '391' and state = 'FL';
+update lodge_directory set member_count = 127, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '394' and state = 'FL';
+update lodge_directory set member_count = 80, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '395' and state = 'FL';
+update lodge_directory set member_count = 48, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '397' and state = 'FL';
+update lodge_directory set member_count = 38, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '401' and state = 'FL';
+update lodge_directory set member_count = 39, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '403' and state = 'FL';
+update lodge_directory set member_count = 34, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '407' and state = 'FL';
+update lodge_directory set member_count = 105, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '408' and state = 'FL';
+update lodge_directory set member_count = 68, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '409' and state = 'FL';
+update lodge_directory set member_count = 124, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '410' and state = 'FL';
+update lodge_directory set member_count = 69, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '411' and state = 'FL';
+update lodge_directory set member_count = 37, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '412' and state = 'FL';
+update lodge_directory set member_count = 65, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '413' and state = 'FL';
+update lodge_directory set member_count = 74, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '414' and state = 'FL';
+update lodge_directory set member_count = 41, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '415' and state = 'FL';
+update lodge_directory set member_count = 97, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '416' and state = 'FL';
+update lodge_directory set member_count = 47, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '417' and state = 'FL';
+update lodge_directory set member_count = 137, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '418' and state = 'FL';
+update lodge_directory set member_count = 93, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '419' and state = 'FL';
+update lodge_directory set member_count = 223, member_count_source = 'lodges.glflamason.org', member_count_updated_at = now() where number = '421' and state = 'FL';
 
 -- Verify
 select count(*) as total, sum(case when member_count is not null then 1 else 0 end) as with_count, avg(member_count)::int as avg_members from lodge_directory where state = 'FL';
