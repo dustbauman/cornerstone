@@ -30,8 +30,10 @@ export default function PostRequestModal({
   defaultLat = 0,
   defaultLng = 0,
   defaultEmail = "",
-  defaultName = "You",
+  defaultName = "Guest",
 }: Props) {
+  const isAnon = !defaultEmail;
+
   const [form, setForm] = useState({
     title: "",
     category: "" as TradeCategory | "",
@@ -42,6 +44,8 @@ export default function PostRequestModal({
     timeline: "Flexible" as RequestTimeline,
     details: "",
     email: defaultEmail,
+    name: "",
+    remoteEligible: false,
   });
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -80,9 +84,10 @@ export default function PostRequestModal({
           timeline: form.timeline,
           details: form.details,
           email: form.email,
-          name: defaultName,
+          name: form.name.trim() || defaultName,
           lat: defaultLat,
           lng: defaultLng,
+          remoteEligible: form.remoteEligible,
         }),
       });
 
@@ -96,7 +101,7 @@ export default function PostRequestModal({
         id: data.id,
         title: form.title,
         category: form.category as TradeCategory,
-        name: defaultName,
+        name: form.name.trim() || defaultName,
         lodge,
         city: form.city,
         state: form.state,
@@ -108,8 +113,8 @@ export default function PostRequestModal({
         responses: 0,
         postedHoursAgo: 0,
         status: "open",
-        remoteEligible: false,
-        verifiedMember: true,
+        remoteEligible: form.remoteEligible,
+        verifiedMember: !isAnon,
       };
 
       await onSubmit(newRequest);
@@ -137,7 +142,7 @@ export default function PostRequestModal({
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
-          {/* 1. Title */}
+          {/* Title */}
           <div>
             <label className="block text-sm font-semibold text-navy mb-1.5">
               What do you need? <span className="text-red-400">*</span>
@@ -152,7 +157,7 @@ export default function PostRequestModal({
             />
           </div>
 
-          {/* 2. Category */}
+          {/* Category */}
           <div>
             <label className="block text-sm font-semibold text-navy mb-1.5">
               Trade category <span className="text-red-400">*</span>
@@ -170,7 +175,7 @@ export default function PostRequestModal({
             </select>
           </div>
 
-          {/* 3. City + State */}
+          {/* City + State */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-semibold text-navy mb-1.5">
@@ -178,7 +183,7 @@ export default function PostRequestModal({
               </label>
               <input
                 type="text"
-                placeholder="Tulsa"
+                placeholder="Tampa"
                 value={form.city}
                 onChange={(e) => setForm({ ...form, city: e.target.value })}
                 required
@@ -199,7 +204,20 @@ export default function PostRequestModal({
             </div>
           </div>
 
-          {/* 4. Lodge number */}
+          {/* Remote eligible */}
+          <label className="flex items-center gap-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={form.remoteEligible}
+              onChange={(e) => setForm({ ...form, remoteEligible: e.target.checked })}
+              className="w-4 h-4 accent-navy flex-shrink-0"
+            />
+            <span className="text-sm text-[#1A1A1A]">
+              This can be done <span className="font-semibold">remotely</span> — open to professionals anywhere
+            </span>
+          </label>
+
+          {/* Lodge number */}
           <div>
             <label className="block text-sm font-semibold text-navy mb-1.5">Lodge # (optional)</label>
             <input
@@ -214,7 +232,7 @@ export default function PostRequestModal({
             </p>
           </div>
 
-          {/* 5 & 6. Budget + Timeline */}
+          {/* Budget + Timeline */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-semibold text-navy mb-1.5">Budget (optional)</label>
@@ -240,7 +258,7 @@ export default function PostRequestModal({
             </div>
           </div>
 
-          {/* 7. Details */}
+          {/* Details */}
           <div>
             <label className="block text-sm font-semibold text-navy mb-1.5">Details (optional)</label>
             <textarea
@@ -252,7 +270,21 @@ export default function PostRequestModal({
             />
           </div>
 
-          {/* 8. Email */}
+          {/* Name — only shown for logged-out users */}
+          {isAnon && (
+            <div>
+              <label className="block text-sm font-semibold text-navy mb-1.5">Your name (optional)</label>
+              <input
+                type="text"
+                placeholder="Robert C. Ingram"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                className={field}
+              />
+            </div>
+          )}
+
+          {/* Email */}
           <div>
             <label className="block text-sm font-semibold text-navy mb-1.5">
               Where should providers reach you? <span className="text-red-400">*</span>

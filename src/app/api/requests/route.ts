@@ -5,8 +5,23 @@ const VALID_TIMELINES = new Set(['ASAP', 'Within 1 week', 'Within 1 month', 'Fle
 
 function normalizeTimeline(timeline: string): string {
   if (VALID_TIMELINES.has(timeline)) return timeline
-  if (timeline === 'Within 2 weeks') return 'Within 1 month'
   return 'Flexible'
+}
+
+async function geocode(city: string, state: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const params = new URLSearchParams({ city, state, country: 'US', format: 'json', limit: '1' })
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+      headers: { 'User-Agent': 'Tyrian/1.0 (hello@tyrian.work)' },
+      signal: AbortSignal.timeout(4000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data[0]) return null
+    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+  } catch {
+    return null
+  }
 }
 
 export async function POST(request: Request) {
@@ -40,6 +55,8 @@ export async function POST(request: Request) {
   let lodgeDisplay: string | null = null
   let postedByName = name || 'Tyrian Member'
   let isVerifiedMember = false
+  let resolvedLat: number | null = lat ?? null
+  let resolvedLng: number | null = lng ?? null
 
   if (user) {
     const { data: profile } = await admin
@@ -63,6 +80,13 @@ export async function POST(request: Request) {
         if (lodge) lodgeDisplay = `${lodge.name} #${lodge.number}`
       }
     }
+  } else {
+    // Anonymous post — geocode the typed city/state so geo-scoring works correctly
+    const geo = await geocode(city, state)
+    if (geo) {
+      resolvedLat = geo.lat
+      resolvedLng = geo.lng
+    }
   }
 
   const { data: row, error } = await admin
@@ -78,8 +102,8 @@ export async function POST(request: Request) {
       details: details || null,
       city,
       state,
-      lat: lat ?? null,
-      lng: lng ?? null,
+      lat: resolvedLat,
+      lng: resolvedLng,
       budget: budget || null,
       timeline: normalizeTimeline(timeline || 'Flexible'),
       status: 'open',
