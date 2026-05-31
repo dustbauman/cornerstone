@@ -7,7 +7,9 @@ export async function loadRequestResponsesPayload(requestId: string) {
 
   const { data: reqRow } = await admin
     .from('requests')
-    .select('id, title, status, posted_by_name, responses_count')
+    .select(
+      'id, title, category, city, state, budget, timeline, details, status, remote_eligible, posted_by_name, responses_count'
+    )
     .eq('id', requestId)
     .maybeSingle()
 
@@ -44,7 +46,10 @@ export async function loadRequestResponsesPayload(requestId: string) {
   }))
 
   return {
-    request: reqRow,
+    request: {
+      ...reqRow,
+      responses_count: responses.length,
+    },
     responses,
   }
 }

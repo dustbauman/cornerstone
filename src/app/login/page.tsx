@@ -60,7 +60,11 @@ function LoginContent() {
   const [loading, setLoading] = useState<'google' | 'password' | 'magic' | 'reset' | null>(null)
   const [error, setError] = useState('')
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin
+  // OAuth/magic-link redirects must use the site the user is on (not a baked-in localhost build env).
+  const appUrl =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000')
 
   useEffect(() => {
     if (claimCode) {

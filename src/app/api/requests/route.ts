@@ -1,6 +1,11 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { DB_REQUEST_SELECT } from '@/lib/db/requests'
+import {
+  countResponsesByRequestId,
+  syncStoredResponseCounts,
+  withLiveResponseCounts,
+} from '@/lib/db/request-response-counts'
 
 const VALID_TIMELINES = new Set(['ASAP', 'Within 1 week', 'Within 1 month', 'Flexible'])
 
@@ -24,7 +29,21 @@ export async function GET() {
     return Response.json({ error: 'Failed to load requests' }, { status: 500 })
   }
 
-  return Response.json({ requests: data ?? [] })
+  const rows = data ?? []
+  const counts = await countResponsesByRequestId(
+    admin,
+    rows.map((r) => r.id)
+  )
+  const requests = withLiveResponseCounts(rows, counts)
+
+  const needsSync = requests.some(
+    (r) => r.responses_count !== (rows.find((x) => x.id === r.id)?.responses_count ?? 0)
+  )
+  if (needsSync) {
+    void syncStoredResponseCounts(admin, counts)
+  }
+
+  return Response.json({ requests })
 }
 
 async function geocode(city: string, state: string): Promise<{ lat: number; lng: number } | null> {

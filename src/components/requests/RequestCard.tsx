@@ -36,8 +36,11 @@ export default function RequestCard({
   isMatchingTrade,
   userLodge,
 }: Props) {
-  const isUrgent = request.responses === 0 && request.postedHoursAgo >= 48;
-  const isNew = request.responses === 0 && request.postedHoursAgo < 48;
+  const responseCount = request.responses;
+  const isUrgent = responseCount === 0 && request.postedHoursAgo >= 48;
+  const isNew = responseCount === 0 && request.postedHoursAgo < 48;
+  const responseLabel =
+    responseCount === 1 ? "1 response" : `${responseCount} responses`;
   const isSameLodge = !!userLodge && request.lodge === userLodge;
   let borderLeft: string | undefined;
   if (isUrgent) {
@@ -183,6 +186,9 @@ export default function RequestCard({
       {isNew && (
         <p className="text-xs text-muted italic mb-3">Be the first to respond</p>
       )}
+      {responseCount > 0 && (
+        <p className="text-xs font-medium text-navy/80 mb-3">{responseLabel}</p>
+      )}
 
       <div className="pt-3 border-t border-gray-50 mt-1">
         <div className="flex items-center justify-between gap-2">
@@ -196,9 +202,14 @@ export default function RequestCard({
             )}
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
-            <span className="text-xs text-muted flex items-center gap-1">
-              <MessageSquare size={10} />
-              {request.responses}
+            <span
+              className={`text-xs flex items-center gap-1 ${
+                responseCount > 0 ? "font-semibold text-navy" : "text-muted"
+              }`}
+              title={responseLabel}
+            >
+              <MessageSquare size={10} aria-hidden />
+              {responseCount}
             </span>
           </div>
         </div>

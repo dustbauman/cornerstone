@@ -101,7 +101,7 @@ export async function POST(
     .select('id', { count: 'exact', head: true })
     .eq('request_id', params.requestId)
 
-  await admin
+  const { error: updateError } = await admin
     .from('requests')
     .update({
       responses_count: responseCount ?? 1,
@@ -109,6 +109,10 @@ export async function POST(
       notify_token_sent_at: new Date().toISOString(),
     })
     .eq('id', params.requestId)
+
+  if (updateError) {
+    console.error('Request responses_count update error:', updateError)
+  }
 
   const contact = await getResponderContact(admin, user.id)
 

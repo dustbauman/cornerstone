@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Megaphone, ChevronRight } from 'lucide-react'
+import ManageRequestActions from '@/components/requests/ManageRequestActions'
 
 export interface MyRequestRow {
   id: string
@@ -8,6 +9,10 @@ export interface MyRequestRow {
   city: string
   state: string
   status: string
+  budget?: string | null
+  timeline?: string | null
+  details?: string | null
+  remote_eligible?: boolean
   responses_count: number
   new_responses_count?: number
   created_at: string
@@ -94,10 +99,8 @@ export default function MyRequestsSection({ requests, demoMode }: Props) {
       ) : (
         <div className="divide-y divide-gray-50">
           {requests.map(req => (
-            <div
-              key={req.id}
-              className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0"
-            >
+            <div key={req.id} className="py-4 first:pt-0 last:pb-0">
+              <div className="flex items-center justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <p className="font-semibold text-sm text-navy truncate">&ldquo;{req.title}&rdquo;</p>
                 <p className="text-xs text-muted mt-1">
@@ -134,6 +137,10 @@ export default function MyRequestsSection({ requests, demoMode }: Props) {
                   </Link>
                 )}
               </div>
+              </div>
+              {!demoMode && (req.status === 'open' || req.status === 'active') && (
+                <ManageRequestActions request={req} className="mt-3" />
+              )}
             </div>
           ))}
         </div>

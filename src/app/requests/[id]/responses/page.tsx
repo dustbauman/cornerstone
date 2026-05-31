@@ -7,13 +7,21 @@ import { Loader2, ArrowLeft, CheckCircle2 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ResponseCard, { type ResponseItem } from "@/components/requests/ResponseCard";
+import ManageRequestActions from "@/components/requests/ManageRequestActions";
 import { createClient } from "@/lib/supabase/client";
 import { getAuthHeaders } from "@/lib/supabase/auth-headers";
 
 interface RequestSummary {
   id: string;
   title: string;
+  category: string;
+  city: string;
+  state: string;
+  budget?: string | null;
+  timeline?: string | null;
+  details?: string | null;
   status: string;
+  remote_eligible?: boolean;
   posted_by_name: string;
   responses_count: number;
 }
@@ -176,6 +184,15 @@ export default function RequestResponsesPage({ params }: { params: { id: string 
               <p className="text-sm text-muted mt-2">
                 {responses.length} verified member{responses.length === 1 ? "" : "s"} responded
               </p>
+              {!isGuest && !filled && (
+                <ManageRequestActions
+                  request={request}
+                  onUpdated={(updated) =>
+                    setRequest((prev) => (prev ? { ...prev, ...updated } : prev))
+                  }
+                  className="mt-4"
+                />
+              )}
             </header>
 
             {filled && (
