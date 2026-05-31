@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import Link from "next/link";
 import { PlusCircle, SlidersHorizontal, X, Megaphone, Loader2 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
@@ -8,6 +9,7 @@ import RequestCard from "@/components/requests/RequestCard";
 import SectionDivider from "@/components/ui/SectionDivider";
 import PostRequestModal from "@/components/requests/PostRequestModal";
 import RespondModal, { type ResponderPreview } from "@/components/requests/RespondModal";
+import GuestBrowseSettingsModal from "@/components/requests/GuestBrowseSettingsModal";
 import ToastNotification from "@/components/ui/ToastNotification";
 import { requests as demoRequests, ServiceRequest } from "@/lib/demo/requests";
 import { haversineDistance, getMatchScore } from "@/lib/geo/scoring";
@@ -16,6 +18,12 @@ import { useDemoMode } from "@/lib/demo/context";
 import { demoUser } from "@/lib/demo/data";
 import { createClient } from "@/lib/supabase/client";
 import { dbRequestToServiceRequest } from "@/lib/db/requests";
+import {
+  DEFAULT_GUEST_AREA,
+  resolveGuestArea,
+  saveGuestAreaPrefs,
+  type GuestAreaPrefs,
+} from "@/lib/guest/area-prefs";
 import type { TradeCategory } from "@/lib/types";
 
 interface RequestUser {
@@ -61,10 +69,10 @@ const ANON_USER: RequestUser = {
   occupation: "",
   lodge: "",
   lodgeId: null,
-  city: "Tulsa",
-  state: "OK",
-  lat: 36.154,
-  lng: -95.9928,
+  city: DEFAULT_GUEST_AREA.city,
+  state: DEFAULT_GUEST_AREA.state,
+  lat: DEFAULT_GUEST_AREA.lat,
+  lng: DEFAULT_GUEST_AREA.lng,
   isVerified: false,
   isLoggedIn: false,
   email: "",
@@ -74,9 +82,14 @@ const ANON_USER: RequestUser = {
 
 type TabType = "for-you" | "your-lodge" | "your-area" | "all";
 
-const TABS: { id: TabType; label: string }[] = [
+const MEMBER_TABS: { id: TabType; label: string }[] = [
   { id: "for-you", label: "For You" },
   { id: "your-lodge", label: "Your Lodge" },
+  { id: "your-area", label: "Your Area" },
+  { id: "all", label: "All Requests" },
+];
+
+const GUEST_TABS: { id: TabType; label: string }[] = [
   { id: "your-area", label: "Your Area" },
   { id: "all", label: "All Requests" },
 ];
@@ -99,8 +112,10 @@ export default function RequestsPage() {
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [requestUser, setRequestUser] = useState<RequestUser>(ANON_USER);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<TabType>("for-you");
+  const [activeTab, setActiveTab] = useState<TabType>("your-area");
   const [modalOpen, setModalOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [guestAreaSource, setGuestAreaSource] = useState<GuestAreaPrefs["source"]>("default");
   const [respondTarget, setRespondTarget] = useState<ServiceRequest | null>(null);
   const [respondedIds, setRespondedIds] = useState<Set<string>>(new Set());
   const [respondSuccessIds, setRespondSuccessIds] = useState<Set<string>>(new Set());
@@ -110,7 +125,12 @@ export default function RequestsPage() {
   const [filterCategory, setFilterCategory] = useState("");
   const [filterState, setFilterState] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [areaFilterCategory, setAreaFilterCategory] = useState("");
+  const [areaFilterStatus, setAreaFilterStatus] = useState("");
   const hasFilters = filterCategory || filterState || filterStatus;
+  const hasAreaFilters = !!(areaFilterCategory || areaFilterStatus);
+
+  const visibleTabs = requestUser.isLoggedIn ? MEMBER_TABS : GUEST_TABS;
 
   useEffect(() => {
     async function load() {
@@ -119,6 +139,7 @@ export default function RequestsPage() {
       if (isDemoMode) {
         setRequests(demoRequests);
         setRequestUser(DEMO_REQUEST_USER);
+        setActiveTab("for-you");
         setRespondedIds(new Set());
         setRespondSuccessIds(new Set());
         setLoading(false);
@@ -132,6 +153,7 @@ export default function RequestsPage() {
         let userCtx: RequestUser = { ...ANON_USER };
 
         if (user) {
+          setActiveTab("for-you");
           const [{ data: profile }, { data: listing }] = await Promise.all([
             supabase
               .from("profiles")
@@ -187,6 +209,16 @@ export default function RequestsPage() {
           }
         } else {
           setRespondedIds(new Set());
+          const area = await resolveGuestArea();
+          setGuestAreaSource(area.source);
+          userCtx = {
+            ...ANON_USER,
+            city: area.city,
+            state: area.state,
+            lat: area.lat,
+            lng: area.lng,
+          };
+          setActiveTab("your-area");
         }
 
         const res = await fetch("/api/requests");
@@ -249,18 +281,32 @@ export default function RequestsPage() {
     [requests, requestUser]
   );
 
+  function passesGuestAreaFilters(r: ServiceRequest) {
+    if (areaFilterCategory && r.category !== areaFilterCategory) return false;
+    if (areaFilterStatus) {
+      if (r.status !== areaFilterStatus) return false;
+    } else if (r.status !== "open" && r.status !== "active") {
+      return false;
+    }
+    return true;
+  }
+
   const areaBands = useMemo(() => {
+    const guestFilter = (r: ServiceRequest) =>
+      !requestUser.isLoggedIn ? passesGuestAreaFilters(r) : true;
+
     const nationwide = requests
-      .filter((r) => r.remoteEligible)
+      .filter((r) => r.remoteEligible && guestFilter(r))
       .sort((a, b) => a.postedHoursAgo - b.postedHoursAgo);
     const local = requests
       .filter((r) => {
         if (r.remoteEligible) return false;
+        if (!guestFilter(r)) return false;
         return haversineDistance(requestUser.lat, requestUser.lng, r.lat, r.lng) <= 50;
       })
       .sort((a, b) => a.postedHoursAgo - b.postedHoursAgo);
     return { nationwide, local };
-  }, [requests, requestUser]);
+  }, [requests, requestUser, areaFilterCategory, areaFilterStatus]);
 
   const allFiltered = useMemo(
     () =>
@@ -323,7 +369,7 @@ export default function RequestsPage() {
     extra?: { matchScore?: number; isMatchingTrade?: boolean }
   ) {
     const id = requestIdKey(r.id);
-    return {
+    const base = {
       request: r,
       isLoggedIn: requestUser.isLoggedIn,
       isVerified: requestUser.isVerified,
@@ -331,8 +377,23 @@ export default function RequestsPage() {
       respondSuccess: respondSuccessIds.has(id),
       onRespond: (req: ServiceRequest) => setRespondTarget(req),
       userLodge: requestUser.lodge,
-      ...extra,
     };
+    if (!requestUser.isLoggedIn || extra?.matchScore === undefined) {
+      return base;
+    }
+    return { ...base, matchScore: extra.matchScore, isMatchingTrade: extra.isMatchingTrade };
+  }
+
+  function handleGuestAreaSave(prefs: GuestAreaPrefs) {
+    saveGuestAreaPrefs(prefs);
+    setGuestAreaSource(prefs.source);
+    setRequestUser((prev) => ({
+      ...prev,
+      city: prefs.city,
+      state: prefs.state,
+      lat: prefs.lat,
+      lng: prefs.lng,
+    }));
   }
 
   function responderPreview(): ResponderPreview {
@@ -497,28 +558,88 @@ export default function RequestsPage() {
     );
   }
 
+  function renderGuestAreaFilters() {
+    return (
+      <div className="flex flex-wrap items-center gap-2 mb-5">
+        <select
+          value={areaFilterCategory}
+          onChange={(e) => setAreaFilterCategory(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/40"
+          aria-label="Filter by trade"
+        >
+          <option value="">All Trades</option>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select
+          value={areaFilterStatus}
+          onChange={(e) => setAreaFilterStatus(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/40"
+          aria-label="Filter by status"
+        >
+          <option value="">Open &amp; active</option>
+          {STATUSES.filter(({ value }) => value).map(({ value, label }) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
+        </select>
+        {hasAreaFilters && (
+          <button
+            type="button"
+            onClick={() => {
+              setAreaFilterCategory("");
+              setAreaFilterStatus("");
+            }}
+            className="text-xs text-muted hover:text-navy flex items-center gap-1 px-2 py-1 rounded-lg border border-gray-200"
+          >
+            <X size={11} /> Clear
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setSettingsOpen(true)}
+          className="ml-auto text-xs font-semibold text-navy border border-gray-200 px-3 py-2 rounded-lg hover:bg-stone transition-colors"
+        >
+          Change area
+        </button>
+      </div>
+    );
+  }
+
   function renderYourArea() {
     const { nationwide, local } = areaBands;
-    if (!nationwide.length && !local.length) return <EmptyState />;
+    const total = nationwide.length + local.length;
+
     return (
-      <div className="space-y-3">
-        {nationwide.length > 0 && (
-          <>
-            <SectionDivider label="🌐  Available nationwide" />
-            {nationwide.map((r) => (
-              <RequestCard key={r.id} {...cardProps(r)} />
-            ))}
-          </>
+      <>
+        {!requestUser.isLoggedIn && renderGuestAreaFilters()}
+        {total > 0 ? (
+          <div className="space-y-3">
+            {nationwide.length > 0 && (
+              <>
+                <SectionDivider label="🌐  Available nationwide" />
+                {nationwide.map((r) => (
+                  <RequestCard key={r.id} {...cardProps(r)} />
+                ))}
+              </>
+            )}
+            {local.length > 0 && (
+              <>
+                <SectionDivider label={`📍  Within 50 miles of ${requestUser.city}`} />
+                {local.map((r) => (
+                  <RequestCard key={r.id} {...cardProps(r)} />
+                ))}
+              </>
+            )}
+          </div>
+        ) : (
+          <EmptyState filtered={hasAreaFilters} />
         )}
-        {local.length > 0 && (
-          <>
-            <SectionDivider label={`📍  Within 50 miles of ${requestUser.city}`} />
-            {local.map((r) => (
-              <RequestCard key={r.id} {...cardProps(r)} />
-            ))}
-          </>
-        )}
-      </div>
+      </>
     );
   }
 
@@ -619,10 +740,31 @@ export default function RequestsPage() {
             </p>
           )}
 
+          {!requestUser.isLoggedIn && (
+            <p className="text-white/60 text-sm">
+              Showing requests near{" "}
+              <span className="text-white font-semibold">
+                {requestUser.city}, {requestUser.state}
+              </span>
+              {guestAreaSource === "geolocation" && (
+                <span className="text-white/40"> · from your location</span>
+              )}
+              {" · "}
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="text-gold font-semibold hover:underline"
+              >
+                Change area
+              </button>
+            </p>
+          )}
+
           <div className="flex items-center gap-2 mt-4 overflow-x-auto pb-1 scrollbar-none">
-            {TABS.map((tab) => (
+            {visibleTabs.map((tab) => (
               <button
                 key={tab.id}
+                type="button"
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
                   activeTab === tab.id
@@ -633,21 +775,38 @@ export default function RequestsPage() {
                 {tab.label}
               </button>
             ))}
-            <button className="ml-auto flex-shrink-0 p-2 rounded-xl border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors">
-              <SlidersHorizontal size={15} />
-            </button>
+            {!requestUser.isLoggedIn && (
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="ml-auto flex-shrink-0 p-2 rounded-xl border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors"
+                aria-label="Browse settings"
+              >
+                <SlidersHorizontal size={15} />
+              </button>
+            )}
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-trust/10 rounded-lg mb-6 border border-trust/15">
+        <div className="flex items-center gap-2 px-4 py-2.5 bg-trust/10 rounded-lg mb-4 border border-trust/15">
           <span className="text-trust text-sm">✓</span>
           <p className="text-sm text-trust m-0">
             Only lodge-verified members can respond to requests. Contact details are kept private
             until a member responds.
           </p>
         </div>
+
+        {!requestUser.isLoggedIn && (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 px-4 py-3 bg-stone rounded-xl mb-6 border border-[#E5E0D5] text-sm text-navy">
+            <span>Are you a Freemason?</span>
+            <Link href="/login?redirect=/requests" className="font-semibold text-navy underline hover:text-trust">
+              Sign in
+            </Link>
+            <span>to respond to requests and connect with members directly.</span>
+          </div>
+        )}
 
         <div className="flex gap-8">
           <div className="flex-1 min-w-0">
@@ -719,6 +878,20 @@ export default function RequestsPage() {
           preview={responderPreview()}
           onClose={() => setRespondTarget(null)}
           onSubmit={submitResponse}
+        />
+      )}
+
+      {settingsOpen && !requestUser.isLoggedIn && (
+        <GuestBrowseSettingsModal
+          current={{
+            city: requestUser.city,
+            state: requestUser.state,
+            lat: requestUser.lat,
+            lng: requestUser.lng,
+            source: guestAreaSource,
+          }}
+          onClose={() => setSettingsOpen(false)}
+          onSave={handleGuestAreaSave}
         />
       )}
 

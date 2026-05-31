@@ -6,6 +6,7 @@ import {
   syncStoredResponseCounts,
   withLiveResponseCounts,
 } from '@/lib/db/request-response-counts'
+import { geocodeCityState } from '@/lib/geo/nominatim'
 
 const VALID_TIMELINES = new Set(['ASAP', 'Within 1 week', 'Within 1 month', 'Flexible'])
 
@@ -44,22 +45,6 @@ export async function GET() {
   }
 
   return Response.json({ requests })
-}
-
-async function geocode(city: string, state: string): Promise<{ lat: number; lng: number } | null> {
-  try {
-    const params = new URLSearchParams({ city, state, country: 'US', format: 'json', limit: '1' })
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
-      headers: { 'User-Agent': 'Tyrian/1.0 (hello@tyrian.work)' },
-      signal: AbortSignal.timeout(4000),
-    })
-    if (!res.ok) return null
-    const data = await res.json()
-    if (!data[0]) return null
-    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
-  } catch {
-    return null
-  }
 }
 
 export async function POST(request: Request) {
@@ -125,7 +110,7 @@ export async function POST(request: Request) {
     }
   } else {
     // Anonymous post — geocode the typed city/state so geo-scoring works correctly
-    const geo = await geocode(city, state)
+    const geo = await geocodeCityState(city, state)
     if (geo) {
       resolvedLat = geo.lat
       resolvedLng = geo.lng
