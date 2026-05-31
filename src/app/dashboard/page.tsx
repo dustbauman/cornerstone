@@ -12,6 +12,7 @@ import VerificationStatusCard from '@/components/member/VerificationStatusCard'
 import CategoryBadge from '@/components/directory/CategoryBadge'
 import { getMemberAccessState } from '@/lib/auth/member-access'
 import type { MemberAccessState } from '@/lib/auth/member-access'
+import { responseStatusLabel } from '@/components/requests/ResponseCard'
 import StarRating from '@/components/directory/StarRating'
 import { createClient } from '@/lib/supabase/client'
 import { useDemoMode } from '@/lib/demo/context'
@@ -50,6 +51,48 @@ const DEMO_DISPLAY_USER: DisplayUser = {
   referralCode: demoUser.referral_code,
 }
 
+interface SentResponse {
+  id: string
+  message: string | null
+  status: string
+  created_at: string
+  request: {
+    id: string
+    title: string
+    posted_by_name: string
+    city: string
+    state: string
+    lodge_display: string | null
+    status: string
+  } | null
+}
+
+const DEMO_SENT_RESPONSES: SentResponse[] = [
+  {
+    id: 'demo-resp-1',
+    message: 'Happy to help with this — I specialize in bathroom remodels across Tulsa.',
+    status: 'viewed',
+    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    request: {
+      id: '2',
+      title: 'Licensed plumber for bathroom remodel',
+      posted_by_name: 'M. Torres',
+      city: 'Tulsa',
+      state: 'OK',
+      lodge_display: 'Acacia Lodge #123',
+      status: 'active',
+    },
+  },
+]
+
+function formatRespondedAt(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime()
+  const hours = Math.floor(ms / (1000 * 60 * 60))
+  if (hours < 24) return hours < 1 ? 'Just now' : `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  return days === 1 ? '1 day ago' : `${days} days ago`
+}
+
 const MOCK_LEADS = [
   { id: 1, name: 'Patricia Monroe', email: 'p.monroe@email.com', message: 'Interested in getting a quote for a bathroom remodel.', date: '2 days ago', source: 'Direct' },
   { id: 2, name: 'David Kowalski', email: 'dkowalski@email.com', message: 'My neighbor recommended you. Can we schedule an estimate?', date: '4 days ago', source: 'Referral' },
@@ -61,11 +104,13 @@ export default function DashboardPage() {
   const [displayUser, setDisplayUser] = useState<DisplayUser | null>(null)
   const [dbListing, setDbListing] = useState<DbListing | null>(null)
   const [accessState, setAccessState] = useState<MemberAccessState>('unaffiliated')
+  const [sentResponses, setSentResponses] = useState<SentResponse[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (isDemoMode) {
       setDisplayUser(DEMO_DISPLAY_USER)
+      setSentResponses(DEMO_SENT_RESPONSES)
       setLoading(false)
       return
     }
@@ -139,6 +184,14 @@ export default function DashboardPage() {
               verification_status: profile?.verification_status ?? 'pending',
             })
       )
+
+      if (profile?.verification_status === 'verified') {
+        fetch('/api/me/responses')
+          .then((r) => (r.ok ? r.json() : { responses: [] }))
+          .then((data) => setSentResponses(data.responses ?? []))
+          .catch(() => setSentResponses([]))
+      }
+
       setLoading(false)
     })
   }, [isDemoMode])
@@ -311,6 +364,58 @@ export default function DashboardPage() {
                   >
                     {accessState === 'unaffiliated' ? 'Find your lodge' : 'View verification status'}
                   </Link>
+                )}
+              </div>
+            )}
+
+            {/* Your responses */}
+            {(isDemoMode || accessState === 'verified') && (
+              <div id="your-responses" className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6">
+                <div className="flex items-center justify-between mb-5">
+                  <h2
+                    className="text-xl font-bold text-navy"
+                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  >
+                    Your responses
+                  </h2>
+                  <Link href="/requests" className="text-sm text-muted hover:text-navy transition-colors">
+                    Browse requests →
+                  </Link>
+                </div>
+                {sentResponses.length > 0 ? (
+                  <div className="space-y-4">
+                    {sentResponses.map((row) => (
+                      <div key={row.id} className="pb-4 border-b border-gray-50 last:border-0 last:pb-0">
+                        <p className="font-semibold text-sm text-navy">
+                          &ldquo;{row.request?.title ?? 'Request'}&rdquo;
+                        </p>
+                        {row.request && (
+                          <p className="text-xs text-muted mt-1">
+                            {row.request.posted_by_name}
+                            {row.request.lodge_display ? ` · ${row.request.lodge_display}` : ''}
+                            {' · '}
+                            {row.request.city}, {row.request.state}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted mt-1">
+                          Responded {formatRespondedAt(row.created_at)} · Status:{' '}
+                          {responseStatusLabel(row.status)}
+                        </p>
+                        {row.status === 'accepted' && (
+                          <p className="text-xs text-trust font-medium mt-2">
+                            ✓ They&apos;re interested. Reach out to close the job.
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted text-center py-4">
+                    You haven&apos;t responded to any requests yet.{' '}
+                    <Link href="/requests" className="text-navy underline">
+                      Find open requests →
+                    </Link>
+                  </p>
                 )}
               </div>
             )}
