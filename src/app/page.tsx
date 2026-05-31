@@ -18,6 +18,7 @@ import {
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import AuthAwareLink from "@/components/layout/AuthAwareLink";
+import TyrianHeroBackground from "@/components/brand/TyrianHeroBackground";
 import LandingStatsBar from "@/components/landing/LandingStatsBar";
 import { getLandingStats } from "@/lib/db/stats";
 
@@ -74,15 +75,8 @@ export default async function LandingPage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="bg-navy text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5 pointer-events-none">
-          <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="1" />
-            </pattern>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </div>
+      <section className="text-white relative overflow-hidden border-b border-gold/25">
+        <TyrianHeroBackground markSize="large" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 relative">
           <div className="max-w-3xl">
