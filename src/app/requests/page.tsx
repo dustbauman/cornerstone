@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { PlusCircle, SlidersHorizontal, X, Megaphone, Loader2 } from "lucide-react";
+import { PlusCircle, SlidersHorizontal, Megaphone, Loader2 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import RequestCard from "@/components/requests/RequestCard";
@@ -10,6 +10,7 @@ import SectionDivider from "@/components/ui/SectionDivider";
 import PostRequestModal from "@/components/requests/PostRequestModal";
 import RespondModal, { type ResponderPreview } from "@/components/requests/RespondModal";
 import GuestBrowseSettingsModal from "@/components/requests/GuestBrowseSettingsModal";
+import ActiveFilterChips from "@/components/requests/ActiveFilterChips";
 import ToastNotification from "@/components/ui/ToastNotification";
 import { requests as demoRequests, ServiceRequest } from "@/lib/demo/requests";
 import { haversineDistance, getMatchScore } from "@/lib/geo/scoring";
@@ -22,6 +23,9 @@ import {
   DEFAULT_GUEST_AREA,
   resolveGuestArea,
   saveGuestAreaPrefs,
+  loadMemberBrowseArea,
+  saveMemberBrowseArea,
+  clearMemberBrowseArea,
   type GuestAreaPrefs,
 } from "@/lib/guest/area-prefs";
 import type { TradeCategory } from "@/lib/types";
@@ -102,6 +106,20 @@ const STATUSES = [
   { value: "filled", label: "Filled" },
 ];
 
+interface BrowseFilters {
+  category: string;
+  status: string;
+  state: string;
+  noResponseOnly: boolean;
+}
+
+const EMPTY_FILTERS: BrowseFilters = {
+  category: "",
+  status: "",
+  state: "",
+  noResponseOnly: false,
+};
+
 function scoreSort(user: RequestUser) {
   return (a: ServiceRequest, b: ServiceRequest) =>
     getMatchScore(b, user) - getMatchScore(a, user);
@@ -116,21 +134,49 @@ export default function RequestsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [guestAreaSource, setGuestAreaSource] = useState<GuestAreaPrefs["source"]>("default");
+  const [profileArea, setProfileArea] = useState<GuestAreaPrefs | null>(null);
+  const [filters, setFilters] = useState<BrowseFilters>(EMPTY_FILTERS);
   const [respondTarget, setRespondTarget] = useState<ServiceRequest | null>(null);
   const [respondedIds, setRespondedIds] = useState<Set<string>>(new Set());
   const [respondSuccessIds, setRespondSuccessIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
   const [toastAction, setToastAction] = useState<{ href: string; label: string } | null>(null);
 
-  const [filterCategory, setFilterCategory] = useState("");
-  const [filterState, setFilterState] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
-  const [areaFilterCategory, setAreaFilterCategory] = useState("");
-  const [areaFilterStatus, setAreaFilterStatus] = useState("");
-  const hasFilters = filterCategory || filterState || filterStatus;
-  const hasAreaFilters = !!(areaFilterCategory || areaFilterStatus);
-
   const visibleTabs = requestUser.isLoggedIn ? MEMBER_TABS : GUEST_TABS;
+  const locationOverridden =
+    requestUser.isLoggedIn &&
+    profileArea != null &&
+    (requestUser.city !== profileArea.city ||
+      requestUser.state !== profileArea.state ||
+      requestUser.lat !== profileArea.lat ||
+      requestUser.lng !== profileArea.lng);
+
+  const hasActiveFilters =
+    !!filters.category ||
+    !!filters.status ||
+    !!filters.state ||
+    filters.noResponseOnly ||
+    !!locationOverridden;
+
+  function passesTabFilters(r: ServiceRequest, tab: TabType) {
+    if (filters.noResponseOnly && (r.responses !== 0 || r.status !== "open")) return false;
+    if (filters.category && r.category !== filters.category) return false;
+    if (filters.status) {
+      if (r.status !== filters.status) return false;
+    } else if (tab === "your-area") {
+      if (r.status !== "open" && r.status !== "active") return false;
+    }
+    if (tab === "all" && filters.state && r.state !== filters.state) return false;
+    return true;
+  }
+
+  function clearAllFilters() {
+    setFilters(EMPTY_FILTERS);
+  }
+
+  function updateFilter<K extends keyof BrowseFilters>(key: K, value: BrowseFilters[K]) {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  }
 
   useEffect(() => {
     async function load() {
@@ -198,6 +244,29 @@ export default function RequestsPage() {
             contactEmail: listing?.email?.trim() || profile?.email?.trim() || user.email || null,
           };
 
+          const memberProfileArea: GuestAreaPrefs = {
+            city: userCtx.city,
+            state: userCtx.state,
+            lat: userCtx.lat,
+            lng: userCtx.lng,
+            source: "profile",
+          };
+          setProfileArea(memberProfileArea);
+
+          const savedBrowseArea = loadMemberBrowseArea();
+          if (savedBrowseArea) {
+            userCtx = {
+              ...userCtx,
+              city: savedBrowseArea.city,
+              state: savedBrowseArea.state,
+              lat: savedBrowseArea.lat,
+              lng: savedBrowseArea.lng,
+            };
+            setGuestAreaSource(savedBrowseArea.source);
+          } else {
+            setGuestAreaSource("profile");
+          }
+
           if (profile?.verification_status === "verified") {
             const { data: myResponses } = await supabase
               .from("request_responses")
@@ -240,8 +309,9 @@ export default function RequestsPage() {
 
   const forYouBands = useMemo(() => {
     const sort = scoreSort(requestUser);
-    const nationwide = requests.filter((r) => r.remoteEligible).sort(sort);
-    const nonRemote = requests.filter((r) => !r.remoteEligible);
+    const eligible = requests.filter((r) => passesTabFilters(r, "for-you"));
+    const nationwide = eligible.filter((r) => r.remoteEligible).sort(sort);
+    const nonRemote = eligible.filter((r) => !r.remoteEligible);
 
     const nearYou: ServiceRequest[] = [];
     const nearYouOther: ServiceRequest[] = [];
@@ -267,58 +337,43 @@ export default function RequestsPage() {
       inYourArea: inYourArea.sort(sort),
       acrossState: acrossState.sort(sort),
     };
-  }, [requests, requestUser]);
+  }, [requests, requestUser, filters]);
 
   const lodgeRequests = useMemo(
     () =>
       requests
+        .filter((r) => passesTabFilters(r, "your-lodge"))
         .filter((r) =>
           requestUser.lodgeId
             ? r.lodgeId === requestUser.lodgeId
             : requestUser.lodge && r.lodge === requestUser.lodge
         )
         .sort((a, b) => a.postedHoursAgo - b.postedHoursAgo),
-    [requests, requestUser]
+    [requests, requestUser, filters]
   );
 
-  function passesGuestAreaFilters(r: ServiceRequest) {
-    if (areaFilterCategory && r.category !== areaFilterCategory) return false;
-    if (areaFilterStatus) {
-      if (r.status !== areaFilterStatus) return false;
-    } else if (r.status !== "open" && r.status !== "active") {
-      return false;
-    }
-    return true;
-  }
-
   const areaBands = useMemo(() => {
-    const guestFilter = (r: ServiceRequest) =>
-      !requestUser.isLoggedIn ? passesGuestAreaFilters(r) : true;
+    const eligible = (r: ServiceRequest) => passesTabFilters(r, "your-area");
 
     const nationwide = requests
-      .filter((r) => r.remoteEligible && guestFilter(r))
+      .filter((r) => r.remoteEligible && eligible(r))
       .sort((a, b) => a.postedHoursAgo - b.postedHoursAgo);
     const local = requests
       .filter((r) => {
         if (r.remoteEligible) return false;
-        if (!guestFilter(r)) return false;
+        if (!eligible(r)) return false;
         return haversineDistance(requestUser.lat, requestUser.lng, r.lat, r.lng) <= 50;
       })
       .sort((a, b) => a.postedHoursAgo - b.postedHoursAgo);
     return { nationwide, local };
-  }, [requests, requestUser, areaFilterCategory, areaFilterStatus]);
+  }, [requests, requestUser, filters]);
 
   const allFiltered = useMemo(
     () =>
       requests
-        .filter((r) => {
-          if (filterCategory && r.category !== filterCategory) return false;
-          if (filterState && r.state !== filterState) return false;
-          if (filterStatus && r.status !== filterStatus) return false;
-          return true;
-        })
+        .filter((r) => passesTabFilters(r, "all"))
         .sort((a, b) => a.postedHoursAgo - b.postedHoursAgo),
-    [requests, filterCategory, filterState, filterStatus]
+    [requests, filters]
   );
 
   const openNearCount = useMemo(
@@ -384,8 +439,12 @@ export default function RequestsPage() {
     return { ...base, matchScore: extra.matchScore, isMatchingTrade: extra.isMatchingTrade };
   }
 
-  function handleGuestAreaSave(prefs: GuestAreaPrefs) {
-    saveGuestAreaPrefs(prefs);
+  function handleBrowseAreaSave(prefs: GuestAreaPrefs) {
+    if (requestUser.isLoggedIn) {
+      saveMemberBrowseArea(prefs);
+    } else {
+      saveGuestAreaPrefs(prefs);
+    }
     setGuestAreaSource(prefs.source);
     setRequestUser((prev) => ({
       ...prev,
@@ -394,6 +453,62 @@ export default function RequestsPage() {
       lat: prefs.lat,
       lng: prefs.lng,
     }));
+  }
+
+  function handleUseProfileLocation() {
+    if (!profileArea) return;
+    clearMemberBrowseArea();
+    setGuestAreaSource("profile");
+    setRequestUser((prev) => ({
+      ...prev,
+      city: profileArea.city,
+      state: profileArea.state,
+      lat: profileArea.lat,
+      lng: profileArea.lng,
+    }));
+  }
+
+  function buildActiveFilterChips() {
+    const chips: { id: string; label: string; onRemove: () => void }[] = [];
+
+    if (filters.noResponseOnly) {
+      chips.push({
+        id: "no-response",
+        label: "No responses yet",
+        onRemove: () => updateFilter("noResponseOnly", false),
+      });
+    }
+    if (filters.category) {
+      chips.push({
+        id: "category",
+        label: filters.category,
+        onRemove: () => updateFilter("category", ""),
+      });
+    }
+    if (filters.status) {
+      const label = STATUSES.find((s) => s.value === filters.status)?.label ?? filters.status;
+      chips.push({
+        id: "status",
+        label,
+        onRemove: () => updateFilter("status", ""),
+      });
+    }
+    if (filters.state && activeTab === "all") {
+      chips.push({
+        id: "state",
+        label: filters.state,
+        onRemove: () => updateFilter("state", ""),
+      });
+    }
+    if (locationOverridden) {
+      chips.push({
+        id: "location",
+        label: `Near ${requestUser.city}, ${requestUser.state}`,
+        onRemove: handleUseProfileLocation,
+      });
+    }
+
+    return chips;
   }
 
   function responderPreview(): ResponderPreview {
@@ -464,7 +579,7 @@ export default function RequestsPage() {
       !nationwide.length && !nearYou.length && !inYourArea.length &&
       !nearYouOther.length && !acrossState.length;
 
-    if (empty) return <EmptyState />;
+    if (empty) return <EmptyState filtered={hasActiveFilters} />;
 
     const stateLabel = requestUser.state === "OK" ? "Oklahoma" : requestUser.state;
 
@@ -542,11 +657,14 @@ export default function RequestsPage() {
     }
     if (!lodgeRequests.length) {
       return (
-        <div className="text-center py-20 text-muted">
-          <Megaphone size={36} className="mx-auto mb-3 opacity-30" />
-          <p className="font-medium text-base">No requests from your lodge yet.</p>
-          <p className="text-sm mt-1">Be the first to post.</p>
-        </div>
+        <EmptyState
+          filtered={hasActiveFilters}
+          message={
+            hasActiveFilters
+              ? undefined
+              : "No requests from your lodge yet."
+          }
+        />
       );
     }
     return (
@@ -558,12 +676,15 @@ export default function RequestsPage() {
     );
   }
 
-  function renderGuestAreaFilters() {
+  function renderBrowseControls() {
+    const statusDefaultLabel =
+      activeTab === "your-area" ? "Open & active" : "All statuses";
+
     return (
       <div className="flex flex-wrap items-center gap-2 mb-5">
         <select
-          value={areaFilterCategory}
-          onChange={(e) => setAreaFilterCategory(e.target.value)}
+          value={filters.category}
+          onChange={(e) => updateFilter("category", e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/40"
           aria-label="Filter by trade"
         >
@@ -575,37 +696,64 @@ export default function RequestsPage() {
           ))}
         </select>
         <select
-          value={areaFilterStatus}
-          onChange={(e) => setAreaFilterStatus(e.target.value)}
+          value={filters.status}
+          onChange={(e) => updateFilter("status", e.target.value)}
           className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/40"
           aria-label="Filter by status"
         >
-          <option value="">Open &amp; active</option>
+          <option value="">{statusDefaultLabel}</option>
           {STATUSES.filter(({ value }) => value).map(({ value, label }) => (
             <option key={value} value={value}>
               {label}
             </option>
           ))}
         </select>
-        {hasAreaFilters && (
-          <button
-            type="button"
-            onClick={() => {
-              setAreaFilterCategory("");
-              setAreaFilterStatus("");
-            }}
-            className="text-xs text-muted hover:text-navy flex items-center gap-1 px-2 py-1 rounded-lg border border-gray-200"
+        {activeTab === "all" && (
+          <select
+            value={filters.state}
+            onChange={(e) => updateFilter("state", e.target.value)}
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/40"
+            aria-label="Filter by state"
           >
-            <X size={11} /> Clear
-          </button>
+            <option value="">All States</option>
+            {STATES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
         )}
         <button
           type="button"
           onClick={() => setSettingsOpen(true)}
-          className="ml-auto text-xs font-semibold text-navy border border-gray-200 px-3 py-2 rounded-lg hover:bg-stone transition-colors"
+          className="text-xs font-semibold text-navy border border-gray-200 px-3 py-2 rounded-lg hover:bg-stone transition-colors"
         >
           Change area
         </button>
+        {activeTab === "all" && (
+          <span className="ml-auto text-xs text-muted">{allFiltered.length} requests</span>
+        )}
+      </div>
+    );
+  }
+
+  function renderBrowseChrome() {
+    const chips = buildActiveFilterChips();
+
+    return (
+      <div className="mb-6 space-y-3">
+        <ActiveFilterChips
+          chips={chips}
+          onClearAll={
+            chips.length > 1
+              ? () => {
+                  clearAllFilters();
+                  if (locationOverridden) handleUseProfileLocation();
+                }
+              : undefined
+          }
+        />
+        {renderBrowseControls()}
       </div>
     );
   }
@@ -614,83 +762,39 @@ export default function RequestsPage() {
     const { nationwide, local } = areaBands;
     const total = nationwide.length + local.length;
 
-    return (
-      <>
-        {!requestUser.isLoggedIn && renderGuestAreaFilters()}
-        {total > 0 ? (
-          <div className="space-y-3">
-            {nationwide.length > 0 && (
-              <>
-                <SectionDivider label="🌐  Available nationwide" />
-                {nationwide.map((r) => (
-                  <RequestCard key={r.id} {...cardProps(r)} />
-                ))}
-              </>
-            )}
-            {local.length > 0 && (
-              <>
-                <SectionDivider label={`📍  Within 50 miles of ${requestUser.city}`} />
-                {local.map((r) => (
-                  <RequestCard key={r.id} {...cardProps(r)} />
-                ))}
-              </>
-            )}
-          </div>
-        ) : (
-          <EmptyState filtered={hasAreaFilters} />
+    return total > 0 ? (
+      <div className="space-y-3">
+        {nationwide.length > 0 && (
+          <>
+            <SectionDivider label="🌐  Available nationwide" />
+            {nationwide.map((r) => (
+              <RequestCard key={r.id} {...cardProps(r)} />
+            ))}
+          </>
         )}
-      </>
+        {local.length > 0 && (
+          <>
+            <SectionDivider label={`📍  Within 50 miles of ${requestUser.city}`} />
+            {local.map((r) => (
+              <RequestCard key={r.id} {...cardProps(r)} />
+            ))}
+          </>
+        )}
+      </div>
+    ) : (
+      <EmptyState filtered={hasActiveFilters} />
     );
   }
 
   function renderAll() {
-    return (
-      <>
-        <div className="flex flex-wrap items-center gap-2 mb-5">
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/40"
-          >
-            <option value="">All Trades</option>
-            {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <select
-            value={filterState}
-            onChange={(e) => setFilterState(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/40"
-          >
-            <option value="">All States</option>
-            {STATES.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/40"
-          >
-            {STATUSES.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
-          </select>
-          {hasFilters && (
-            <button
-              onClick={() => { setFilterCategory(""); setFilterState(""); setFilterStatus(""); }}
-              className="text-xs text-muted hover:text-navy flex items-center gap-1 px-2 py-1 rounded-lg border border-gray-200"
-            >
-              <X size={11} /> Clear
-            </button>
-          )}
-          <span className="ml-auto text-xs text-muted">{allFiltered.length} requests</span>
-        </div>
-
-        {allFiltered.length > 0 ? (
-          <div className="space-y-3">
-            {allFiltered.map((r) => (
-              <RequestCard key={r.id} {...cardProps(r)} />
-            ))}
-          </div>
-        ) : (
-          <EmptyState filtered />
-        )}
-      </>
+    return allFiltered.length > 0 ? (
+      <div className="space-y-3">
+        {allFiltered.map((r) => (
+          <RequestCard key={r.id} {...cardProps(r)} />
+        ))}
+      </div>
+    ) : (
+      <EmptyState filtered={hasActiveFilters} />
     );
   }
 
@@ -731,12 +835,30 @@ export default function RequestsPage() {
             </button>
           </div>
 
-          {requestUser.isLoggedIn && requestUser.trade && (
+          {requestUser.isLoggedIn && (
             <p className="text-white/60 text-sm">
-              Showing results for:{" "}
-              <span className="text-white font-semibold">{requestUser.trade}</span>
+              {requestUser.trade && (
+                <>
+                  Personalized for{" "}
+                  <span className="text-white font-semibold">{requestUser.trade}</span>
+                  {" · "}
+                </>
+              )}
+              Near{" "}
+              <span className="text-white font-semibold">
+                {requestUser.city}, {requestUser.state}
+              </span>
+              {locationOverridden && (
+                <span className="text-white/40"> · custom area</span>
+              )}
               {" · "}
-              <span className="text-white font-semibold">{requestUser.city}, {requestUser.state}</span>
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="text-gold font-semibold hover:underline"
+              >
+                Change area
+              </button>
             </p>
           )}
 
@@ -775,16 +897,14 @@ export default function RequestsPage() {
                 {tab.label}
               </button>
             ))}
-            {!requestUser.isLoggedIn && (
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(true)}
-                className="ml-auto flex-shrink-0 p-2 rounded-xl border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors"
-                aria-label="Browse settings"
-              >
-                <SlidersHorizontal size={15} />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              className="ml-auto flex-shrink-0 p-2 rounded-xl border border-white/20 text-white/50 hover:text-white hover:border-white/40 transition-colors"
+              aria-label="Browse settings"
+            >
+              <SlidersHorizontal size={15} />
+            </button>
           </div>
         </div>
       </div>
@@ -810,6 +930,7 @@ export default function RequestsPage() {
 
         <div className="flex gap-8">
           <div className="flex-1 min-w-0">
+            {renderBrowseChrome()}
             {activeTab === "for-you" && renderForYou()}
             {activeTab === "your-lodge" && renderYourLodge()}
             {activeTab === "your-area" && renderYourArea()}
@@ -836,10 +957,18 @@ export default function RequestsPage() {
                 <span className="font-serif font-bold text-navy text-lg">{openNearCount}</span>
               </div>
               <div className="h-px bg-gray-100" />
-              <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => updateFilter("noResponseOnly", !filters.noResponseOnly)}
+                className={`w-full flex items-center justify-between rounded-lg px-2 py-1.5 -mx-2 transition-colors ${
+                  filters.noResponseOnly
+                    ? "bg-red-50 ring-1 ring-red-100"
+                    : "hover:bg-stone"
+                }`}
+              >
                 <span className="text-sm text-muted">With no response yet</span>
                 <span className="font-serif font-bold text-red-500 text-lg">{noResponseCount}</span>
-              </div>
+              </button>
             </div>
 
             {requestUser.isLoggedIn && (
@@ -881,7 +1010,7 @@ export default function RequestsPage() {
         />
       )}
 
-      {settingsOpen && !requestUser.isLoggedIn && (
+      {settingsOpen && (
         <GuestBrowseSettingsModal
           current={{
             city: requestUser.city,
@@ -891,7 +1020,9 @@ export default function RequestsPage() {
             source: guestAreaSource,
           }}
           onClose={() => setSettingsOpen(false)}
-          onSave={handleGuestAreaSave}
+          onSave={handleBrowseAreaSave}
+          profileDefault={requestUser.isLoggedIn ? profileArea : undefined}
+          onUseProfile={requestUser.isLoggedIn ? handleUseProfileLocation : undefined}
         />
       )}
 
@@ -910,13 +1041,16 @@ export default function RequestsPage() {
   );
 }
 
-function EmptyState({ filtered }: { filtered?: boolean }) {
+function EmptyState({ filtered, message }: { filtered?: boolean; message?: string }) {
   return (
     <div className="text-center py-20 text-muted">
       <Megaphone size={36} className="mx-auto mb-3 opacity-30" />
       <p className="font-medium text-base">
-        {filtered ? "No requests match your filters" : "No requests in this view yet"}
+        {filtered ? "No requests match your filters" : message ?? "No requests in this view yet"}
       </p>
+      {!filtered && message === "No requests from your lodge yet." && (
+        <p className="text-sm mt-1">Be the first to post.</p>
+      )}
     </div>
   );
 }

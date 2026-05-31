@@ -5,7 +5,7 @@ export interface GuestAreaPrefs {
   state: string
   lat: number
   lng: number
-  source: 'saved' | 'geolocation' | 'default'
+  source: 'saved' | 'geolocation' | 'default' | 'profile'
 }
 
 export const DEFAULT_GUEST_AREA: GuestAreaPrefs = {
@@ -16,13 +16,11 @@ export const DEFAULT_GUEST_AREA: GuestAreaPrefs = {
   source: 'default',
 }
 
-const STORAGE_KEY = 'tyrian_guest_area'
+const GUEST_STORAGE_KEY = 'tyrian_guest_area'
+const MEMBER_STORAGE_KEY = 'tyrian_member_browse_area'
 
-export function loadGuestAreaPrefs(): GuestAreaPrefs | null {
-  if (typeof window === 'undefined') return null
+function parseStoredArea(raw: string): GuestAreaPrefs | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
     const parsed = JSON.parse(raw) as Partial<GuestAreaPrefs>
     if (
       typeof parsed.city !== 'string' ||
@@ -32,16 +30,29 @@ export function loadGuestAreaPrefs(): GuestAreaPrefs | null {
     ) {
       return null
     }
+    const source = parsed.source
     return {
       city: parsed.city,
       state: normalizeStateCode(parsed.state),
       lat: parsed.lat,
       lng: parsed.lng,
-      source: parsed.source === 'geolocation' ? 'geolocation' : 'saved',
+      source:
+        source === 'geolocation'
+          ? 'geolocation'
+          : source === 'profile'
+            ? 'profile'
+            : 'saved',
     }
   } catch {
     return null
   }
+}
+
+export function loadGuestAreaPrefs(): GuestAreaPrefs | null {
+  if (typeof window === 'undefined') return null
+  const raw = localStorage.getItem(GUEST_STORAGE_KEY)
+  if (!raw) return null
+  return parseStoredArea(raw)
 }
 
 export function saveGuestAreaPrefs(prefs: Omit<GuestAreaPrefs, 'source'> & { source?: GuestAreaPrefs['source'] }) {
@@ -53,7 +64,31 @@ export function saveGuestAreaPrefs(prefs: Omit<GuestAreaPrefs, 'source'> & { sou
     lng: prefs.lng,
     source: prefs.source ?? 'saved',
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(payload))
+  localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(payload))
+}
+
+export function loadMemberBrowseArea(): GuestAreaPrefs | null {
+  if (typeof window === 'undefined') return null
+  const raw = localStorage.getItem(MEMBER_STORAGE_KEY)
+  if (!raw) return null
+  return parseStoredArea(raw)
+}
+
+export function saveMemberBrowseArea(prefs: Omit<GuestAreaPrefs, 'source'> & { source?: GuestAreaPrefs['source'] }) {
+  if (typeof window === 'undefined') return
+  const payload: GuestAreaPrefs = {
+    city: prefs.city.trim(),
+    state: normalizeStateCode(prefs.state),
+    lat: prefs.lat,
+    lng: prefs.lng,
+    source: prefs.source ?? 'saved',
+  }
+  localStorage.setItem(MEMBER_STORAGE_KEY, JSON.stringify(payload))
+}
+
+export function clearMemberBrowseArea() {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem(MEMBER_STORAGE_KEY)
 }
 
 function getCurrentPosition(): Promise<GeolocationPosition> {

@@ -9,9 +9,17 @@ interface Props {
   current: GuestAreaPrefs;
   onClose: () => void;
   onSave: (prefs: GuestAreaPrefs) => void;
+  profileDefault?: GuestAreaPrefs | null;
+  onUseProfile?: () => void;
 }
 
-export default function GuestBrowseSettingsModal({ current, onClose, onSave }: Props) {
+export default function GuestBrowseSettingsModal({
+  current,
+  onClose,
+  onSave,
+  profileDefault,
+  onUseProfile,
+}: Props) {
   const [city, setCity] = useState(current.city);
   const [state, setState] = useState(current.state);
   const [saving, setSaving] = useState(false);
@@ -135,6 +143,20 @@ export default function GuestBrowseSettingsModal({ current, onClose, onSave }: P
         </div>
 
         <form onSubmit={handleSave} className="px-6 py-5 space-y-4">
+          {profileDefault && onUseProfile && (
+            <button
+              type="button"
+              onClick={() => {
+                onUseProfile();
+                onClose();
+              }}
+              disabled={busy}
+              className="w-full flex items-center justify-center gap-2 border border-trust/30 text-trust font-semibold text-sm py-2.5 rounded-xl hover:bg-trust/5 transition-colors disabled:opacity-50"
+            >
+              Use profile location ({profileDefault.city}, {profileDefault.state})
+            </button>
+          )}
+
           <button
             type="button"
             onClick={handleUseLocation}
