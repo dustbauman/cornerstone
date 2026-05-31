@@ -21,6 +21,9 @@ import AuthAwareLink from "@/components/layout/AuthAwareLink";
 import LandingStatsBar from "@/components/landing/LandingStatsBar";
 import { getLandingStats } from "@/lib/db/stats";
 
+/** Live stats need the service role; skip static prerender when env is missing at build. */
+export const dynamic = "force-dynamic";
+
 const CATEGORIES = [
   { label: "Roofing", icon: Home },
   { label: "Electrical", icon: Zap },

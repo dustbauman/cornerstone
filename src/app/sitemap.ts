@@ -1,6 +1,9 @@
 import type { MetadataRoute } from 'next'
 import { getSiteUrl } from '@/lib/site'
-import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  createAdminClient,
+  isSupabaseAdminConfigured,
+} from '@/lib/supabase/admin'
 import { demoListingSlugs } from '@/lib/demo/listings'
 import { DB_LISTING_SELECT, isVerifiedPublicListing, type DbListingRow } from '@/lib/db/listings'
 
@@ -37,6 +40,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const seenProfiles = new Set(profileEntries.map((e) => e.url))
 
   try {
+    if (!isSupabaseAdminConfigured()) {
+      return [...staticEntries, ...profileEntries]
+    }
     const admin = createAdminClient()
 
     const { data: listings } = await admin

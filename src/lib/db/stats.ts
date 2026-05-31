@@ -1,4 +1,7 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  createAdminClient,
+  isSupabaseAdminConfigured,
+} from '@/lib/supabase/admin'
 import { isVerifiedPublicListing, type DbListingRow } from '@/lib/db/listings'
 
 export interface LandingStats {
@@ -8,23 +11,50 @@ export interface LandingStats {
   openRequests: number
 }
 
-export async function getLandingStats(): Promise<LandingStats> {
-  const admin = createAdminClient()
+export const EMPTY_LANDING_STATS: LandingStats = {
+  professionals: 0,
+  lodges: 0,
+  states: 0,
+  openRequests: 0,
+}
 
-  const [listingsRes, lodgesRes, requestsRes] = await Promise.all([
-    admin
-      .from('listings')
-      .select(
-        `id, state, profiles:profile_id ( verification_status, lodge_id )`
-      )
-      .eq('is_active', true)
-      .eq('visibility', 'public'),
-    admin.from('lodges').select('state').eq('status', 'active'),
-    admin
-      .from('requests')
-      .select('id', { count: 'exact', head: true })
-      .in('status', ['open', 'active']),
-  ])
+export async function getLandingStats(): Promise<LandingStats> {
+  if (!isSupabaseAdminConfigured()) {
+    return EMPTY_LANDING_STATS
+  }
+
+  let admin
+  try {
+    admin = createAdminClient()
+  } catch {
+    return EMPTY_LANDING_STATS
+  }
+
+  let listingsRes
+  let lodgesRes
+  let requestsRes
+  try {
+    ;[listingsRes, lodgesRes, requestsRes] = await Promise.all([
+      admin
+        .from('listings')
+        .select(
+          `id, state, profiles:profile_id ( verification_status, lodge_id )`
+        )
+        .eq('is_active', true)
+        .eq('visibility', 'public'),
+      admin.from('lodges').select('state').eq('status', 'active'),
+      admin
+        .from('requests')
+        .select('id', { count: 'exact', head: true })
+        .in('status', ['open', 'active']),
+    ])
+  } catch {
+    return EMPTY_LANDING_STATS
+  }
+
+  if (listingsRes.error || lodgesRes.error || requestsRes.error) {
+    return EMPTY_LANDING_STATS
+  }
 
   const rows = (listingsRes.data ?? []) as unknown as Pick<
     DbListingRow,
