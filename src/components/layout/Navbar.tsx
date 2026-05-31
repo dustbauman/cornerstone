@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, LogOut, ClipboardList, Network } from 'lucide-react'
+import { Menu, X, Settings, ClipboardList, Network } from 'lucide-react'
 import Logo from './Logo'
 import DashboardNavDropdown from './DashboardNavDropdown'
-import ProfileAvatar from '@/components/ui/ProfileAvatar'
+import UserAccountMenu from './UserAccountMenu'
 import { createClient } from '@/lib/supabase/client'
 import type { Session } from '@supabase/supabase-js'
 
@@ -108,30 +108,14 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-3">
             {isLoggedIn ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 text-white/90 text-sm">
-                  <ProfileAvatar
-                    name={userLabel}
-                    size="sm"
-                    tone="inverse"
-                  />
-                  <span className="font-medium max-w-[160px] truncate">{userLabel}</span>
-                </div>
-                <button
-                  onClick={handleSignOut}
-                  className="flex items-center gap-1.5 text-white/60 hover:text-white text-sm transition-colors"
-                >
-                  <LogOut size={16} />
-                  <span>Sign out</span>
-                </button>
-              </div>
+              <UserAccountMenu userLabel={userLabel} onSignOut={handleSignOut} />
             ) : (
               <div className="flex items-center gap-3">
                 <Link href="/login" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
                   Sign In
                 </Link>
                 <Link
-                  href="/join"
+                  href="/login"
                   className="bg-[#C9A84C] hover:bg-[#b8943d] text-navy font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
                 >
                   List Your Business
@@ -179,9 +163,17 @@ export default function Navbar() {
             {isLoggedIn ? (
               <>
                 <p className="text-white/50 text-xs px-1 pb-2 truncate">{userLabel}</p>
+                <Link
+                  href="/settings"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2"
+                >
+                  <Settings size={16} />
+                  Settings
+                </Link>
                 <button
                   onClick={() => { handleSignOut(); setMenuOpen(false) }}
-                  className="w-full text-center bg-white/10 text-white font-semibold py-2.5 rounded-lg text-sm"
+                  className="w-full text-center bg-white/10 text-white font-semibold py-2.5 rounded-lg text-sm mt-1"
                 >
                   Sign Out
                 </button>

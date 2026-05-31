@@ -56,13 +56,24 @@ export default function VerificationStatusCard({ state, lodgeName, lodgeNumber }
             Not affiliated with a lodge
           </span>
         </div>
-        <p className="text-sm leading-relaxed text-[#1A1A1A] mb-3">
+        <p className="text-sm leading-relaxed text-[#1A1A1A] mb-4">
           Tyrian is lodge-gated. Join through your lodge&apos;s invite link to get verified —
           or unlock your lodge if it&apos;s not on Tyrian yet.
         </p>
-        <Link href="/network" className="text-sm font-semibold text-navy underline hover:no-underline">
-          Find your lodge on the network →
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Link
+            href="/network"
+            className="inline-flex items-center justify-center bg-navy hover:bg-navy-dark text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+          >
+            Find your lodge
+          </Link>
+          <Link
+            href="/join"
+            className="inline-flex items-center justify-center border border-[#E5E0D5] hover:bg-stone text-navy font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+          >
+            Unlock your lodge
+          </Link>
+        </div>
       </div>
     )
   }

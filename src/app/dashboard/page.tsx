@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   Eye, Users, Share2, Edit3, Lock, Globe, Copy,
@@ -18,6 +18,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useDemoMode } from '@/lib/demo/context'
 import { demoUser, demoListings } from '@/lib/demo/data'
 import { getDemoListingBySlug } from '@/lib/demo/listings'
+import { computeProfileCompletion } from '@/lib/profile/completion'
+import MyRequestsSection, { type MyRequestRow } from '@/components/dashboard/MyRequestsSection'
+import { getAuthHeaders } from '@/lib/supabase/auth-headers'
 import type { Listing, TradeCategory } from '@/lib/types'
 
 interface DbListing {
@@ -25,8 +28,10 @@ interface DbListing {
   business_name: string
   trade_category: string
   description: string | null
+  phone: string | null
   google_rating: number | null
   google_rating_count: number | null
+  views_count: number
 }
 
 interface DisplayUser {
@@ -67,6 +72,20 @@ interface SentResponse {
   } | null
 }
 
+const DEMO_MY_REQUESTS: MyRequestRow[] = [
+  {
+    id: 'demo-my-request',
+    title: 'Need electrician for panel upgrade — 200 amp service',
+    category: 'Electrical',
+    city: 'Tulsa',
+    state: 'OK',
+    status: 'active',
+    responses_count: 2,
+    new_responses_count: 1,
+    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+]
+
 const DEMO_SENT_RESPONSES: SentResponse[] = [
   {
     id: 'demo-resp-1',
@@ -105,11 +124,19 @@ export default function DashboardPage() {
   const [dbListing, setDbListing] = useState<DbListing | null>(null)
   const [accessState, setAccessState] = useState<MemberAccessState>('unaffiliated')
   const [sentResponses, setSentResponses] = useState<SentResponse[]>([])
+  const [myRequests, setMyRequests] = useState<MyRequestRow[]>([])
   const [loading, setLoading] = useState(true)
+  const [profileFields, setProfileFields] = useState<{
+    city: string | null
+    state: string | null
+    tradeCategory: string | null
+    occupation: string | null
+  } | null>(null)
 
   useEffect(() => {
     if (isDemoMode) {
       setDisplayUser(DEMO_DISPLAY_USER)
+      setMyRequests(DEMO_MY_REQUESTS)
       setSentResponses(DEMO_SENT_RESPONSES)
       setLoading(false)
       return
@@ -125,12 +152,16 @@ export default function DashboardPage() {
       const [{ data: profile }, { data: listingRow }] = await Promise.all([
         supabase
           .from('profiles')
-          .select('full_name, city, state, referral_code, lodge_id, verification_status')
+          .select(
+            'full_name, city, state, referral_code, lodge_id, verification_status, trade_category, occupation'
+          )
           .eq('id', user.id)
           .single(),
         supabase
           .from('listings')
-          .select('id, business_name, trade_category, description, google_rating, google_rating_count')
+          .select(
+            'id, business_name, trade_category, description, phone, google_rating, google_rating_count, views_count'
+          )
           .eq('profile_id', user.id)
           .eq('is_active', true)
           .maybeSingle(),
@@ -156,6 +187,13 @@ export default function DashboardPage() {
       }
 
       if (listingRow) setDbListing(listingRow as DbListing)
+
+      setProfileFields({
+        city: profile?.city ?? null,
+        state: profile?.state ?? null,
+        tradeCategory: profile?.trade_category ?? null,
+        occupation: profile?.occupation ?? null,
+      })
 
       const metaName =
         (user.user_metadata?.full_name as string) ||
@@ -185,12 +223,21 @@ export default function DashboardPage() {
             })
       )
 
-      if (profile?.verification_status === 'verified') {
-        fetch('/api/me/responses')
-          .then((r) => (r.ok ? r.json() : { responses: [] }))
-          .then((data) => setSentResponses(data.responses ?? []))
-          .catch(() => setSentResponses([]))
-      }
+      getAuthHeaders().then((authHeaders) => {
+        const fetchOpts: RequestInit = { credentials: 'include', headers: authHeaders }
+
+        fetch('/api/me/requests', fetchOpts)
+          .then((r) => (r.ok ? r.json() : { requests: [] }))
+          .then((data) => setMyRequests(data.requests ?? []))
+          .catch(() => setMyRequests([]))
+
+        if (profile?.verification_status === 'verified') {
+          fetch('/api/me/responses', fetchOpts)
+            .then((r) => (r.ok ? r.json() : { responses: [] }))
+            .then((data) => setSentResponses(data.responses ?? []))
+            .catch(() => setSentResponses([]))
+        }
+      })
 
       setLoading(false)
     })
@@ -203,6 +250,70 @@ export default function DashboardPage() {
   const demoListing = isDemoMode
     ? demoListings.find(l => l.slug === 'plumb-line-plumbing')
     : null
+
+  const completion = useMemo(() => {
+    if (!displayUser) {
+      return computeProfileCompletion({
+        fullName: '',
+        hasActiveListing: false,
+      })
+    }
+    if (isDemoMode) {
+      return computeProfileCompletion({
+        fullName: displayUser.fullName,
+        city: demoUser.city,
+        state: demoUser.state,
+        tradeCategory: demoUser.trade_category,
+        occupation: 'Plumber',
+        hasActiveListing: true,
+        listingHasDescription: true,
+        listingHasPhone: true,
+      })
+    }
+    const result = computeProfileCompletion({
+      fullName: displayUser.fullName,
+      city: profileFields?.city,
+      state: profileFields?.state,
+      tradeCategory: profileFields?.tradeCategory,
+      occupation: profileFields?.occupation,
+      hasActiveListing: !!dbListing,
+      listingHasDescription: !!dbListing?.description?.trim(),
+      listingHasPhone: !!dbListing?.phone?.trim(),
+    })
+    if (dbListing?.id) {
+      const details = result.steps.find(s => s.id === 'listing_details')
+      if (details && !details.done) {
+        details.href = `/dashboard/listing/edit/${dbListing.id}`
+      }
+    }
+    return result
+  }, [isDemoMode, displayUser, profileFields, dbListing])
+
+  const listingViews = isDemoMode ? 312 : (dbListing?.views_count ?? 0)
+
+  const stats = [
+    {
+      label: 'Listing views',
+      value: isDemoMode ? '312' : String(listingViews),
+      delta: isDemoMode ? 'demo data' : listingViews > 0 ? 'all time' : 'not tracked yet',
+      icon: Eye,
+    },
+    {
+      label: 'Referrals received',
+      value: isDemoMode ? '17' : '0',
+      delta: isDemoMode ? 'demo data' : 'tracking not live yet',
+      icon: Users,
+    },
+    {
+      label: 'Profile completion',
+      value: `${completion.percent}%`,
+      delta: completion.isComplete
+        ? 'Profile complete'
+        : completion.nextStep?.label ?? completion.summary,
+      icon: TrendingUp,
+      href: completion.isComplete ? undefined : completion.nextStep?.href,
+    },
+  ]
 
   if (loading) {
     return (
@@ -219,12 +330,6 @@ export default function DashboardPage() {
   if (!displayUser) return null
 
   const canList = isDemoMode || accessState === 'verified'
-
-  const stats = [
-    { label: 'Profile Views', value: isDemoMode ? '312' : '—', delta: 'this month', icon: Eye },
-    { label: 'Referrals Received', value: isDemoMode ? '17' : '0', delta: 'total', icon: Users },
-    { label: 'Profile Completion', value: isDemoMode ? '92%' : '40%', delta: isDemoMode ? 'Complete your profile →' : 'Add your listing to complete setup', icon: TrendingUp },
-  ]
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -250,23 +355,43 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
         {/* Stats row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {stats.map(({ label, value, delta, icon: Icon }) => (
-            <div key={label} className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-sm text-muted font-medium">{label}</p>
-                <div className="w-9 h-9 rounded-full bg-navy/5 flex items-center justify-center">
-                  <Icon size={18} className="text-navy" />
+          {stats.map(({ label, value, delta, icon: Icon, href }) => {
+            const inner = (
+              <>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm text-muted font-medium">{label}</p>
+                  <div className="w-9 h-9 rounded-full bg-navy/5 flex items-center justify-center">
+                    <Icon size={18} className="text-navy" />
+                  </div>
                 </div>
+                <div
+                  className="text-3xl font-bold text-navy"
+                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                >
+                  {value}
+                </div>
+                <p className={`text-xs mt-1 ${completion.isComplete && label === 'Profile completion' ? 'text-muted' : 'text-[#2D6A4F]'}`}>
+                  {delta}
+                </p>
+              </>
+            )
+            if (href) {
+              return (
+                <Link
+                  key={label}
+                  href={href}
+                  className="block bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5 hover:border-gold/40 hover:shadow-md transition-all"
+                >
+                  {inner}
+                </Link>
+              )
+            }
+            return (
+              <div key={label} className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
+                {inner}
               </div>
-              <div
-                className="text-3xl font-bold text-navy"
-                style={{ fontFamily: "'Cormorant Garamond', serif" }}
-              >
-                {value}
-              </div>
-              <p className="text-xs text-[#2D6A4F] mt-1">{delta}</p>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -367,6 +492,8 @@ export default function DashboardPage() {
                 )}
               </div>
             )}
+
+            <MyRequestsSection requests={myRequests} demoMode={isDemoMode} />
 
             {/* Your responses */}
             {(isDemoMode || accessState === 'verified') && (
@@ -505,19 +632,36 @@ export default function DashboardPage() {
               lodgeNumber={displayUser.lodgeNumber || undefined}
             />
 
-            {/* Profile completion */}
-            <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
-              <h3 className="font-semibold text-navy text-sm mb-3">Profile Completion</h3>
-              <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
-                <div
-                  className="bg-[#2D6A4F] h-2 rounded-full transition-all"
-                  style={{ width: isDemoMode ? '92%' : '40%' }}
-                />
+            {!completion.isComplete && (
+              <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
+                <h3 className="font-semibold text-navy text-sm mb-3">Profile completion</h3>
+                <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
+                  <div
+                    className="bg-[#2D6A4F] h-2 rounded-full transition-all"
+                    style={{ width: `${completion.percent}%` }}
+                  />
+                </div>
+                <ul className="space-y-2 mb-3">
+                  {completion.steps.map(step => (
+                    <li key={step.id} className="flex items-start gap-2 text-xs">
+                      <span className={step.done ? 'text-trust' : 'text-muted'}>
+                        {step.done ? '✓' : '○'}
+                      </span>
+                      {step.href && !step.done ? (
+                        <Link href={step.href} className="text-navy font-medium hover:underline">
+                          {step.label}
+                        </Link>
+                      ) : (
+                        <span className={step.done ? 'text-muted line-through' : 'text-[#1A1A1A]'}>
+                          {step.label}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-muted">{completion.summary}</p>
               </div>
-              <p className="text-xs text-muted">
-                {isDemoMode ? '92% complete — add a profile photo to finish.' : '40% complete — add a listing to continue.'}
-              </p>
-            </div>
+            )}
           </div>
         </div>
       </div>

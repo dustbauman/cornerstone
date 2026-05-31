@@ -4,15 +4,17 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
-  Users, ShieldCheck, CheckCircle2, Clock, Eye,
+  Users, CheckCircle2, Clock, Eye, MessageSquare,
   Copy, QrCode, Mail, ChevronRight, AlertCircle,
-  Building2, Loader2,
+  Building2, Loader2, Settings,
 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { createClient } from '@/lib/supabase/client'
 import ProfileAvatar from '@/components/ui/ProfileAvatar'
 import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
+import AdminStatCard from '@/components/admin/AdminStatCard'
+import { DB_REQUEST_SELECT, type DbRequestRow } from '@/lib/db/requests'
 import { Suspense } from 'react'
 
 interface Lodge {
@@ -48,9 +50,9 @@ interface Member {
 
 interface Stats {
   totalMembers: number
-  verifiedMembers: number
-  activeListings: number
   pendingApprovals: number
+  activeListings: number
+  openRequests: number
 }
 
 const SETUP_STEP_DEFS = [
@@ -101,15 +103,19 @@ function AdminContent() {
         return
       }
 
+      const lodgeId = profile.lodge_id
+
       const [
         { data: lodgeData },
         { data: membersData },
         { data: listingsData },
+        { data: requestRows },
         unverifiedResult,
       ] = await Promise.all([
-        supabase.from('lodges').select('*').eq('id', profile.lodge_id).single(),
-        supabase.from('profiles').select('id, full_name, email, trade_category, city, verification_status, is_lodge_admin, is_co_admin').eq('lodge_id', profile.lodge_id),
+        supabase.from('lodges').select('*').eq('id', lodgeId).single(),
+        supabase.from('profiles').select('id, full_name, email, trade_category, city, verification_status, is_lodge_admin, is_co_admin').eq('lodge_id', lodgeId),
         supabase.from('listings').select('id, profile_id').eq('is_active', true),
+        supabase.from('requests').select(DB_REQUEST_SELECT).in('status', ['open', 'active']),
         showDirectoryReview
           ? supabase.from('lodges').select('*').is('directory_id', null).eq('status', 'active')
           : Promise.resolve({ data: [] as Lodge[] }),
@@ -119,17 +125,21 @@ function AdminContent() {
       const lodgeListings = (listingsData || []).filter(
         (l: { profile_id: string }) => lodgeMemberIds.has(l.profile_id)
       )
+      const openRequests = (requestRows || []).filter(
+        (r: DbRequestRow) =>
+          r.lodge_id === lodgeId || (r.profile_id != null && lodgeMemberIds.has(r.profile_id))
+      )
 
       setLodge(lodgeData)
       const memberList = (membersData || []) as Member[]
       setMembers(memberList)
       setStats({
         totalMembers: memberList.length,
-        verifiedMembers: memberList.filter(m => m.verification_status === 'verified').length,
-        activeListings: lodgeListings.length,
         pendingApprovals: memberList.filter(
           m => m.verification_status === 'pending' && !m.is_lodge_admin && !m.is_co_admin
         ).length,
+        activeListings: lodgeListings.length,
+        openRequests: openRequests.length,
       })
       if (showDirectoryReview) {
         setUnverifiedLodges((unverifiedResult.data || []) as Lodge[])
@@ -179,7 +189,6 @@ function AdminContent() {
       )
       setStats(prev => prev ? {
         ...prev,
-        verifiedMembers: action === 'approve' ? prev.verifiedMembers + 1 : prev.verifiedMembers,
         pendingApprovals: Math.max(0, prev.pendingApprovals - 1),
       } : prev)
     }
@@ -267,12 +276,21 @@ function AdminContent() {
             </p>
           )}
           {lodge && (
-            <Link
-              href={`/lodge/${lodge.slug ?? lodge.id}`}
-              className="text-sm text-white/70 hover:text-white underline mt-2 inline-block"
-            >
-              View public lodge page →
-            </Link>
+            <div className="flex flex-col items-start gap-2.5 mt-3">
+              <Link
+                href={`/lodge/${lodge.slug ?? lodge.id}`}
+                className="text-sm text-white/70 hover:text-white underline"
+              >
+                View public lodge page →
+              </Link>
+              <Link
+                href="/admin/settings"
+                className="inline-flex items-center gap-2 text-sm text-white/90 hover:text-white bg-white/10 hover:bg-white/15 border border-white/20 rounded-lg px-3 py-1.5 font-medium transition-colors"
+              >
+                <Settings size={15} aria-hidden />
+                Lodge settings
+              </Link>
+            </div>
           )}
         </div>
       </div>
@@ -334,22 +352,16 @@ function AdminContent() {
         {/* Stats row */}
         {stats && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              { label: 'Total members',     value: stats.totalMembers,     icon: Users },
-              { label: 'Verified members',  value: stats.verifiedMembers,  icon: ShieldCheck },
-              { label: 'Active listings',   value: stats.activeListings,   icon: Eye },
-              { label: 'Pending approvals', value: stats.pendingApprovals, icon: Clock },
-            ].map(({ label, value, icon: Icon }) => (
-              <div key={label} className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs text-muted font-medium">{label}</p>
-                  <Icon size={16} className="text-navy" />
-                </div>
-                <div className="text-3xl font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-                  {value}
-                </div>
-              </div>
-            ))}
+            <AdminStatCard href="/admin/members" label="Total members" value={stats.totalMembers} icon={Users} />
+            <AdminStatCard
+              href="/admin/pending"
+              label="Pending approvals"
+              value={stats.pendingApprovals}
+              icon={Clock}
+              highlight={stats.pendingApprovals > 0}
+            />
+            <AdminStatCard href="/admin/listings" label="Active listings" value={stats.activeListings} icon={Eye} />
+            <AdminStatCard href="/admin/requests" label="Open requests" value={stats.openRequests} icon={MessageSquare} />
           </div>
         )}
 
@@ -363,9 +375,14 @@ function AdminContent() {
                   <h2 className="text-xl font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                     Pending approvals
                   </h2>
-                  <span className="text-xs bg-amber-100 text-amber-700 font-semibold px-2.5 py-1 rounded-full">
-                    {pendingMembers.length} waiting
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs bg-amber-100 text-amber-700 font-semibold px-2.5 py-1 rounded-full">
+                      {pendingMembers.length} waiting
+                    </span>
+                    <Link href="/admin/pending" className="text-xs font-semibold text-navy hover:underline">
+                      View all →
+                    </Link>
+                  </div>
                 </div>
                 <div className="space-y-3">
                   {pendingMembers.map(member => (
@@ -406,10 +423,13 @@ function AdminContent() {
 
             {/* Member table */}
             <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-[#E5E0D5]">
+              <div className="px-6 py-5 border-b border-[#E5E0D5] flex items-center justify-between">
                 <h2 className="text-xl font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                   Members ({members.length})
                 </h2>
+                <Link href="/admin/members" className="text-xs font-semibold text-navy hover:underline">
+                  View all →
+                </Link>
               </div>
               {members.length === 0 ? (
                 <div className="px-6 py-10 text-center text-muted">
@@ -418,8 +438,12 @@ function AdminContent() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-50">
-                  {members.map(member => (
-                    <div key={member.id} className="flex items-center justify-between gap-3 px-6 py-3.5 hover:bg-stone/50 transition-colors">
+                  {members.slice(0, 8).map(member => (
+                    <Link
+                      key={member.id}
+                      href="/admin/members"
+                      className="flex items-center justify-between gap-3 px-6 py-3.5 hover:bg-stone/50 transition-colors"
+                    >
                       <div className="flex items-center gap-3 min-w-0">
                         <ProfileAvatar name={member.full_name || 'Member'} size="md" />
                         <div className="min-w-0">
@@ -444,7 +468,7 @@ function AdminContent() {
                         </span>
                         <ChevronRight size={14} className="text-muted" />
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
@@ -601,11 +625,37 @@ function AdminContent() {
               )
             })()}
 
-            {/* Lodge info */}
+            <Link
+              href="/admin/settings"
+              className="block bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5 hover:border-gold/40 hover:shadow-md transition-all group"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-full bg-navy/5 flex items-center justify-center flex-shrink-0">
+                    <Settings size={16} className="text-navy" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-navy text-sm group-hover:text-gold transition-colors">
+                      Lodge settings
+                    </h3>
+                    <p className="text-xs text-muted mt-1 leading-relaxed">
+                      Welcome message, meeting schedule, address, website, and city shown on your lodge page.
+                    </p>
+                    {lodge?.welcome_message?.trim() ? (
+                      <p className="text-xs text-trust mt-2 font-medium">Welcome message set</p>
+                    ) : (
+                      <p className="text-xs text-amber-700 mt-2 font-medium">Add a welcome message →</p>
+                    )}
+                  </div>
+                </div>
+                <ChevronRight size={18} className="text-muted group-hover:text-navy flex-shrink-0 mt-0.5" />
+              </div>
+            </Link>
+
             <div className="bg-[#2D6A4F]/5 border border-[#2D6A4F]/15 rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Building2 size={16} className="text-[#2D6A4F]" />
-                <h3 className="font-semibold text-navy text-sm">Lodge details</h3>
+                <h3 className="font-semibold text-navy text-sm">Lodge overview</h3>
               </div>
               {lodge && (
                 <div className="space-y-1.5 text-sm">

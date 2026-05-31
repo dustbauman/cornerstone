@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import ResponseCard, { type ResponseItem } from "@/components/requests/ResponseCard";
 import { createClient } from "@/lib/supabase/client";
+import { getAuthHeaders } from "@/lib/supabase/auth-headers";
 
 interface RequestSummary {
   id: string;
@@ -37,13 +38,40 @@ export default function RequestResponsesPage({ params }: { params: { id: string 
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      setIsGuest(!user);
+      const loggedIn = !!user;
+      setIsGuest(!loggedIn);
 
-      const qs = token ? `?token=${encodeURIComponent(token)}` : "";
-      const res = await fetch(`/api/requests/${params.id}/responses${qs}`);
+      const authHeaders = await getAuthHeaders();
+      const fetchOpts: RequestInit = {
+        credentials: "include",
+        headers: authHeaders,
+      };
+
+      let res: Response;
+
+      if (loggedIn) {
+        res = await fetch(`/api/me/requests/${params.id}/responses`, fetchOpts);
+        if (res.status === 403 || res.status === 401) {
+          const qs = token ? `?token=${encodeURIComponent(token)}` : "";
+          res = await fetch(`/api/requests/${params.id}/responses${qs}`, fetchOpts);
+        }
+      } else {
+        const qs = token ? `?token=${encodeURIComponent(token)}` : "";
+        res = await fetch(`/api/requests/${params.id}/responses${qs}`, fetchOpts);
+      }
 
       if (res.status === 401) {
-        setError("This link is invalid or has expired.");
+        setError(
+          loggedIn
+            ? "We couldn't verify access to this request. Try opening it from Dashboard → My requests."
+            : "This link is invalid or has expired."
+        );
+        setLoading(false);
+        return;
+      }
+
+      if (res.status === 403) {
+        setError("You don't have access to this request.");
         setLoading(false);
         return;
       }
@@ -65,9 +93,11 @@ export default function RequestResponsesPage({ params }: { params: { id: string 
   }, [params.id, token]);
 
   async function handleMarkHired(responseId: string) {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`/api/requests/${params.id}/mark-filled`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders },
+      credentials: "include",
       body: JSON.stringify({ responseId, token: token ?? undefined }),
     });
 
@@ -90,13 +120,23 @@ export default function RequestResponsesPage({ params }: { params: { id: string 
       <Navbar />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full">
-        <Link
-          href="/requests"
-          className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-navy transition-colors mb-6"
-        >
-          <ArrowLeft size={16} />
-          Back to request board
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-6">
+          <Link
+            href="/requests"
+            className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-navy transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Back to request board
+          </Link>
+          {!isGuest && (
+            <Link
+              href="/dashboard#my-requests"
+              className="text-sm text-muted hover:text-navy transition-colors"
+            >
+              My requests on dashboard →
+            </Link>
+          )}
+        </div>
 
         {loading && (
           <div className="flex justify-center py-20">
@@ -107,9 +147,19 @@ export default function RequestResponsesPage({ params }: { params: { id: string 
         {error && (
           <div className="bg-white rounded-2xl border border-red-100 p-8 text-center">
             <p className="text-red-600 font-medium">{error}</p>
-            <Link href="/requests" className="text-sm text-navy underline mt-4 inline-block">
-              Return to request board
-            </Link>
+            {!isGuest && (
+              <Link
+                href="/dashboard#my-requests"
+                className="text-sm text-navy underline mt-4 inline-block"
+              >
+                Go to My requests →
+              </Link>
+            )}
+            {isGuest && (
+              <Link href="/requests" className="text-sm text-navy underline mt-4 inline-block">
+                Return to request board
+              </Link>
+            )}
           </div>
         )}
 

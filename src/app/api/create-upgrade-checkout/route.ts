@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { lodgeId, fromTier, toTier, price } = body
+  const { lodgeId, fromTier, toTier } = body
 
   if (!lodgeId || !fromTier || !toTier) {
     return Response.json({ error: 'Missing required fields' }, { status: 400 })

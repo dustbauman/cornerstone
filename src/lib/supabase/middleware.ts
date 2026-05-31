@@ -37,7 +37,12 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
-  const isProtected = path.startsWith('/dashboard') || path.startsWith('/admin')
+  const isProtected =
+    path.startsWith('/dashboard') ||
+    path.startsWith('/admin') ||
+    path.startsWith('/settings')
+
+  const requiresLodge = path.startsWith('/dashboard') || path.startsWith('/admin')
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone()
@@ -46,7 +51,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  if (user && isProtected) {
+  if (user && requiresLodge) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('lodge_id')

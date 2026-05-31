@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import LodgeCard, { type LodgeCardData } from '@/components/lodge/LodgeCard'
+import UnlockLodgeBanner from '@/components/network/UnlockLodgeBanner'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
@@ -80,9 +81,15 @@ export default async function NetworkPage() {
           <h1 className="text-4xl font-bold mb-3" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
             The Network
           </h1>
-          <p className="text-white/60 text-lg max-w-2xl">
+          <p className="text-white/60 text-lg max-w-2xl mb-4">
             Every lodge on Tyrian. Browse listings, open requests, and verified members from lodges across the country.
           </p>
+          <Link
+            href="/join"
+            className="inline-flex text-sm font-semibold text-gold hover:text-gold-light transition-colors"
+          >
+            Don&apos;t see your lodge? Unlock it on Tyrian →
+          </Link>
         </div>
       </div>
 
@@ -101,11 +108,14 @@ export default async function NetworkPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {lodges.map(lodge => (
-              <LodgeCard key={lodge.id} lodge={lodge} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {lodges.map(lodge => (
+                <LodgeCard key={lodge.id} lodge={lodge} />
+              ))}
+            </div>
+            <UnlockLodgeBanner />
+          </>
         )}
       </div>
 

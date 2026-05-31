@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
+import AuthAwareLink from "./AuthAwareLink";
 
 export default function Footer() {
   return (
@@ -18,28 +19,32 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/directory" className="hover:text-white transition-colors">Directory</Link></li>
               <li><Link href="/requests" className="hover:text-white transition-colors">Service Requests</Link></li>
-              <li><span className="cursor-default">List Your Business</span></li>
-              <li><span className="cursor-default">Sign In</span></li>
+              <li>
+                <AuthAwareLink className="hover:text-white transition-colors">
+                  List Your Business
+                </AuthAwareLink>
+              </li>
+              <li><Link href="/login" className="hover:text-white transition-colors">Sign In</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="text-white font-semibold text-sm mb-3 uppercase tracking-wider">Community</h4>
             <ul className="space-y-2 text-sm">
-              <li><span className="cursor-default">About Tyrian</span></li>
-              <li><span className="cursor-default">For Lodges</span></li>
+              <li><Link href="/about" className="hover:text-white transition-colors">About Tyrian</Link></li>
+              <li><Link href="/join" className="hover:text-white transition-colors">For Lodges</Link></li>
               <li><Link href="/admin" className="hover:text-white transition-colors">Lodge Admin</Link></li>
-              <li><span className="cursor-default">Join the Network</span></li>
+              <li><Link href="/network" className="hover:text-white transition-colors">Join the Network</Link></li>
             </ul>
           </div>
         </div>
 
         <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/30">
           <p>© 2025 Tyrian. All rights reserved. · Built on a foundation of trust.</p>
-          <div className="flex gap-4">
-            <span className="cursor-default">Privacy Policy</span>
-            <span className="cursor-default">Terms of Use</span>
-            <span className="cursor-default">Contact</span>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/privacy" className="hover:text-white/60 transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white/60 transition-colors">Terms of Use</Link>
+            <Link href="/contact" className="hover:text-white/60 transition-colors">Contact</Link>
           </div>
         </div>
       </div>

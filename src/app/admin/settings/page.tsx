@@ -7,7 +7,9 @@ import { Loader2, ArrowLeft, Building2 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { createClient } from '@/lib/supabase/client'
-import { normalizeWebsiteUrl } from '@/lib/url'
+
+const field =
+  'w-full border border-[#E5E0D5] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition bg-white'
 
 function AdminSettingsContent() {
   const router = useRouter()
@@ -16,7 +18,8 @@ function AdminSettingsContent() {
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [lodgeId, setLodgeId] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const [form, setForm] = useState({
     city: '',
     meeting_address: '',
@@ -28,8 +31,13 @@ function AdminSettingsContent() {
   useEffect(() => {
     async function load() {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) {
+        router.push('/login?redirect=/admin/settings')
+        return
+      }
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -44,7 +52,9 @@ function AdminSettingsContent() {
 
       const { data: lodge } = await supabase
         .from('lodges')
-        .select('id, city, meeting_address, meeting_schedule, website, welcome_message, directory_id')
+        .select(
+          'id, city, meeting_address, meeting_schedule, website, welcome_message, directory_id'
+        )
         .eq('id', profile.lodge_id)
         .single()
 
@@ -64,7 +74,6 @@ function AdminSettingsContent() {
           }
         }
 
-        setLodgeId(lodge.id)
         setForm({
           city,
           meeting_address: meetingAddress,
@@ -80,28 +89,33 @@ function AdminSettingsContent() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!lodgeId) return
     setSaving(true)
+    setSaveError(null)
+    setSaveSuccess(false)
 
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('lodges')
-      .update({
-        city: form.city.trim(),
-        meeting_address: form.meeting_address.trim() || null,
-        meeting_schedule: form.meeting_schedule.trim() || null,
-        website: normalizeWebsiteUrl(form.website),
-        welcome_message: form.welcome_message.trim() || null,
-      })
-      .eq('id', lodgeId)
+    const res = await fetch('/api/admin/lodge', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    })
 
+    const data = await res.json().catch(() => ({}))
     setSaving(false)
-    if (!error) {
-      router.push(fromOnboarding ? '/admin?onboarding=true' : '/admin')
+
+    if (!res.ok) {
+      setSaveError(
+        typeof data.error === 'string' ? data.error : 'Could not save lodge details. Please try again.'
+      )
+      return
+    }
+
+    setSaveSuccess(true)
+    if (fromOnboarding) {
+      router.push('/admin?onboarding=true')
+    } else {
+      router.refresh()
     }
   }
-
-  const field = 'w-full border border-[#E5E0D5] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition bg-white'
 
   if (loading) {
     return (
@@ -115,13 +129,15 @@ function AdminSettingsContent() {
     )
   }
 
+  const backHref = fromOnboarding ? '/admin?onboarding=true' : '/admin'
+
   return (
     <div className="flex flex-col min-h-screen bg-stone">
       <Navbar />
 
       <div className="max-w-lg mx-auto px-4 py-10 flex-1 w-full">
         <Link
-          href={fromOnboarding ? '/admin?onboarding=true' : '/admin'}
+          href={backHref}
           className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-navy mb-6"
         >
           <ArrowLeft size={14} />
@@ -133,18 +149,27 @@ function AdminSettingsContent() {
             <Building2 size={20} className="text-navy" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              Lodge details
+            <h1
+              className="text-2xl font-bold text-navy"
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            >
+              Lodge settings
             </h1>
-            <p className="text-sm text-muted">Location, meeting info, and welcome message for members.</p>
+            <p className="text-sm text-muted">
+              Shown on your public lodge page and member join link.
+            </p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6 space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6 space-y-4"
+        >
           <div>
             <label className="block text-sm font-semibold text-navy mb-1.5">City</label>
             <input
               type="text"
+              required
               value={form.city}
               onChange={e => setForm({ ...form, city: e.target.value })}
               placeholder="Tampa"
@@ -171,7 +196,6 @@ function AdminSettingsContent() {
               placeholder="1st & 3rd Tuesday, 7:30 PM"
               className={field}
             />
-            <p className="text-xs text-muted mt-1">Shown on your lodge page and member invite link.</p>
           </div>
           <div>
             <label className="block text-sm font-semibold text-navy mb-1.5">Lodge website</label>
@@ -190,20 +214,35 @@ function AdminSettingsContent() {
             <textarea
               value={form.welcome_message}
               onChange={e => setForm({ ...form, welcome_message: e.target.value })}
-              placeholder="Welcome message shown to members joining your lodge…"
-              rows={4}
-              className={`${field} resize-none`}
+              placeholder="A short welcome for brothers visiting your lodge page…"
+              rows={5}
+              className={`${field} resize-y min-h-[120px]`}
             />
+            <p className="text-xs text-muted mt-1">
+              Appears on your public lodge page below the lodge name.
+            </p>
           </div>
+
+          {saveError && <p className="text-sm text-red-600">{saveError}</p>}
+          {saveSuccess && !fromOnboarding && (
+            <p className="text-sm text-trust font-medium">Lodge settings saved.</p>
+          )}
 
           <button
             type="submit"
             disabled={saving}
             className="w-full bg-navy hover:bg-navy/90 disabled:opacity-50 text-[#C9A84C] font-bold py-3 rounded-xl transition-colors text-sm"
           >
-            {saving ? 'Saving…' : 'Save lodge details'}
+            {saving ? 'Saving…' : 'Save lodge settings'}
           </button>
         </form>
+
+        <p className="text-xs text-muted text-center mt-4">
+          Also available from{' '}
+          <Link href="/settings" className="text-navy font-semibold underline">
+            Account settings
+          </Link>
+        </p>
       </div>
 
       <Footer />

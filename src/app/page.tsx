@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import AuthAwareLink from "@/components/layout/AuthAwareLink";
+import LandingStatsBar from "@/components/landing/LandingStatsBar";
+import { getLandingStats } from "@/lib/db/stats";
 
 const CATEGORIES = [
   { label: "Roofing", icon: Home },
@@ -33,41 +36,36 @@ const CATEGORIES = [
   { label: "Painting", icon: PaintBucket },
 ];
 
-const STATS = [
-  { value: "1,200+", label: "Verified Professionals" },
-  { value: "48", label: "Lodges on the Network" },
-  { value: "12", label: "States Covered" },
-  { value: "50+", label: "Open Requests" },
-];
-
 const HOW_IT_WORKS = [
   {
     step: "01",
-    label: "Looking for a service?",
-    title: "Hire someone you can trust.",
-    body: "Post a request or browse verified lodge professionals. Every listing is backed by a real sponsor confirmation — not an anonymous profile and five stars from strangers.",
-    cta: "Browse the directory",
+    label: "Get verified",
+    title: "Get verified",
+    body: "Apply through your lodge. A sponsor confirms your membership and standing — the same standard of trust Freemasonry has upheld for centuries.",
+    cta: "Browse the Directory",
     href: "/directory",
   },
   {
     step: "02",
-    label: "Have a skill or trade?",
-    title: "Your brothers need what you know.",
-    body: "The request board shows real demand from real members nearby. You don't need a formal business to list — just a skill and a willingness to help.",
-    cta: "See open requests",
-    href: "/requests",
+    label: "List your business",
+    title: "List your business",
+    body: "Create your professional profile in minutes. Your lodge affiliation, trade, location, and services — all in one place, visible to members and the public.",
+    cta: "List Your Business",
+    href: "/login",
   },
   {
     step: "03",
-    label: "Part of the brotherhood?",
-    title: "This is your network.",
-    body: "Browse your lodge's members, listings, and open requests. Connect with lodges in every state. The craft has always been built on mutual support — Tyrian is where that happens.",
-    cta: "Explore the network",
+    label: "Get found and referred",
+    title: "Get found and referred",
+    body: "Members search for verified professionals. The public finds you through Google. Every connection on Tyrian is backed by real accountability — not just an algorithm.",
+    cta: "Explore the Network",
     href: "/network",
   },
 ];
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const liveStats = await getLandingStats();
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -90,12 +88,13 @@ export default function LandingPage() {
               The professional network for Freemasons
             </div>
             <h1 className="font-serif text-5xl md:text-6xl font-bold leading-tight mb-6">
-              Never hire a stranger.
-              <span className="text-gold block mt-1">Never work alone.</span>
+              Hire with confidence.
+              <span className="text-gold block mt-1">Get found by your community.</span>
             </h1>
             <p className="text-white/70 text-xl leading-relaxed mb-10 max-w-2xl">
-              Tyrian connects lodge-verified professionals with the brothers who need them — and gives
-              every Mason a place to put their skills to work.
+              Every professional on Tyrian is lodge-verified and accountable to their community.
+              Browse trusted service providers across the US — or list your business and start
+              receiving referrals today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
@@ -105,37 +104,23 @@ export default function LandingPage() {
                 Browse the Directory
                 <ArrowRight size={20} />
               </Link>
-              <Link
-                href="/dashboard"
+              <AuthAwareLink
                 className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-lg px-8 py-4 rounded-xl border border-white/20 transition-colors"
               >
                 List Your Business
-              </Link>
+              </AuthAwareLink>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats bar */}
-      <section className="bg-navy-dark text-white border-t border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {STATS.map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="font-serif text-3xl font-bold text-gold">{s.value}</div>
-                <div className="text-white/50 text-sm mt-1">{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <p className="text-center text-white/30 text-xs mt-6">Growing across Florida, Oklahoma, and beyond.</p>
-        </div>
-      </section>
+      <LandingStatsBar liveStats={liveStats} />
 
       {/* How it works */}
       <section className="py-20 bg-stone">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="font-serif text-4xl font-bold text-navy mb-3">Built for every member</h2>
+            <h2 className="font-serif text-4xl font-bold text-navy mb-3">How Tyrian works</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {HOW_IT_WORKS.map((item) => (
@@ -265,12 +250,9 @@ export default function LandingPage() {
                 verified professional reputation that compounds over time. Your lodge affiliation
                 is your credential — put it to work.
               </p>
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 bg-gold hover:bg-gold-dark text-navy font-bold px-5 py-3 rounded-xl transition-colors text-sm"
-              >
+              <AuthAwareLink className="inline-flex items-center gap-2 bg-gold hover:bg-gold-dark text-navy font-bold px-5 py-3 rounded-xl transition-colors text-sm">
                 List Your Business →
-              </Link>
+              </AuthAwareLink>
             </div>
 
             <div className="bg-stone rounded-2xl p-8">

@@ -15,7 +15,7 @@ import { CATEGORIES } from "@/lib/constants/categories";
 import { useDemoMode } from "@/lib/demo/context";
 import { demoUser } from "@/lib/demo/data";
 import { createClient } from "@/lib/supabase/client";
-import { DB_REQUEST_SELECT, dbRequestToServiceRequest } from "@/lib/db/requests";
+import { dbRequestToServiceRequest } from "@/lib/db/requests";
 import type { TradeCategory } from "@/lib/types";
 
 interface RequestUser {
@@ -105,6 +105,7 @@ export default function RequestsPage() {
   const [respondedIds, setRespondedIds] = useState<Set<string>>(new Set());
   const [respondSuccessIds, setRespondSuccessIds] = useState<Set<string>>(new Set());
   const [toast, setToast] = useState<string | null>(null);
+  const [toastAction, setToastAction] = useState<{ href: string; label: string } | null>(null);
 
   const [filterCategory, setFilterCategory] = useState("");
   const [filterState, setFilterState] = useState("");
@@ -188,14 +189,12 @@ export default function RequestsPage() {
           setRespondedIds(new Set());
         }
 
-        const { data: rows } = await supabase
-          .from("requests")
-          .select(DB_REQUEST_SELECT)
-          .in("status", ["open", "active", "filled"])
-          .order("created_at", { ascending: false })
-          .limit(300);
+        const res = await fetch("/api/requests");
+        const payload = await res.json();
+        const rows = res.ok ? payload.requests ?? [] : [];
+        if (!res.ok) console.error("Requests fetch error:", payload.error);
 
-        setRequests((rows || []).map(dbRequestToServiceRequest));
+        setRequests(rows.map(dbRequestToServiceRequest));
         setRequestUser(userCtx);
       } catch (err) {
         console.error("Requests load error:", err);
@@ -292,10 +291,27 @@ export default function RequestsPage() {
     [requests]
   );
 
-  function handleNewRequest(request: ServiceRequest) {
+  function handleNewRequest(request: ServiceRequest, notifyToken?: string | null) {
     setRequests((prev) => [request, ...prev]);
     setModalOpen(false);
-    setToast("Your request has been posted. Verified professionals in your area have been notified.");
+    const requestId = String(request.id);
+    if (requestUser.isLoggedIn && !isDemoMode) {
+      setToast("Your request is live. You'll get an email when a verified member responds.");
+      const responsesPath = notifyToken
+        ? `/requests/${requestId}/responses?token=${encodeURIComponent(notifyToken)}`
+        : `/requests/${requestId}/responses`;
+      setToastAction({
+        href: responsesPath,
+        label: "View your request",
+      });
+    } else {
+      setToast(
+        isDemoMode
+          ? "Your request has been posted (demo)."
+          : "Your request has been posted. Check your email when a verified member responds."
+      );
+      setToastAction(null);
+    }
   }
 
   function requestIdKey(id: string | number): string {
@@ -707,7 +723,15 @@ export default function RequestsPage() {
       )}
 
       {toast && (
-        <ToastNotification message={toast} onDismiss={() => setToast(null)} />
+        <ToastNotification
+          message={toast}
+          onDismiss={() => {
+            setToast(null);
+            setToastAction(null);
+          }}
+          actionHref={toastAction?.href}
+          actionLabel={toastAction?.label}
+        />
       )}
     </div>
   );

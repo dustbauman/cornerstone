@@ -8,12 +8,16 @@ interface DemoContextValue {
 
 const DemoContext = createContext<DemoContextValue>({ isDemoMode: false, toggleDemo: () => {} })
 
+function readDemoModeFromStorage(): boolean {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem('tyrian_demo_mode') === 'true'
+}
+
 export function DemoProvider({ children }: { children: React.ReactNode }) {
   const [isDemoMode, setIsDemoMode] = useState(false)
 
   useEffect(() => {
-    const stored = localStorage.getItem('tyrian_demo_mode')
-    if (stored === 'true') setIsDemoMode(true)
+    setIsDemoMode(readDemoModeFromStorage())
   }, [])
 
   const toggleDemo = () => {

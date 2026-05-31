@@ -9,7 +9,7 @@ import { TradeCategory } from "@/lib/types";
 
 interface Props {
   onClose: () => void;
-  onSubmit: (request: ServiceRequest) => void | Promise<void>;
+  onSubmit: (request: ServiceRequest, notifyToken?: string | null) => void | Promise<void>;
   defaultLodge?: string;
   defaultCity?: string;
   defaultState?: string;
@@ -117,7 +117,7 @@ export default function PostRequestModal({
         verifiedMember: !isAnon,
       };
 
-      await onSubmit(newRequest);
+      await onSubmit(newRequest, data.notify_token ?? null);
     } catch {
       setSubmitError("Network error. Please try again.");
     } finally {

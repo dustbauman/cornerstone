@@ -1,12 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { assertRequesterAuthorized } from '@/lib/request-response/access'
+import { getRouteUser } from '@/lib/supabase/route-auth'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: Request,
   { params }: { params: { requestId: string } }
 ) {
   const supabase = createClient()
+  const user = await getRouteUser(request)
   let token: string | null = null
   let responseId: string | undefined
 
@@ -18,7 +22,7 @@ export async function POST(
     // empty body ok for auth-only callers
   }
 
-  const auth = await assertRequesterAuthorized(supabase, params.requestId, token)
+  const auth = await assertRequesterAuthorized(supabase, params.requestId, token, user)
 
   if (!auth.authorized) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })

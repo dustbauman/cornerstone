@@ -545,6 +545,10 @@ function LoginContent() {
                   No account yet? You need a lodge invite link to join —{' '}
                   <Link href="/network" className="text-navy underline hover:no-underline">
                     find your lodge
+                  </Link>{' '}
+                  or{' '}
+                  <Link href="/join" className="text-navy underline hover:no-underline">
+                    unlock your lodge
                   </Link>
                   .
                 </p>
