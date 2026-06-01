@@ -26,7 +26,7 @@ export async function enrichLodgeGeo(
   lodge: LodgeGeoInput
 ): Promise<LodgeGeoResult> {
   let city = lodge.city?.trim() ?? ''
-  let state = normalizeStateCode(lodge.state)
+  const state = normalizeStateCode(lodge.state)
   let meetingAddress = lodge.meeting_address?.trim() || null
   let lat = lodge.lat ?? null
   let lng = lodge.lng ?? null

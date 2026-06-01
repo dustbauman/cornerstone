@@ -27,7 +27,7 @@ export default function ToastNotification({
   }, [onDismiss, autoDismissMs]);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 bg-navy text-white px-5 py-4 rounded-2xl shadow-2xl border border-white/10 max-w-sm animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div className="fixed bottom-6 right-6 z-50 bg-navy text-white px-5 py-4 rounded-2xl shadow-card-hover border border-white/10 max-w-sm">
       <div className="flex items-start gap-3">
         <CheckCircle2 size={20} className="text-trust flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">

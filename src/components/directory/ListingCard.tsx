@@ -25,7 +25,7 @@ export default function ListingCard({ listing }: Props) {
       tabIndex={0}
       aria-label={listing.businessName}
     >
-      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md hover:border-gold/30 transition-all duration-200 h-full flex flex-col">
+      <div className="tyrian-card-interactive p-5 h-full flex flex-col">
         <div className="flex items-start justify-between gap-2 mb-3">
           <CategoryBadge trade={listing.trade} size="sm" />
           {listing.verified && <VerifiedBadge size="sm" />}
@@ -38,7 +38,7 @@ export default function ListingCard({ listing }: Props) {
 
         <StarRating rating={listing.rating} reviewCount={listing.reviewCount} />
 
-        <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
+        <div className="mt-auto pt-4 border-t border-warm flex items-center justify-between">
           <div className="flex items-center gap-1 text-sm text-muted">
             <MapPin size={13} />
             <span>{listing.location.city}, {listing.location.stateCode}</span>

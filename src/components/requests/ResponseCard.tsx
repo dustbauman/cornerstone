@@ -86,7 +86,7 @@ export default function ResponseCard({ response, onMarkHired, showMarkHired }: P
         </blockquote>
       )}
 
-      <div className="mt-4 pt-4 border-t border-gray-100">
+      <div className="mt-4 pt-4 border-t border-warm">
         <p className="text-xs font-semibold text-navy uppercase tracking-[0.08em] mb-2">Contact</p>
         <div className="flex flex-wrap gap-4 text-sm">
           {contact.phone && (

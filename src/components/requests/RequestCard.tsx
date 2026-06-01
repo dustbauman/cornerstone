@@ -58,7 +58,7 @@ export default function RequestCard({
 
     if (respondSuccess) {
       return (
-        <div className="mt-3 pt-3 border-t border-gray-50">
+        <div className="mt-3 pt-3 border-t border-warm">
           <p className="text-sm font-semibold text-trust">✓ Response sent</p>
           <p className="text-xs text-muted mt-0.5">
             {request.name} from {request.lodge.split("#")[0]?.trim() || "their lodge"} will be
@@ -70,7 +70,7 @@ export default function RequestCard({
 
     if (!isLoggedIn) {
       return (
-        <div className="mt-3 pt-3 border-t border-[#f5f0e8]">
+        <div className="mt-3 pt-3 border-t border-warm">
           <Link
             href="/login?redirect=/requests"
             className="inline-block text-sm font-semibold text-navy border border-navy/20 px-3 py-1.5 rounded-lg hover:bg-stone transition-colors"
@@ -86,11 +86,11 @@ export default function RequestCard({
 
     if (!isVerified) {
       return (
-        <div className="mt-3 pt-3 border-t border-gray-50">
+        <div className="mt-3 pt-3 border-t border-warm">
           <button
             type="button"
             disabled
-            className="text-sm font-semibold text-muted bg-gray-100 px-3 py-1.5 rounded-lg cursor-not-allowed"
+            className="text-sm font-semibold text-muted bg-stone px-3 py-1.5 rounded-lg cursor-not-allowed border border-warm"
           >
             Verification pending
           </button>
@@ -104,7 +104,7 @@ export default function RequestCard({
 
     if (hasResponded) {
       return (
-        <div className="mt-3 pt-3 border-t border-gray-50">
+        <div className="mt-3 pt-3 border-t border-warm">
           <button
             type="button"
             disabled
@@ -122,7 +122,7 @@ export default function RequestCard({
     }
 
     return (
-      <div className="mt-3 pt-3 border-t border-gray-50">
+      <div className="mt-3 pt-3 border-t border-warm">
         <button
           type="button"
           onClick={() => onRespond?.(request)}
@@ -136,7 +136,7 @@ export default function RequestCard({
 
   return (
     <div
-      className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md hover:border-gold/20 transition-all"
+      className="tyrian-card-interactive p-5"
       style={borderLeft ? { borderLeft } : undefined}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -190,7 +190,7 @@ export default function RequestCard({
         <p className="text-xs font-medium text-navy/80 mb-3">{responseLabel}</p>
       )}
 
-      <div className="pt-3 border-t border-gray-50 mt-1">
+      <div className="pt-3 border-t border-warm mt-1">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-wrap min-w-0">
             {matchScore !== undefined && <MatchPill score={matchScore} />}

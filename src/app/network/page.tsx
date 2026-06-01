@@ -25,7 +25,8 @@ import { demoListings, demoLodges } from '@/lib/demo/data'
 import { createClient } from '@/lib/supabase/client'
 
 const NEAR_ME_RADIUS_MILES = 50
-const NEAR_ME_STORAGE_KEY = 'tyrian_directory_near_me'
+/** Separate from directory so "near me" on /directory doesn't hide all lodges here. */
+const NEAR_ME_STORAGE_KEY = 'tyrian_network_near_me'
 
 function demoNetworkLodges(): LodgeCardData[] {
   return [
@@ -83,7 +84,7 @@ function NetworkContent() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selectedState, setSelectedState] = useState('')
-  const [nearMeOnly, setNearMeOnly] = useState(true)
+  const [nearMeOnly, setNearMeOnly] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [browseArea, setBrowseArea] = useState<GuestAreaPrefs>(DEFAULT_GUEST_AREA)
   const [profileArea, setProfileArea] = useState<GuestAreaPrefs | null>(null)
@@ -452,13 +453,27 @@ function NetworkContent() {
                   {hasFilters ? 'No lodges match your filters' : 'No lodges found'}
                 </p>
                 <p className="text-sm mt-1 max-w-sm mx-auto">
-                  Try a wider area, clear filters, or unlock your lodge on Tyrian.
+                  {nearMeOnly && lodges.length > 0
+                    ? `No lodges within ${NEAR_ME_RADIUS_MILES} miles of ${browseArea.city}, ${browseArea.state}. Try showing all lodges or change your browse area.`
+                    : 'Try a wider area, clear filters, or unlock your lodge on Tyrian.'}
                 </p>
+                {nearMeOnly && lodges.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNearMeOnly(false)
+                      localStorage.setItem(NEAR_ME_STORAGE_KEY, 'false')
+                    }}
+                    className="mt-4 inline-flex tyrian-btn-primary text-sm px-5 py-2.5"
+                  >
+                    Show all {lodges.length} lodges
+                  </button>
+                )}
                 {hasFilters && (
                   <button
                     type="button"
                     onClick={clearFilters}
-                    className="mt-4 text-sm font-semibold text-navy underline"
+                    className="mt-4 text-sm font-semibold text-navy underline block mx-auto"
                   >
                     Clear filters
                   </button>

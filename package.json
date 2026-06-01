@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "seed": "tsx scripts/seed.ts",
-    "seed:lodges": "tsx scripts/seed-lodge-directory.ts"
+    "seed:lodges": "tsx scripts/seed-lodge-directory.ts",
+    "email:test": "tsx scripts/send-test-email.ts"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.7.0",

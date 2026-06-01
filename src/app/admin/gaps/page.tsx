@@ -75,10 +75,36 @@ export default function GapDashboardPage() {
     });
   }, []);
 
-  function handleInviteConfirm() {
+  async function handleInviteConfirm(recipientEmail: string) {
+    const trade = inviteTarget?.trade ?? inviteGapTrade ?? "";
+    if (!trade) throw new Error("Trade is required");
+
+    const res = await fetch("/api/admin/listing-invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: recipientEmail,
+        recipientName: inviteTarget?.name ?? "Brother",
+        trade,
+      }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(
+        typeof data.error === "string" ? data.error : "Failed to send invite"
+      );
+    }
+
     const name = inviteTarget?.name ?? inviteGapTrade ?? "";
-    setSentInvites((prev) => { const next = new Set(prev); next.add(name); return next; });
-    setToast(`Invite sent to ${inviteTarget ? `Brother ${inviteTarget.name.split(" ").slice(-1)[0]}` : "a brother"}.`);
+    setSentInvites((prev) => {
+      const next = new Set(prev);
+      next.add(name);
+      return next;
+    });
+    setToast(
+      `Invite sent to ${inviteTarget ? `Brother ${inviteTarget.name.split(" ").slice(-1)[0]}` : "your brother"}.`
+    );
     setInviteTarget(null);
     setInviteGapTrade(null);
   }

@@ -121,13 +121,13 @@ export default function GuestBrowseSettingsModal({
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/60"
       onClick={(e) => {
         if (e.target === overlayRef.current) onClose();
       }}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <div className="tyrian-modal-panel w-full max-w-md overflow-hidden">
+        <div className="tyrian-modal-header px-6">
           <div>
             <h2 className="font-serif text-xl font-bold text-navy">Browse settings</h2>
             <p className="text-sm text-muted mt-0.5">Set the area used for nearby requests.</p>
@@ -194,7 +194,7 @@ export default function GuestBrowseSettingsModal({
               id="guest-state"
               value={state}
               onChange={(e) => setState(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-gold/40"
+              className="tyrian-input rounded-xl px-3 py-2.5"
             >
               {US_STATES.map(([code, name]) => (
                 <option key={code} value={code}>
@@ -210,7 +210,7 @@ export default function GuestBrowseSettingsModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-muted hover:text-navy transition-colors"
+              className="flex-1 tyrian-btn-secondary py-2.5 text-sm text-muted"
             >
               Cancel
             </button>

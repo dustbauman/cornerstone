@@ -125,16 +125,16 @@ export default function PostRequestModal({
     }
   }
 
-  const field = "w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold transition";
+  const field = "tyrian-input rounded-xl px-4 py-3";
 
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/60"
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+      <div className="tyrian-modal-panel w-full max-w-lg">
+        <div className="tyrian-modal-header px-6">
           <h2 className="font-serif text-xl font-bold text-navy">Post a service request</h2>
           <button onClick={onClose} className="text-muted hover:text-navy transition-colors">
             <X size={20} />
@@ -312,7 +312,7 @@ export default function PostRequestModal({
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="flex-1 border border-gray-200 text-muted font-semibold py-3 rounded-xl hover:bg-stone transition-colors text-sm"
+              className="flex-1 tyrian-btn-secondary py-3 text-sm text-muted"
             >
               Cancel
             </button>

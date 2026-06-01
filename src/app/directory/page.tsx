@@ -39,17 +39,17 @@ const NEAR_ME_STORAGE_KEY = 'tyrian_directory_near_me'
 
 function ListingSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm animate-pulse">
+    <div className="tyrian-card p-5 animate-pulse">
       <div className="flex items-start justify-between gap-2 mb-3">
-        <div className="h-5 w-20 bg-gray-100 rounded-full" />
-        <div className="h-5 w-24 bg-gray-100 rounded-full" />
+        <div className="h-5 w-20 bg-warm rounded-full" />
+        <div className="h-5 w-24 bg-warm rounded-full" />
       </div>
-      <div className="h-5 w-3/4 bg-gray-100 rounded mb-2" />
-      <div className="h-4 w-1/2 bg-gray-100 rounded mb-4" />
-      <div className="h-4 w-32 bg-gray-100 rounded mb-4" />
-      <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
-        <div className="h-3 w-24 bg-gray-100 rounded" />
-        <div className="h-3 w-28 bg-gray-100 rounded" />
+      <div className="h-5 w-3/4 bg-warm rounded mb-2" />
+      <div className="h-4 w-1/2 bg-warm rounded mb-4" />
+      <div className="h-4 w-32 bg-warm rounded mb-4" />
+      <div className="pt-4 border-t border-warm flex items-center justify-between">
+        <div className="h-3 w-24 bg-warm rounded" />
+        <div className="h-3 w-28 bg-warm rounded" />
       </div>
     </div>
   )

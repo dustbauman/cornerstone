@@ -18,7 +18,7 @@ export default function MatchPill({ score }: Props) {
     );
   }
   return (
-    <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 border border-gray-200 uppercase tracking-[0.06em]">
+    <span className="inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-stone text-muted border border-warm uppercase tracking-[0.06em]">
       Different trade
     </span>
   );

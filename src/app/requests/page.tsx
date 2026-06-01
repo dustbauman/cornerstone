@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
-import { PlusCircle, SlidersHorizontal, Megaphone, Loader2 } from "lucide-react";
+import { PlusCircle, SlidersHorizontal } from "lucide-react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import RequestCard from "@/components/requests/RequestCard";
@@ -11,6 +11,8 @@ import PostRequestModal from "@/components/requests/PostRequestModal";
 import RespondModal, { type ResponderPreview } from "@/components/requests/RespondModal";
 import GuestBrowseSettingsModal from "@/components/requests/GuestBrowseSettingsModal";
 import ActiveFilterChips from "@/components/requests/ActiveFilterChips";
+import RequestsBoardEmpty from "@/components/requests/RequestsBoardEmpty";
+import RequestCardSkeleton from "@/components/ui/RequestCardSkeleton";
 import ToastNotification from "@/components/ui/ToastNotification";
 import { requests as demoRequests, ServiceRequest } from "@/lib/demo/requests";
 import { haversineDistance, getMatchScore } from "@/lib/geo/scoring";
@@ -579,7 +581,7 @@ export default function RequestsPage() {
       !nationwide.length && !nearYou.length && !inYourArea.length &&
       !nearYouOther.length && !acrossState.length;
 
-    if (empty) return <EmptyState filtered={hasActiveFilters} />;
+    if (empty) return <RequestsBoardEmpty filtered={hasActiveFilters} />;
 
     const stateLabel = requestUser.state === "OK" ? "Oklahoma" : requestUser.state;
 
@@ -657,13 +659,9 @@ export default function RequestsPage() {
     }
     if (!lodgeRequests.length) {
       return (
-        <EmptyState
+        <RequestsBoardEmpty
           filtered={hasActiveFilters}
-          message={
-            hasActiveFilters
-              ? undefined
-              : "No requests from your lodge yet."
-          }
+          message={hasActiveFilters ? undefined : "No requests from your lodge yet."}
         />
       );
     }
@@ -782,7 +780,7 @@ export default function RequestsPage() {
         )}
       </div>
     ) : (
-      <EmptyState filtered={hasActiveFilters} />
+      <RequestsBoardEmpty filtered={hasActiveFilters} />
     );
   }
 
@@ -794,7 +792,7 @@ export default function RequestsPage() {
         ))}
       </div>
     ) : (
-      <EmptyState filtered={hasActiveFilters} />
+      <RequestsBoardEmpty filtered={hasActiveFilters} />
     );
   }
 
@@ -802,8 +800,18 @@ export default function RequestsPage() {
     return (
       <div className="flex flex-col min-h-screen">
         <Navbar />
-        <div className="flex-1 flex items-center justify-center bg-stone">
-          <Loader2 size={32} className="text-navy animate-spin" />
+        <div className="bg-navy text-white py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="h-8 w-48 bg-white/10 rounded animate-pulse mb-3" />
+            <div className="h-4 w-72 bg-white/10 rounded animate-pulse" />
+          </div>
+        </div>
+        <div className="flex-1 bg-stone py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-3">
+            {Array.from({ length: 4 }, (_, i) => (
+              <RequestCardSkeleton key={i} />
+            ))}
+          </div>
         </div>
         <Footer />
       </div>
@@ -1036,20 +1044,6 @@ export default function RequestsPage() {
           actionHref={toastAction?.href}
           actionLabel={toastAction?.label}
         />
-      )}
-    </div>
-  );
-}
-
-function EmptyState({ filtered, message }: { filtered?: boolean; message?: string }) {
-  return (
-    <div className="text-center py-20 text-muted">
-      <Megaphone size={36} className="mx-auto mb-3 opacity-30" />
-      <p className="font-medium text-base">
-        {filtered ? "No requests match your filters" : message ?? "No requests in this view yet"}
-      </p>
-      {!filtered && message === "No requests from your lodge yet." && (
-        <p className="text-sm mt-1">Be the first to post.</p>
       )}
     </div>
   );

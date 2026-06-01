@@ -7,6 +7,7 @@
   --foreground: #1A1A1A;
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'DM Sans', system-ui, sans-serif;
+  --border-warm: #E5E0D5;
 }
 
 body {
@@ -14,6 +15,51 @@ body {
   background: var(--background);
   font-family: var(--font-sans);
   font-weight: 400;
+}
+
+@layer base {
+  ::selection {
+    @apply bg-gold/25 text-charcoal;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:not([tabindex='-1']):focus-visible {
+    @apply outline-none ring-2 ring-gold/40 ring-offset-2 ring-offset-stone;
+  }
+}
+
+@layer components {
+  .tyrian-card {
+    @apply bg-white rounded-2xl border border-warm shadow-card;
+  }
+
+  .tyrian-card-interactive {
+    @apply tyrian-card transition-all duration-200 hover:shadow-card-hover hover:border-gold/30;
+  }
+
+  .tyrian-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-gold hover:bg-gold-dark text-navy font-bold rounded-xl transition-colors;
+  }
+
+  .tyrian-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 bg-white border border-warm text-navy font-semibold rounded-xl hover:bg-stone transition-colors;
+  }
+
+  .tyrian-input {
+    @apply w-full text-sm px-3 py-2.5 rounded-lg bg-white border border-warm text-charcoal placeholder:text-muted/70;
+  }
+
+  .tyrian-modal-panel {
+    @apply bg-white rounded-2xl border border-warm shadow-card max-h-[90vh] overflow-y-auto;
+  }
+
+  .tyrian-modal-header {
+    @apply flex items-center justify-between px-5 py-4 border-b border-warm;
+  }
 }
 
 @layer utilities {

@@ -181,28 +181,30 @@ function LoginContent() {
       await setAuthIntent('claim')
     }
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: callbackUrl(),
-        shouldCreateUser: isClaimFlow,
-      },
+    const res = await fetch('/api/auth/send-magic-link', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        redirectTo: callbackUrl(),
+        purpose: isClaimFlow ? 'claim' : 'sign-in',
+      }),
     })
 
-    if (error) {
+    const data = await res.json().catch(() => ({}))
+
+    if (!res.ok) {
       setError(
-        error.message.toLowerCase().includes('user')
-          ? isClaimFlow
-            ? 'Could not send a sign-in link. Use the same email from checkout, or try Google sign-in.'
-            : 'No Tyrian account exists for this email. Join through your lodge invite link first.'
-          : error.message
+        data.error === 'NO_ACCOUNT'
+          ? 'No Tyrian account exists for this email. Join through your lodge invite link first.'
+          : data.message || 'Could not send sign-in link. Try again or use Google sign-in.'
       )
       setLoading(null)
-    } else {
-      setView('magic-sent')
-      setLoading(null)
+      return
     }
+
+    setView('magic-sent')
+    setLoading(null)
   }
 
   async function handleForgotPassword(e: React.FormEvent) {
@@ -210,18 +212,21 @@ function LoginContent() {
     setLoading('reset')
     setError('')
 
-    const supabase = createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${appUrl}/auth/callback?next=${encodeURIComponent('/auth/reset-password')}`,
+    const res = await fetch('/api/auth/send-reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
     })
 
-    if (error) {
-      setError(error.message)
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.message || 'Could not send reset link.')
       setLoading(null)
-    } else {
-      setView('reset-sent')
-      setLoading(null)
+      return
     }
+
+    setView('reset-sent')
+    setLoading(null)
   }
 
   const inputClass =

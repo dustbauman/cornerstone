@@ -198,12 +198,23 @@ function AdminContent() {
     e.preventDefault()
     if (!inviteEmail.trim() || !lodge) return
     setSendingInvite(true)
-    // Placeholder — wire to Resend when keys are available
-    await new Promise(r => setTimeout(r, 600))
-    setSendingInvite(false)
-    setInviteSent(true)
-    setInviteEmail('')
-    setTimeout(() => setInviteSent(false), 3000)
+    try {
+      const res = await fetch('/api/admin/invite-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail.trim() }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        alert(data.error || data.message || 'Failed to send invite')
+        return
+      }
+      setInviteSent(true)
+      setInviteEmail('')
+      setTimeout(() => setInviteSent(false), 4000)
+    } finally {
+      setSendingInvite(false)
+    }
   }
 
   if (loading) {

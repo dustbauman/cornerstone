@@ -31,14 +31,19 @@ export async function GET(request: Request) {
 
   let day7Sent = 0
   for (const lodge of day7Lodges || []) {
+    const expiresAt = new Date(lodge.claim_code_expires_at)
+    const daysUntilExpiry = Math.max(
+      1,
+      Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    )
     await sendClaimReminder({
       to: lodge.paid_by_email,
       payerName: lodge.paid_by_name || 'Brother',
       lodgeName: lodge.name,
       lodgeNumber: lodge.number,
       claimCode: lodge.claim_code,
-      expiresAt: new Date(lodge.claim_code_expires_at),
-      daysUntilExpiry: 23,
+      expiresAt,
+      daysUntilExpiry,
     })
     await supabase.from('lodges').update({ reminder_7_sent_at: now.toISOString() }).eq('id', lodge.id)
     day7Sent++
@@ -58,14 +63,19 @@ export async function GET(request: Request) {
 
   let day25Sent = 0
   for (const lodge of day25Lodges || []) {
+    const expiresAt = new Date(lodge.claim_code_expires_at)
+    const daysUntilExpiry = Math.max(
+      1,
+      Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    )
     await sendClaimReminder({
       to: lodge.paid_by_email,
       payerName: lodge.paid_by_name || 'Brother',
       lodgeName: lodge.name,
       lodgeNumber: lodge.number,
       claimCode: lodge.claim_code,
-      expiresAt: new Date(lodge.claim_code_expires_at),
-      daysUntilExpiry: 5,
+      expiresAt,
+      daysUntilExpiry,
     })
     await supabase.from('lodges').update({ reminder_25_sent_at: now.toISOString() }).eq('id', lodge.id)
     day25Sent++

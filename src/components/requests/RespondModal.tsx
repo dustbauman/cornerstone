@@ -51,13 +51,13 @@ export default function RespondModal({ request, preview, onClose, onSubmit }: Pr
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy/60"
       onClick={(e) => {
         if (e.target === e.currentTarget && !submitting) onClose();
       }}
     >
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+      <div className="tyrian-modal-panel w-full max-w-lg">
+        <div className="tyrian-modal-header px-6">
           <h2 className="font-serif text-xl font-bold text-navy">
             Respond to {request.title}
           </h2>
@@ -86,7 +86,7 @@ export default function RespondModal({ request, preview, onClose, onSubmit }: Pr
               onChange={(e) => setMessage(e.target.value.slice(0, 500))}
               placeholder="Introduce yourself and let them know you can help. Your name and lodge will be included automatically."
               rows={4}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold/40 focus:border-gold transition resize-none"
+              className="tyrian-input rounded-xl px-4 py-3 resize-none"
             />
             <p className="text-xs text-muted mt-1 text-right">{message.length}/500</p>
           </div>
@@ -142,7 +142,7 @@ export default function RespondModal({ request, preview, onClose, onSubmit }: Pr
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="flex-1 border border-gray-200 text-muted font-semibold py-3 rounded-xl hover:bg-stone transition-colors text-sm"
+              className="flex-1 tyrian-btn-secondary py-3 text-sm text-muted"
             >
               Cancel
             </button>

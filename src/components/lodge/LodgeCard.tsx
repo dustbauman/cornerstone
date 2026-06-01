@@ -35,7 +35,7 @@ export default function LodgeCard({ lodge }: { lodge: LodgeCardData }) {
 
   return (
     <Link href={href} className="group block">
-      <div className="bg-white rounded-2xl border border-[#E5E0D5] p-6 shadow-sm hover:shadow-md hover:border-gold/30 transition-all h-full flex flex-col">
+      <div className="tyrian-card-interactive p-6 h-full flex flex-col">
         <div className="flex items-start gap-3 mb-3">
           <LodgeAvatar number={lodge.number} tier={lodge.tier} size="sm" />
           <div className="min-w-0 flex-1">

@@ -21,8 +21,16 @@ export default function Navbar() {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<NavProfile | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   const networkActive = pathname === '/network' || pathname.startsWith('/lodge/')
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     const supabase = createClient()
@@ -80,7 +88,11 @@ export default function Navbar() {
   const userLabel = profile?.fullName ?? session?.user?.email ?? ''
 
   return (
-    <nav className="bg-navy sticky top-0 z-50 shadow-md">
+    <nav
+      className={`bg-navy sticky top-0 z-50 transition-shadow duration-200 ${
+        scrolled ? 'shadow-lg border-b border-white/10' : 'shadow-md'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Logo variant="light" size="sm" />
@@ -116,7 +128,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/login"
-                  className="bg-[#C9A84C] hover:bg-[#b8943d] text-navy font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+                  className="bg-gold hover:bg-gold-dark text-navy font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
                 >
                   List Your Business
                 </Link>
@@ -179,7 +191,7 @@ export default function Navbar() {
                 </button>
               </>
             ) : (
-              <Link href="/login" onClick={() => setMenuOpen(false)} className="block w-full text-center bg-[#C9A84C] text-navy font-semibold py-2.5 rounded-lg text-sm">
+              <Link href="/login" onClick={() => setMenuOpen(false)} className="block w-full text-center bg-gold hover:bg-gold-dark text-navy font-semibold py-2.5 rounded-lg text-sm transition-colors">
                 Sign In
               </Link>
             )}
