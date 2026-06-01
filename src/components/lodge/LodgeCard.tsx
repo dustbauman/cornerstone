@@ -15,6 +15,7 @@ export interface LodgeCardData {
   memberCount: number
   listingCount: number
   requestCount: number
+  distanceMiles?: number | null
 }
 
 export default function LodgeCard({ lodge }: { lodge: LodgeCardData }) {
@@ -38,6 +39,9 @@ export default function LodgeCard({ lodge }: { lodge: LodgeCardData }) {
         </h3>
         <p className="text-sm text-muted">
           #{lodge.number} · {lodge.city ? `${lodge.city}, ` : ''}{lodge.state}
+          {lodge.distanceMiles != null && (
+            <span className="text-navy/70"> · {Math.round(lodge.distanceMiles)} mi</span>
+          )}
         </p>
           </div>
         </div>

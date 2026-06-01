@@ -93,6 +93,8 @@ export function demoListingToListing(dl: typeof demoListings[number]): Listing {
       city: dl.city,
       state: STATE_CODE_TO_NAME[dl.state] ?? dl.state,
       stateCode: dl.state,
+      lat: dl.lat,
+      lng: dl.lng,
     },
     rating: dl.google_rating,
     reviewCount: dl.google_rating_count,

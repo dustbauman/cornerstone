@@ -25,6 +25,8 @@ export interface Listing {
     city: string;
     state: string;
     stateCode: string;
+    lat?: number;
+    lng?: number;
   };
   rating: number;
   reviewCount: number;
