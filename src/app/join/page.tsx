@@ -27,6 +27,7 @@ function JoinContent() {
   const [lookupState, setLookupState] = useState(searchParams.get('state') || '')
   const [lookupStatus, setLookupStatus] = useState<LookupStatus>('idle')
   const [foundLodgeName, setFoundLodgeName] = useState('')
+  const [foundLodgeSlug, setFoundLodgeSlug] = useState('')
 
   // Form state (shown after lookup returns not_found)
   const [selectedLodge, setSelectedLodge] = useState<LodgeResult | null>(null)
@@ -60,6 +61,7 @@ function JoinContent() {
         setLookupStatus('not_found')
       } else if (data.status === 'active') {
         setFoundLodgeName(data.name)
+        setFoundLodgeSlug(data.slug || '')
         setLookupStatus('active')
       } else {
         setFoundLodgeName(data.name)
@@ -154,20 +156,33 @@ function JoinContent() {
             </form>
 
             {/* Lookup outcomes */}
-            {lookupStatus === 'active' && (
+            {lookupStatus === 'active' && !foundLodgeSlug && (
+              <div className="mt-5 p-4 bg-[#2D6A4F]/8 border border-[#2D6A4F]/20 rounded-xl">
+                <p className="text-sm font-semibold text-[#1A1A1A]">
+                  {foundLodgeName} #{lookupNumber} is on Tyrian. Ask your lodge admin for an invite link.
+                </p>
+              </div>
+            )}
+
+            {lookupStatus === 'active' && foundLodgeSlug && (
               <div className="mt-5 p-4 bg-[#2D6A4F]/8 border border-[#2D6A4F]/20 rounded-xl">
                 <div className="flex items-start gap-3">
                   <CheckCircle2 size={18} className="text-[#2D6A4F] flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-semibold text-[#1A1A1A]">
-                      {foundLodgeName} #{lookupNumber} · {US_STATES.find(s => s.code === lookupState)?.name} is already on Tyrian.
+                      {foundLodgeName} #{lookupNumber} · {US_STATES.find(s => s.code === lookupState)?.name} is on Tyrian.
                     </p>
                     <p className="text-sm text-muted mt-1">
-                      Your lodge admin can send you an invite link, or ask them to add you from the lodge admin panel.
+                      Join with your sponsor info — no search needed.
                     </p>
-                    <div className="flex gap-4 mt-3 text-sm">
-                      <Link href="/directory" className="font-semibold text-navy underline">View the directory →</Link>
-                      <Link href="mailto:hello@tyrian.work" className="text-muted hover:text-navy">Contact support</Link>
+                    <div className="flex flex-wrap gap-3 mt-3 text-sm">
+                      <Link
+                        href={`/join/${foundLodgeSlug}`}
+                        className="inline-flex font-semibold text-white bg-navy hover:bg-navy/90 px-4 py-2 rounded-lg transition-colors"
+                      >
+                        Join {foundLodgeName} →
+                      </Link>
+                      <Link href="/directory" className="font-semibold text-navy underline self-center">View directory</Link>
                     </div>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 import { sendMemberMagicLinkEmail, sendSponsorConfirmEmail } from '@/lib/email'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { canSendInvite, recordInviteSent } from '@/lib/invites'
+import { canAcceptNewMember } from '@/lib/invites'
 
 export async function POST(request: Request) {
   const body = await request.json()
@@ -40,11 +40,11 @@ export async function POST(request: Request) {
   }
 
   // Hard cap check — server-enforced, cannot be bypassed via the UI
-  const { allowed, cap } = await canSendInvite(lodge.id)
+  const { allowed, cap } = await canAcceptNewMember(lodge.id)
   if (!allowed) {
     return Response.json({
       error: 'LODGE_AT_CAPACITY',
-      message: `${lodge.name} has reached its ${cap}-member invite limit. Ask your lodge admin to upgrade the plan to continue adding members.`,
+      message: `${lodge.name} has reached its ${cap}-verified member limit. Ask your lodge admin to upgrade the plan to continue adding members.`,
     }, { status: 403 })
   }
 
@@ -164,11 +164,6 @@ export async function POST(request: Request) {
       error: 'EMAIL_FAILED',
       message: 'Your profile was created but we could not send emails. Contact your lodge admin for help signing in.',
     }, { status: 500 })
-  }
-
-  // Increment invite counter after successful join (cap check already passed above)
-  if (cap !== null) {
-    await recordInviteSent(lodge.id)
   }
 
   return Response.json({

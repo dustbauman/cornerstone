@@ -46,12 +46,16 @@ interface LodgeSummary {
   number: string
   tier: string
   invite_cap: number | null
-  invites_sent: number
+}
+
+interface LodgeUpgradeState {
+  lodge: LodgeSummary
+  verifiedCount: number
 }
 
 export default function UpgradePage() {
   const router = useRouter()
-  const [lodge, setLodge] = useState<LodgeSummary | null>(null)
+  const [lodgeState, setLodgeState] = useState<LodgeUpgradeState | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState<string | null>(null)
   const [error, setError] = useState('')
@@ -73,20 +77,30 @@ export default function UpgradePage() {
         return
       }
 
-      const { data: lodgeData } = await supabase
-        .from('lodges')
-        .select('id, name, number, tier, invite_cap, invites_sent')
-        .eq('id', profile.lodge_id)
-        .single()
+      const [{ data: lodgeData }, { count: verifiedCount }] = await Promise.all([
+        supabase
+          .from('lodges')
+          .select('id, name, number, tier, invite_cap')
+          .eq('id', profile.lodge_id)
+          .single(),
+        supabase
+          .from('profiles')
+          .select('*', { count: 'exact', head: true })
+          .eq('lodge_id', profile.lodge_id)
+          .eq('verification_status', 'verified'),
+      ])
 
-      setLodge(lodgeData)
+      if (lodgeData) {
+        setLodgeState({ lodge: lodgeData, verifiedCount: verifiedCount ?? 0 })
+      }
       setLoading(false)
     }
     load()
   }, [router])
 
   async function handleUpgrade(toTier: string, price: number) {
-    if (!lodge) return
+    if (!lodgeState) return
+    const lodge = lodgeState.lodge
     setSubmitting(toTier)
     setError('')
 
@@ -121,9 +135,10 @@ export default function UpgradePage() {
     )
   }
 
+  const lodge = lodgeState?.lodge ?? null
   const options = lodge ? UPGRADE_OPTIONS[lodge.tier] : null
 
-  if (!lodge || !options) {
+  if (!lodgeState || !options) {
     return (
       <div className="flex flex-col min-h-screen bg-stone">
         <Navbar />
@@ -146,8 +161,8 @@ export default function UpgradePage() {
     )
   }
 
-  const used = lodge.invites_sent ?? 0
-  const cap = lodge.invite_cap
+  const { lodge: activeLodge, verifiedCount: used } = lodgeState
+  const cap = activeLodge.invite_cap
 
   return (
     <div className="flex flex-col min-h-screen bg-stone">
@@ -168,13 +183,13 @@ export default function UpgradePage() {
           <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-3">Current plan</p>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold text-navy">{lodge.name} #{lodge.number}</p>
-              <p className="text-sm text-muted capitalize">{TIER_LABELS[lodge.tier] ?? lodge.tier}</p>
+              <p className="font-semibold text-navy">{activeLodge.name} #{activeLodge.number}</p>
+              <p className="text-sm text-muted capitalize">{TIER_LABELS[activeLodge.tier] ?? activeLodge.tier}</p>
             </div>
             {cap !== null && (
               <div className="text-right">
                 <p className="text-sm font-semibold text-navy">{used} / {cap}</p>
-                <p className="text-xs text-muted">invites used</p>
+                <p className="text-xs text-muted">verified members</p>
               </div>
             )}
           </div>

@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { Loader2, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import { createClient } from '@/lib/supabase/client'
 
 interface LodgeInfo {
   id: string
@@ -18,7 +17,6 @@ interface LodgeInfo {
   meeting_schedule: string | null
   slug: string | null
   invite_cap: number | null
-  invites_sent: number
 }
 
 export default function MemberJoinPage() {
@@ -26,6 +24,7 @@ export default function MemberJoinPage() {
   const lodgeSlug = params['lodge-slug'] as string
 
   const [lodge, setLodge] = useState<LodgeInfo | null>(null)
+  const [atCap, setAtCap] = useState(false)
   const [loadingLodge, setLoadingLodge] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -42,27 +41,20 @@ export default function MemberJoinPage() {
 
   useEffect(() => {
     async function loadLodge() {
-      const supabase = createClient()
-      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-      let query = supabase
-        .from('lodges')
-        .select('id, name, number, city, state, welcome_message, meeting_schedule, slug, invite_cap, invites_sent')
-        .eq('status', 'active')
-
-      if (uuidPattern.test(lodgeSlug)) {
-        query = query.eq('id', lodgeSlug)
-      } else {
-        query = query.eq('slug', lodgeSlug)
-      }
-
-      const { data } = await query.maybeSingle()
-      if (!data) {
+      try {
+        const res = await fetch(`/api/lodge-join-info?slug=${encodeURIComponent(lodgeSlug)}`)
+        if (!res.ok) {
+          setNotFound(true)
+          return
+        }
+        const data = await res.json()
+        setLodge(data.lodge as LodgeInfo)
+        setAtCap(!!data.atCap)
+      } catch {
         setNotFound(true)
-      } else {
-        setLodge(data as LodgeInfo)
+      } finally {
+        setLoadingLodge(false)
       }
-      setLoadingLodge(false)
     }
     loadLodge()
   }, [lodgeSlug])
@@ -137,8 +129,6 @@ export default function MemberJoinPage() {
     )
   }
 
-  const atCap = lodge && lodge.invite_cap !== null && lodge.invites_sent >= lodge.invite_cap
-
   if (atCap) {
     return (
       <div className="flex flex-col min-h-screen bg-stone">
@@ -150,7 +140,7 @@ export default function MemberJoinPage() {
               Lodge is currently full
             </h1>
             <p className="text-sm text-muted mb-4 leading-relaxed">
-              {lodge!.name} has reached its current member invite limit.
+              {lodge!.name} has reached its {lodge!.invite_cap}-verified member limit.
               Ask your lodge admin to upgrade the plan to continue adding members.
             </p>
             <Link href="/network" className="text-sm font-semibold text-navy underline">

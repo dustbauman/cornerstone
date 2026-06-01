@@ -179,8 +179,12 @@ function AdminContent() {
       body: JSON.stringify({ memberId, action }),
     })
     setActionLoading(null)
-    if (res.ok) {
-      setMembers(prev =>
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      alert(data.message || data.error || 'Action failed')
+      return
+    }
+    setMembers(prev =>
         prev.map(m =>
           m.id === memberId
             ? { ...m, verification_status: action === 'approve' ? 'verified' : 'rejected' }
@@ -191,7 +195,6 @@ function AdminContent() {
         ...prev,
         pendingApprovals: Math.max(0, prev.pendingApprovals - 1),
       } : prev)
-    }
   }
 
   async function sendInvite(e: React.FormEvent) {
@@ -518,9 +521,9 @@ function AdminContent() {
             {/* Invite tools */}
             {(() => {
               const cap = lodge?.invite_cap ?? null
-              const used = lodge?.invites_sent ?? 0
-              const remaining = cap !== null ? cap - used : null
-              const atCap = cap !== null && used >= cap
+              const verifiedCount = members.filter(m => m.verification_status === 'verified').length
+              const remaining = cap !== null ? cap - verifiedCount : null
+              const atCap = cap !== null && verifiedCount >= cap
               const runningLow = cap !== null && remaining !== null && remaining <= Math.ceil(cap * 0.2)
               const upgradeDiff = lodge?.tier === 'small' ? 200 : lodge?.tier === 'standard' ? 300 : null
 
@@ -530,7 +533,6 @@ function AdminContent() {
                     Invite members
                   </h3>
 
-                  {/* Invite count */}
                   {cap !== null && (
                     <div className={`flex items-center justify-between text-xs mb-4 mt-1 px-3 py-2 rounded-lg ${
                       atCap        ? 'bg-amber-50 text-amber-700'
@@ -538,10 +540,10 @@ function AdminContent() {
                       : 'bg-stone text-muted'
                     }`}>
                       <span>
-                        {atCap ? '⚠ Invite limit reached' : runningLow ? `⚠ ${used} of ${cap} invites used` : `${used} of ${cap} invites used`}
+                        {atCap ? '⚠ Member limit reached' : runningLow ? `⚠ ${verifiedCount} of ${cap} verified members` : `${verifiedCount} of ${cap} verified members`}
                       </span>
                       {remaining !== null && !atCap && (
-                        <span className="font-semibold">{remaining} left</span>
+                        <span className="font-semibold">{remaining} spots left</span>
                       )}
                     </div>
                   )}

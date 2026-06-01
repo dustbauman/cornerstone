@@ -285,14 +285,14 @@ function LoginContent() {
               Join through your lodge
             </h2>
             <p className="text-sm text-white/70 leading-relaxed mb-4">
-              Tyrian is lodge-gated. Ask your lodge admin for an invite link, or find your lodge on the network.
+              Use the invite link or QR code from your lodge admin — it takes you straight to signup for your lodge.
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <Link
                 href="/network"
                 className="inline-flex items-center justify-center bg-[#C9A84C] hover:bg-[#b8943d] text-navy font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors"
               >
-                Find your lodge
+                Browse lodges
               </Link>
               <Link
                 href="/join"
@@ -551,13 +551,9 @@ function LoginContent() {
                 </p>
               ) : (
                 <p className="mt-5 text-xs text-center text-muted leading-relaxed">
-                  No account yet? You need a lodge invite link to join —{' '}
-                  <Link href="/network" className="text-navy underline hover:no-underline">
-                    find your lodge
-                  </Link>{' '}
-                  or{' '}
+                  No account yet? Join through your lodge&apos;s invite link or QR code. Lodge admins can{' '}
                   <Link href="/join" className="text-navy underline hover:no-underline">
-                    unlock your lodge
+                    unlock Tyrian for your lodge
                   </Link>
                   .
                 </p>

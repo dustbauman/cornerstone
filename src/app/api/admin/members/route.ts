@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
+import { canAcceptNewMember } from '@/lib/invites'
 
 export async function POST(request: Request) {
   const { memberId, action } = await request.json()
@@ -40,6 +41,18 @@ export async function POST(request: Request) {
 
   if (target.id === user.id) {
     return Response.json({ error: 'Cannot modify your own status' }, { status: 400 })
+  }
+
+  if (action === 'approve') {
+    const { allowed, cap } = await canAcceptNewMember(adminProfile.lodge_id)
+    if (!allowed) {
+      return Response.json({
+        error: 'LODGE_AT_CAPACITY',
+        message: cap
+          ? `Your lodge has reached its ${cap}-verified member limit. Upgrade your plan before approving more members.`
+          : 'Your lodge cannot accept more verified members right now.',
+      }, { status: 403 })
+    }
   }
 
   const status = action === 'approve' ? 'verified' : 'rejected'

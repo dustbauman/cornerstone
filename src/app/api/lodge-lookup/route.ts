@@ -9,7 +9,6 @@ export async function GET(request: NextRequest) {
   const number = searchParams.get('number')?.trim()
   const state = searchParams.get('state')?.trim()
 
-  // Founding slot count query
   if (searchParams.has('_founding')) {
     const { count } = await supabase
       .from('lodges')
@@ -25,7 +24,7 @@ export async function GET(request: NextRequest) {
 
   const { data: lodge } = await supabase
     .from('lodges')
-    .select('id, name, number, state, status')
+    .select('id, name, number, state, status, slug')
     .eq('number', number)
     .eq('state', state)
     .maybeSingle()
@@ -40,5 +39,6 @@ export async function GET(request: NextRequest) {
     name: lodge.name,
     number: lodge.number,
     state: lodge.state,
+    slug: lodge.slug ?? lodge.id,
   })
 }
