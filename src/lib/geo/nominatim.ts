@@ -1,5 +1,36 @@
 const USER_AGENT = 'Tyrian/1.0 (hello@tyrian.work)'
 
+export async function geocodeQuery(query: string): Promise<{ lat: number; lng: number } | null> {
+  try {
+    const params = new URLSearchParams({
+      q: query,
+      format: 'json',
+      limit: '1',
+      countrycodes: 'us',
+    })
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
+      headers: { 'User-Agent': USER_AGENT },
+      signal: AbortSignal.timeout(5000),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data[0]) return null
+    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
+  } catch {
+    return null
+  }
+}
+
+export async function geocodeAddress(
+  address: string,
+  city: string,
+  state: string
+): Promise<{ lat: number; lng: number } | null> {
+  const parts = [address.trim(), city.trim(), state.trim(), 'USA'].filter(Boolean)
+  if (parts.length < 3) return null
+  return geocodeQuery(parts.join(', '))
+}
+
 export async function geocodeCityState(
   city: string,
   state: string

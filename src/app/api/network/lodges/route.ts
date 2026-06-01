@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { LodgeCardData } from '@/components/lodge/LodgeCard'
+import { enrichLodgeGeo } from '@/lib/lodges/geocode-lodge'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,7 +9,9 @@ export async function GET() {
 
   const { data: lodges, error } = await admin
     .from('lodges')
-    .select('id, name, number, city, state, tier, slug, created_at')
+    .select(
+      'id, name, number, city, state, tier, slug, created_at, meeting_address, lat, lng, directory_id'
+    )
     .eq('status', 'active')
     .order('tier')
     .order('created_at')
@@ -25,11 +28,14 @@ export async function GET() {
   const results: LodgeCardData[] = []
 
   for (const lodge of lodges) {
-    const { data: members } = await admin
-      .from('profiles')
-      .select('id')
-      .eq('lodge_id', lodge.id)
-      .eq('verification_status', 'verified')
+    const [{ data: members }, geo] = await Promise.all([
+      admin
+        .from('profiles')
+        .select('id')
+        .eq('lodge_id', lodge.id)
+        .eq('verification_status', 'verified'),
+      enrichLodgeGeo(admin, lodge),
+    ])
 
     const memberIds = (members ?? []).map((m) => m.id)
     let listingCount = 0
@@ -53,8 +59,11 @@ export async function GET() {
       slug: lodge.slug,
       name: lodge.name,
       number: lodge.number,
-      city: lodge.city ?? '',
-      state: lodge.state ?? '',
+      city: geo.city,
+      state: geo.state,
+      meetingAddress: geo.meeting_address,
+      lat: geo.lat,
+      lng: geo.lng,
       tier: lodge.tier,
       memberCount: memberIds.length,
       listingCount,

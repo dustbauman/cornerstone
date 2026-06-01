@@ -1,5 +1,6 @@
 import { generateUniqueClaimCode } from '@/lib/lodges/claim-code'
 import { generateUniqueLodgeSlug } from '@/lib/lodges/slug'
+import { enrichLodgeGeo } from '@/lib/lodges/geocode-lodge'
 import { sendLodgeClaimEmail } from '@/lib/email'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { INVITE_CAPS } from '@/lib/invites'
@@ -105,6 +106,15 @@ export async function POST(request: Request) {
       }
 
       lodge = inserted
+
+      void enrichLodgeGeo(supabase, {
+        id: inserted.id,
+        number: lodgeNumber,
+        city,
+        state,
+        meeting_address: meetingAddress,
+        directory_id: directoryId || null,
+      })
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'

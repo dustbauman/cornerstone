@@ -10,8 +10,7 @@ import UnlockLodgeBanner from '@/components/network/UnlockLodgeBanner'
 import ActiveFilterChips from '@/components/requests/ActiveFilterChips'
 import GuestBrowseSettingsModal from '@/components/requests/GuestBrowseSettingsModal'
 import { STATE_CODE_TO_NAME } from '@/lib/db/listings'
-import { haversineDistance } from '@/lib/geo/scoring'
-import { getCachedCityCoords, resolveCityCoordsBatch } from '@/lib/geo/city-coords-cache'
+import { distanceMiles, isWithinBrowseRadius } from '@/lib/geo/nearby'
 import {
   DEFAULT_GUEST_AREA,
   resolveGuestArea,
@@ -29,27 +28,53 @@ const NEAR_ME_RADIUS_MILES = 50
 const NEAR_ME_STORAGE_KEY = 'tyrian_directory_near_me'
 
 function demoNetworkLodges(): LodgeCardData[] {
-  return demoLodges.map((lodge) => {
-    const memberCount = demoListings.filter((x) => x.lodge_id === lodge.id).length
-    const listingCount = demoListings.filter((x) => x.lodge_id === lodge.id).length
-    return {
-      id: lodge.id,
-      slug: `${lodge.name.toLowerCase().replace(/\s+/g, '-')}-${lodge.number}`,
-      name: lodge.name,
-      number: lodge.number,
-      city: lodge.city,
-      state: lodge.state,
-      tier: lodge.tier,
-      memberCount: Math.max(memberCount, 3),
-      listingCount,
+  return [
+    {
+      id: demoLodges[0].id,
+      slug: 'acacia-lodge-123',
+      name: demoLodges[0].name,
+      number: demoLodges[0].number,
+      city: demoLodges[0].city,
+      state: demoLodges[0].state,
+      meetingAddress: '123 Main St',
+      lat: 36.154,
+      lng: -95.9928,
+      tier: demoLodges[0].tier,
+      memberCount: 8,
+      listingCount: demoListings.filter((x) => x.lodge_id === demoLodges[0].id).length,
       requestCount: 1,
-    }
-  })
-}
-
-function lodgeCoords(lodge: LodgeCardData): { lat: number; lng: number } | null {
-  if (!lodge.city) return null
-  return getCachedCityCoords(lodge.city, lodge.state)
+    },
+    {
+      id: demoLodges[1].id,
+      slug: 'gulf-coast-lodge-441',
+      name: demoLodges[1].name,
+      number: demoLodges[1].number,
+      city: demoLodges[1].city,
+      state: demoLodges[1].state,
+      meetingAddress: '441 Masonic Ave',
+      lat: 27.9506,
+      lng: -82.4572,
+      tier: demoLodges[1].tier,
+      memberCount: 6,
+      listingCount: demoListings.filter((x) => x.lodge_id === demoLodges[1].id).length,
+      requestCount: 1,
+    },
+    {
+      id: demoLodges[2].id,
+      slug: 'suncoast-lodge-217',
+      name: demoLodges[2].name,
+      number: demoLodges[2].number,
+      city: demoLodges[2].city,
+      state: demoLodges[2].state,
+      meetingAddress: '217 Gulf Stream Ave',
+      lat: 27.3364,
+      lng: -82.5307,
+      tier: demoLodges[2].tier,
+      memberCount: 4,
+      listingCount: demoListings.filter((x) => x.lodge_id === demoLodges[2].id).length,
+      requestCount: 0,
+    },
+  ]
 }
 
 function NetworkContent() {
@@ -63,7 +88,6 @@ function NetworkContent() {
   const [browseArea, setBrowseArea] = useState<GuestAreaPrefs>(DEFAULT_GUEST_AREA)
   const [profileArea, setProfileArea] = useState<GuestAreaPrefs | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [coordsTick, setCoordsTick] = useState(0)
 
   useEffect(() => {
     const stored = localStorage.getItem(NEAR_ME_STORAGE_KEY)
@@ -130,23 +154,6 @@ function NetworkContent() {
       .finally(() => setLoading(false))
   }, [isDemoMode])
 
-  useEffect(() => {
-    if (isDemoMode || lodges.length === 0) return
-
-    const pairs = lodges
-      .filter((l) => l.city)
-      .map((l) => ({ city: l.city, state: l.state }))
-
-    let cancelled = false
-    void resolveCityCoordsBatch(pairs, () => {
-      if (!cancelled) setCoordsTick((n) => n + 1)
-    })
-
-    return () => {
-      cancelled = true
-    }
-  }, [lodges, isDemoMode])
-
   const locationOverridden =
     isLoggedIn &&
     profileArea != null &&
@@ -155,11 +162,18 @@ function NetworkContent() {
       browseArea.lat !== profileArea.lat ||
       browseArea.lng !== profileArea.lng)
 
-  const lodgeDistance = (lodge: LodgeCardData): number | null => {
-    const coords = lodgeCoords(lodge)
-    if (!coords) return null
-    return haversineDistance(browseArea.lat, browseArea.lng, coords.lat, coords.lng)
-  }
+  const lodgeDistance = (lodge: LodgeCardData) =>
+    distanceMiles(
+      { city: lodge.city, state: lodge.state, lat: lodge.lat, lng: lodge.lng },
+      browseArea
+    )
+
+  const isLodgeNear = (lodge: LodgeCardData) =>
+    isWithinBrowseRadius(
+      { city: lodge.city, state: lodge.state, lat: lodge.lat, lng: lodge.lng },
+      browseArea,
+      NEAR_ME_RADIUS_MILES
+    )
 
   const availableStates = useMemo(() => {
     const codes = Array.from(new Set(lodges.map((l) => l.state).filter(Boolean)))
@@ -181,9 +195,7 @@ function NetworkContent() {
       if (!matchSearch || !matchState) return false
 
       if (nearMeOnly) {
-        const dist = lodgeDistance(lodge)
-        if (dist != null) return dist <= NEAR_ME_RADIUS_MILES
-        return lodge.state === browseArea.state
+        return isLodgeNear(lodge)
       }
 
       return true
@@ -208,16 +220,11 @@ function NetworkContent() {
       if (b.tier === 'founding' && a.tier !== 'founding') return 1
       return b.memberCount - a.memberCount
     })
-  }, [lodges, search, selectedState, nearMeOnly, browseArea, coordsTick])
+  }, [lodges, search, selectedState, nearMeOnly, browseArea])
 
   const nearMeCount = useMemo(
-    () =>
-      lodges.filter((lodge) => {
-        const dist = lodgeDistance(lodge)
-        if (dist != null) return dist <= NEAR_ME_RADIUS_MILES
-        return lodge.state === browseArea.state
-      }).length,
-    [lodges, browseArea.state, coordsTick]
+    () => lodges.filter((lodge) => isLodgeNear(lodge)).length,
+    [lodges, browseArea, nearMeOnly]
   )
 
   function clearFilters() {

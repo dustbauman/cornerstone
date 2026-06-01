@@ -15,7 +15,19 @@ export interface LodgeCardData {
   memberCount: number
   listingCount: number
   requestCount: number
+  meetingAddress?: string | null
+  lat?: number | null
+  lng?: number | null
   distanceMiles?: number | null
+}
+
+function formatCity(city: string) {
+  if (!city) return city
+  return city
+    .toLowerCase()
+    .split(/\s+/)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ')
 }
 
 export default function LodgeCard({ lodge }: { lodge: LodgeCardData }) {
@@ -38,11 +50,14 @@ export default function LodgeCard({ lodge }: { lodge: LodgeCardData }) {
           {lodge.name}
         </h3>
         <p className="text-sm text-muted">
-          #{lodge.number} · {lodge.city ? `${lodge.city}, ` : ''}{lodge.state}
+          #{lodge.number} · {lodge.city ? `${formatCity(lodge.city)}, ` : ''}{lodge.state}
           {lodge.distanceMiles != null && (
             <span className="text-navy/70"> · {Math.round(lodge.distanceMiles)} mi</span>
           )}
         </p>
+        {lodge.meetingAddress && (
+          <p className="text-xs text-muted mt-1 leading-snug">{lodge.meetingAddress}</p>
+        )}
           </div>
         </div>
 
