@@ -4,15 +4,11 @@ import { enrichLodgeGeo } from '@/lib/lodges/geocode-lodge'
 import { sendLodgeClaimEmail } from '@/lib/email'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { INVITE_CAPS } from '@/lib/invites'
-
-const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
-
-const PRICES: Record<string, number> = {
-  small: 299,
-  standard: 499,
-  large: 799,
-  founding: 1,
-}
+import {
+  getFoundingOffer,
+  getStripePriceIdForFoundingOffer,
+  STANDARD_PRICES_DOLLARS,
+} from '@/lib/pricing'
 
 export async function POST(request: Request) {
   try {
@@ -22,6 +18,8 @@ export async function POST(request: Request) {
     if (!lodgeName || !lodgeNumber || !state || !size || !payerEmail) {
       return Response.json({ error: 'Missing required fields' }, { status: 400 })
     }
+
+    const normalizedPayerEmail = payerEmail.toLowerCase().trim()
 
     const supabase = createAdminClient()
 
@@ -39,13 +37,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { count: foundingCount } = await supabase
-      .from('lodges')
-      .select('*', { count: 'exact', head: true })
-      .eq('tier', 'founding')
-      .eq('status', 'active')
-
-    const isFoundingEligible = (foundingCount ?? 0) < FOUNDING_LIMIT
+    const { offer: foundingOffer } = await getFoundingOffer(supabase)
 
     let lodge: { id: string; slug: string | null }
 
@@ -54,7 +46,7 @@ export async function POST(request: Request) {
       await supabase
         .from('lodges')
         .update({
-          paid_by_email: payerEmail,
+          paid_by_email: normalizedPayerEmail,
           paid_by_name: payerName,
           name: lodgeName,
         })
@@ -86,7 +78,7 @@ export async function POST(request: Request) {
           meeting_address: meetingAddress,
           status: 'pending',
           tier: 'standard',
-          paid_by_email: payerEmail,
+          paid_by_email: normalizedPayerEmail,
           paid_by_name: payerName,
           directory_id: directoryId || null,
           slug,
@@ -123,9 +115,9 @@ export async function POST(request: Request) {
       const Stripe = (await import('stripe')).default
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
-      let priceId: string
-      if (isFoundingEligible) {
-        priceId = process.env.STRIPE_PRICE_FOUNDING!
+      let priceId: string | undefined
+      if (foundingOffer) {
+        priceId = getStripePriceIdForFoundingOffer(foundingOffer)
       } else {
         const priceMap: Record<string, string> = {
           small: process.env.STRIPE_PRICE_STANDARD_SMALL!,
@@ -155,11 +147,11 @@ export async function POST(request: Request) {
           lodge_number: lodgeNumber,
           lodge_state: state,
           lodge_size: size,
-          payer_email: payerEmail,
+          payer_email: normalizedPayerEmail,
           payer_name: payerName,
-          is_founding_eligible: String(isFoundingEligible),
+          founding_program: foundingOffer?.programTier ?? '',
         },
-        customer_email: payerEmail,
+        customer_email: normalizedPayerEmail,
         success_url: `${appUrl}/join/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${appUrl}/join/confirm`,
         expires_at: Math.floor(Date.now() / 1000) + 2 * 60 * 60,
@@ -175,15 +167,22 @@ export async function POST(request: Request) {
       return Response.json({ url: session.url })
     }
 
-    const tier = isFoundingEligible ? 'founding'
-      : size === 'small'  ? 'small'
-      : size === 'large'  ? 'large'
-      : 'standard'
+    // Dev / no Stripe: activate immediately
+    const tier = foundingOffer
+      ? foundingOffer.lodgeTier
+      : size === 'small'
+        ? 'small'
+        : size === 'large'
+          ? 'large'
+          : 'standard'
     const inviteCap = INVITE_CAPS[tier] ?? null
     const claimCode = await generateUniqueClaimCode(supabase)
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30)
-    const amount = isFoundingEligible ? PRICES.founding : PRICES[size] ?? PRICES.standard
+    const amount = foundingOffer
+      ? foundingOffer.priceDollars
+      : STANDARD_PRICES_DOLLARS[size as keyof typeof STANDARD_PRICES_DOLLARS] ??
+        STANDARD_PRICES_DOLLARS.standard
 
     const { error: activateError } = await supabase
       .from('lodges')
@@ -210,7 +209,7 @@ export async function POST(request: Request) {
 
     try {
       await sendLodgeClaimEmail({
-        to: payerEmail,
+        to: normalizedPayerEmail,
         payerName: payerName || 'Brother',
         lodgeName,
         lodgeNumber,
@@ -228,7 +227,7 @@ export async function POST(request: Request) {
       code: claimCode,
       tier,
       amount: String(amount),
-      email: payerEmail,
+      email: normalizedPayerEmail,
     })
 
     return Response.json({ url: `${appUrl}/join/success?${params}` })

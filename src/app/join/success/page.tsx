@@ -6,6 +6,10 @@ import { CheckCircle2, Copy, Check, Mail, Loader2 } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
+import {
+  foundingProgramTierFromLodgeTier,
+  isFoundingProgramLodgeTier,
+} from '@/lib/pricing/constants'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
@@ -42,7 +46,8 @@ function SuccessContent() {
       .finally(() => setLoadingSession(false))
   }, [claimCode, sessionId])
 
-  const isFounding = tier === 'founding'
+  const isFoundingProgram = isFoundingProgramLodgeTier(tier)
+  const foundingProgram = foundingProgramTierFromLodgeTier(tier)
 
   function copyCode() {
     navigator.clipboard.writeText(claimCode)
@@ -88,10 +93,19 @@ function SuccessContent() {
           </div>
         </div>
 
-        {isFounding && (
+        {isFoundingProgram && (
           <div className="mb-5 p-4 bg-[#FEF3C7] border border-[#C9A84C]/40 rounded-xl">
-            <FoundingLodgeBadge variant="callout" label="You're a Founding Lodge — one of the first 10 nationally." />
-            <p className="text-sm text-[#78350F] mt-2">Your lodge will carry the Founding Lodge designation permanently.</p>
+            <FoundingLodgeBadge
+              variant="callout"
+              label={
+                foundingProgram === 'charter'
+                  ? "You're a Charter Founding Lodge — lifetime access secured."
+                  : "You're a Pioneer Founding Lodge — one of the first nationally."
+              }
+            />
+            <p className="text-sm text-[#78350F] mt-2">
+              Your lodge carries permanent Founding Lodge designation with no annual renewal.
+            </p>
           </div>
         )}
 

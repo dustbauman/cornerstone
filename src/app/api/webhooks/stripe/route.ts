@@ -3,8 +3,7 @@ import { generateUniqueClaimCode } from '@/lib/lodges/claim-code'
 import { generateUniqueLodgeSlug } from '@/lib/lodges/slug'
 import { sendLodgeClaimEmail } from '@/lib/email'
 import { INVITE_CAPS } from '@/lib/invites'
-
-const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
+import { getFoundingOffer } from '@/lib/pricing'
 
 function adminClient() {
   return createClient(
@@ -53,20 +52,17 @@ export async function POST(request: Request) {
     return Response.json({ received: true })
   }
 
-  // Assign tier server-side — never trust the frontend
-  const { count: foundingCount } = await supabase
-    .from('lodges')
-    .select('*', { count: 'exact', head: true })
-    .eq('tier', 'founding')
-    .eq('status', 'active')
+  // Assign tier server-side at payment time — never trust the client
+  const { offer: foundingOffer } = await getFoundingOffer(supabase)
+  const size = meta.lodge_size as string
 
-  const isFoundingEligible = (foundingCount ?? 0) < FOUNDING_LIMIT
-  const size = meta.lodge_size as string // 'small' | 'standard' | 'large'
-
-  const tier = isFoundingEligible ? 'founding'
-    : size === 'small'    ? 'small'
-    : size === 'large'    ? 'large'
-    : 'standard'
+  const tier = foundingOffer
+    ? foundingOffer.lodgeTier
+    : size === 'small'
+      ? 'small'
+      : size === 'large'
+        ? 'large'
+        : 'standard'
 
   const inviteCap = INVITE_CAPS[tier] ?? null
 
@@ -84,6 +80,8 @@ export async function POST(request: Request) {
       invite_cap:            inviteCap,
       invites_sent:          0,
       paid_at:               new Date().toISOString(),
+      paid_by_email:         (meta.payer_email ?? session.customer_email ?? '').toLowerCase().trim() || null,
+      paid_by_name:          meta.payer_name ?? null,
       claim_code:            claimCode,
       claim_code_expires_at: expiresAt.toISOString(),
       stripe_session_id:     session.id,

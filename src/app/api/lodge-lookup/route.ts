@@ -1,7 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-
-const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
+import {
+  FOUNDING_SLOTS_TOTAL,
+  getFoundingSlotCounts,
+  resolveFoundingOffer,
+} from '@/lib/pricing'
 
 export async function GET(request: NextRequest) {
   const supabase = createClient()
@@ -10,12 +13,25 @@ export async function GET(request: NextRequest) {
   const state = searchParams.get('state')?.trim()
 
   if (searchParams.has('_founding')) {
-    const { count } = await supabase
-      .from('lodges')
-      .select('*', { count: 'exact', head: true })
-      .eq('tier', 'founding')
-      .eq('status', 'active')
-    return Response.json({ foundingCount: count ?? 0, limit: FOUNDING_LIMIT })
+    const counts = await getFoundingSlotCounts(supabase)
+    const offer = resolveFoundingOffer(counts)
+    return Response.json({
+      pioneerCount: counts.pioneerCount,
+      charterCount: counts.charterCount,
+      foundingCount: counts.totalFoundingCount,
+      pioneerRemaining: counts.pioneerRemaining,
+      charterRemaining: counts.charterRemaining,
+      totalRemaining: counts.totalRemaining,
+      limit: FOUNDING_SLOTS_TOTAL,
+      offer: offer
+        ? {
+            programTier: offer.programTier,
+            priceDollars: offer.priceDollars,
+            label: offer.label,
+            callout: offer.callout,
+          }
+        : null,
+    })
   }
 
   if (!number || !state) {

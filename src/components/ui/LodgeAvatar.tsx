@@ -20,7 +20,7 @@ export default function LodgeAvatar({
   className = '',
 }: LodgeAvatarProps) {
   const sizeClass = SIZE_CLASSES[size]
-  const isFounding = tier === 'founding'
+  const isFounding = tier === 'founding' || tier === 'charter'
   const label = number ? `#${number}` : null
 
   return (

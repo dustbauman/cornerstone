@@ -72,8 +72,10 @@ export async function GET() {
   }
 
   results.sort((a, b) => {
-    if (a.tier === 'founding' && b.tier !== 'founding') return -1
-    if (b.tier === 'founding' && a.tier !== 'founding') return 1
+    const aFounding = a.tier === 'founding' || a.tier === 'charter'
+    const bFounding = b.tier === 'founding' || b.tier === 'charter'
+    if (aFounding && !bFounding) return -1
+    if (bFounding && !aFounding) return 1
     return b.memberCount - a.memberCount
   })
 

@@ -141,7 +141,7 @@ export default async function LodgeCommunityPage({ params }: PageProps) {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      {lodge.tier === 'founding' ? (
+      {lodge.tier === 'founding' || lodge.tier === 'charter' ? (
         <FoundingLodgeHero {...heroProps} />
       ) : (
         <div className="bg-navy text-white py-12">

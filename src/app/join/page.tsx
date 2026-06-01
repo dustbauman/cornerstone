@@ -7,8 +7,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import LodgeSearch, { US_STATES, type LodgeResult } from '@/components/lodge/LodgeSearch'
 import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
-
-const FOUNDING_LIMIT = parseInt(process.env.NEXT_PUBLIC_FOUNDING_LODGE_LIMIT || '10')
+import { FOUNDING_TIER_1_SLOTS } from '@/lib/pricing/constants'
 
 const SIZE_OPTIONS = [
   { value: 'small',    label: 'Under 40 members',  price: 299 },
@@ -17,6 +16,18 @@ const SIZE_OPTIONS = [
 ]
 
 type LookupStatus = 'idle' | 'checking' | 'active' | 'pending' | 'not_found' | 'error'
+
+type FoundingStatus = {
+  totalRemaining: number
+  pioneerRemaining: number
+  charterRemaining: number
+  offer: {
+    programTier: 'pioneer' | 'charter'
+    priceDollars: number
+    label: string
+    callout: string
+  } | null
+}
 
 function JoinContent() {
   const router = useRouter()
@@ -35,7 +46,7 @@ function JoinContent() {
   const [payerName, setPayerName] = useState('')
   const [payerEmail, setPayerEmail] = useState('')
   const [confirmed, setConfirmed] = useState(false)
-  const [foundingSlots, setFoundingSlots] = useState<number | null>(null)
+  const [foundingStatus, setFoundingStatus] = useState<FoundingStatus | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
@@ -45,8 +56,17 @@ function JoinContent() {
     if (showForm) {
       fetch('/api/lodge-lookup?_founding=1')
         .then(r => r.json())
-        .then(d => { if (typeof d.foundingCount === 'number') setFoundingSlots(FOUNDING_LIMIT - d.foundingCount) })
-        .catch(() => setFoundingSlots(null))
+        .then((d: FoundingStatus & { totalRemaining?: number }) => {
+          if (typeof d.totalRemaining === 'number') {
+            setFoundingStatus({
+              totalRemaining: d.totalRemaining,
+              pioneerRemaining: d.pioneerRemaining ?? 0,
+              charterRemaining: d.charterRemaining ?? 0,
+              offer: d.offer ?? null,
+            })
+          }
+        })
+        .catch(() => setFoundingStatus(null))
     }
   }, [showForm])
 
@@ -87,7 +107,7 @@ function JoinContent() {
       payerEmail: payerEmail.trim(),
       directoryId: selectedLodge.id || '',
       isManualEntry: selectedLodge.isManualEntry ? '1' : '0',
-      ...(isFoundingEligible ? { foundingEligible: '1' } : {}),
+      ...(foundingOffer ? { foundingProgram: foundingOffer.programTier } : {}),
     })
 
     router.push(`/join/confirm?${params}`)
@@ -95,7 +115,9 @@ function JoinContent() {
 
   const selectedSize = SIZE_OPTIONS.find(o => o.value === size)
   const canSubmit = selectedLodge && size && payerName.trim() && payerEmail.trim() && confirmed
-  const isFoundingEligible = foundingSlots !== null && foundingSlots > 0
+  const foundingOffer = foundingStatus?.offer ?? null
+  const isFoundingEligible = foundingOffer !== null
+  const foundingPrice = foundingOffer?.priceDollars ?? null
 
   return (
     <div className="flex flex-col min-h-screen bg-stone">
@@ -223,11 +245,29 @@ function JoinContent() {
             </div>
 
             {/* Founding callout */}
-            {foundingSlots !== null && foundingSlots > 0 && (
+            {foundingOffer && (
               <div className="p-4 bg-[#FEF3C7] border border-[#C9A84C]/40 rounded-xl">
-                <FoundingLodgeBadge variant="callout" label="Founding Lodge pricing available" />
+                <FoundingLodgeBadge
+                  variant="callout"
+                  label={
+                    foundingOffer.programTier === 'pioneer'
+                      ? 'Pioneer Founding Lodge — $99 lifetime'
+                      : 'Charter Founding Lodge — $299 lifetime'
+                  }
+                />
                 <p className="text-sm text-[#78350F] mt-2">
-                  Only {foundingSlots} of {FOUNDING_LIMIT} founding slots remain. Founding lodges pay $1 and receive permanent recognition and locked-in pricing forever.
+                  {foundingOffer.programTier === 'pioneer' ? (
+                    <>
+                      {foundingStatus!.pioneerRemaining} of {FOUNDING_TIER_1_SLOTS} Pioneer slots remain.
+                      Pay ${foundingOffer.priceDollars} once for lifetime access — no annual fee, ever.
+                    </>
+                  ) : (
+                    <>
+                      Pioneer slots are full. {foundingStatus!.charterRemaining} Charter{' '}
+                      {foundingStatus!.charterRemaining === 1 ? 'slot' : 'slots'} remain at $
+                      {foundingOffer.priceDollars} — still lifetime, still no annual fee.
+                    </>
+                  )}
                 </p>
               </div>
             )}
@@ -257,10 +297,10 @@ function JoinContent() {
                         <input type="radio" name="size" value={opt.value} checked={size === opt.value} onChange={() => setSize(opt.value)} className="accent-navy" />
                         <span className="text-sm font-medium text-[#1A1A1A]">{opt.label}</span>
                       </div>
-                      {isFoundingEligible ? (
+                      {isFoundingEligible && foundingPrice !== null ? (
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-muted line-through">${opt.price}</span>
-                          <span className="text-sm font-semibold text-[#92400E]">$1</span>
+                          <span className="text-sm font-semibold text-[#92400E]">${foundingPrice}</span>
                         </div>
                       ) : (
                         <span className="text-sm font-semibold text-navy">${opt.price}</span>
@@ -270,11 +310,13 @@ function JoinContent() {
                 </div>
                 <p className="text-sm text-muted mt-2">
                   One-time platform fee:{' '}
-                  {isFoundingEligible ? (
+                  {isFoundingEligible && foundingOffer ? (
                     <>
                       <span className="line-through text-muted">${selectedSize?.price}</span>{' '}
-                      <span className="font-semibold text-[#92400E]">$1</span>
-                      <span className="text-[#92400E] ml-2">(Founding Lodge pricing)</span>
+                      <span className="font-semibold text-[#92400E]">${foundingPrice}</span>
+                      <span className="text-[#92400E] ml-2">
+                        ({foundingOffer.label} — lifetime, one-time)
+                      </span>
                     </>
                   ) : (
                     <span className="font-semibold text-navy">${selectedSize?.price}</span>

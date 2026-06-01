@@ -39,7 +39,7 @@ export default function LodgeCard({ lodge }: { lodge: LodgeCardData }) {
         <div className="flex items-start gap-3 mb-3">
           <LodgeAvatar number={lodge.number} tier={lodge.tier} size="sm" />
           <div className="min-w-0 flex-1">
-        {lodge.tier === 'founding' && (
+        {(lodge.tier === 'founding' || lodge.tier === 'charter') && (
           <FoundingLodgeBadge variant="pill" className="mb-2" />
         )}
 

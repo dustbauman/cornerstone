@@ -1,6 +1,11 @@
 import { APP_URL, getAppUrl } from './send'
 import { EMAIL_THEME as t } from './theme'
 import {
+  isFoundingProgramLodgeTier,
+  foundingProgramTierFromLodgeTier,
+  FOUNDING_PROGRAM_LABELS,
+} from '@/lib/pricing/constants'
+import {
   emailButton,
   emailButtonRow,
   emailCallout,
@@ -29,7 +34,11 @@ export interface LodgeClaimTemplateArgs {
 
 export function buildLodgeClaimEmail(args: LodgeClaimTemplateArgs) {
   const { payerName, lodgeName, lodgeNumber, claimCode, tier, expiresAt } = args
-  const isFounding = tier === 'founding'
+  const isFoundingProgram = isFoundingProgramLodgeTier(tier)
+  const foundingProgram = foundingProgramTierFromLodgeTier(tier)
+  const foundingLabel = foundingProgram
+    ? `${FOUNDING_PROGRAM_LABELS[foundingProgram]} Founding Lodge`
+    : 'Founding Lodge'
   const expiryStr = expiresAt.toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
@@ -40,10 +49,10 @@ export function buildLodgeClaimEmail(args: LodgeClaimTemplateArgs) {
 
   const subject = `Your lodge claim code for Tyrian — ${claimCode}`
 
-  const foundingBlock = isFounding
+  const foundingBlock = isFoundingProgram
     ? emailCallout({
-        title: 'Founding Lodge — permanent designation secured',
-        body: 'This status is permanent and appears on your lodge page and every member&rsquo;s verified profile.',
+        title: `${foundingLabel} — lifetime access secured`,
+        body: 'This status is permanent with no annual renewal. It appears on your lodge page and every member&rsquo;s verified profile.',
         variant: 'founding',
       })
     : ''
@@ -78,7 +87,9 @@ export function buildLodgeClaimEmail(args: LodgeClaimTemplateArgs) {
     `Hi ${payerName},`,
     '',
     `${lodgeLabel} is now on Tyrian.`,
-    isFounding ? '\nFounding Lodge — you have secured a permanent designation.\n' : '',
+    isFoundingProgram
+      ? `\n${foundingLabel} — lifetime access with no annual renewal.\n`
+      : '',
     `Your claim code: ${claimCode}`,
     `Expires: ${expiryStr}`,
     '',

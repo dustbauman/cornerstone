@@ -82,6 +82,7 @@ function NetworkContent() {
   const { isDemoMode } = useDemoMode()
   const [lodges, setLodges] = useState<LodgeCardData[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState('')
   const [search, setSearch] = useState('')
   const [selectedState, setSelectedState] = useState('')
   const [nearMeOnly, setNearMeOnly] = useState(false)
@@ -142,6 +143,7 @@ function NetworkContent() {
 
   useEffect(() => {
     setLoading(true)
+    setFetchError('')
     if (isDemoMode) {
       setLodges(demoNetworkLodges())
       setLoading(false)
@@ -149,9 +151,19 @@ function NetworkContent() {
     }
 
     fetch('/api/network/lodges')
-      .then((r) => (r.ok ? r.json() : { lodges: [] }))
+      .then(async (r) => {
+        const data = await r.json().catch(() => ({}))
+        if (!r.ok) {
+          setFetchError(data.error || 'Could not load lodges. Try refreshing.')
+          return { lodges: [] }
+        }
+        return data
+      })
       .then((data) => setLodges(data.lodges ?? []))
-      .catch(() => setLodges([]))
+      .catch(() => {
+        setFetchError('Could not load lodges. Try refreshing.')
+        setLodges([])
+      })
       .finally(() => setLoading(false))
   }, [isDemoMode])
 
@@ -217,8 +229,10 @@ function NetworkContent() {
     }
 
     return withDistance.sort((a, b) => {
-      if (a.tier === 'founding' && b.tier !== 'founding') return -1
-      if (b.tier === 'founding' && a.tier !== 'founding') return 1
+      const aFounding = a.tier === 'founding' || a.tier === 'charter'
+      const bFounding = b.tier === 'founding' || b.tier === 'charter'
+      if (aFounding && !bFounding) return -1
+      if (bFounding && !aFounding) return 1
       return b.memberCount - a.memberCount
     })
   }, [lodges, search, selectedState, nearMeOnly, browseArea])
@@ -423,13 +437,27 @@ function NetworkContent() {
               </div>
             ) : lodges.length === 0 ? (
               <div className="text-center py-20">
-                <p
-                  className="text-lg font-semibold text-navy mb-2"
-                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
-                >
-                  The network is growing.
-                </p>
-                <p className="text-muted mb-6">Your lodge could be the first.</p>
+                {fetchError ? (
+                  <>
+                    <p
+                      className="text-lg font-semibold text-navy mb-2"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      Couldn&apos;t load the network
+                    </p>
+                    <p className="text-muted mb-6">{fetchError}</p>
+                  </>
+                ) : (
+                  <>
+                    <p
+                      className="text-lg font-semibold text-navy mb-2"
+                      style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                    >
+                      The network is growing.
+                    </p>
+                    <p className="text-muted mb-6">Your lodge could be the first.</p>
+                  </>
+                )}
                 <Link
                   href="/join"
                   className="inline-flex bg-gold hover:bg-gold-dark text-navy font-bold px-6 py-3 rounded-xl transition-colors"

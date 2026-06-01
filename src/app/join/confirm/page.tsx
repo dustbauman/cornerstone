@@ -6,6 +6,11 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { TierNudge } from '@/components/TierNudge'
 import { createClient } from '@/lib/supabase/client'
+import {
+  FOUNDING_PRICES_DOLLARS,
+  FOUNDING_PROGRAM_LABELS,
+  type FoundingProgramTier,
+} from '@/lib/pricing/constants'
 
 const SIZE_LABELS: Record<string, string> = {
   small:    'Under 40 members',
@@ -40,13 +45,20 @@ function ConfirmContent() {
   const payerName    = searchParams.get('payerName') || ''
   const payerEmail   = searchParams.get('payerEmail') || ''
   const isManual     = searchParams.get('isManualEntry') === '1'
-  const isFoundingEligible = searchParams.get('foundingEligible') === '1'
+  const foundingProgramParam = searchParams.get('foundingProgram')
+  const foundingProgram: FoundingProgramTier | null =
+    foundingProgramParam === 'pioneer' || foundingProgramParam === 'charter'
+      ? foundingProgramParam
+      : null
+  const isFoundingEligible = foundingProgram !== null
 
   // size is mutable — TierNudge may change it before checkout
   const [size, setSize] = useState(searchParams.get('size') || 'standard')
 
   const listPrice = SIZE_PRICES[size] ?? 499
-  const price = isFoundingEligible ? 1 : listPrice
+  const price = foundingProgram
+    ? FOUNDING_PRICES_DOLLARS[foundingProgram]
+    : listPrice
 
   // Fetch member count from lodge_directory when a directoryId is present
   useEffect(() => {
@@ -157,8 +169,10 @@ function ConfirmContent() {
               )}
               ${price}{' '}
               <span className="text-sm font-normal text-muted">(one-time)</span>
-              {isFoundingEligible && (
-                <span className="block text-xs font-normal text-[#92400E] mt-0.5">Founding Lodge pricing</span>
+              {foundingProgram && (
+                <span className="block text-xs font-normal text-[#92400E] mt-0.5">
+                  {FOUNDING_PROGRAM_LABELS[foundingProgram]} Founding Lodge — lifetime access
+                </span>
               )}
             </span>
           </div>
