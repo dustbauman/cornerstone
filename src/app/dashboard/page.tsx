@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import {
   Eye, Users, Share2, Edit3, Lock, Globe, Copy,
@@ -20,8 +20,10 @@ import { demoUser, demoListings } from '@/lib/demo/data'
 import { getDemoListingBySlug } from '@/lib/demo/listings'
 import { computeProfileCompletion } from '@/lib/profile/completion'
 import MyRequestsSection, { type MyRequestRow } from '@/components/dashboard/MyRequestsSection'
+import PendingReviewsSection from '@/components/dashboard/PendingReviewsSection'
+import DashboardReviewLauncher from '@/components/dashboard/DashboardReviewLauncher'
 import { getAuthHeaders } from '@/lib/supabase/auth-headers'
-import type { Listing, TradeCategory } from '@/lib/types'
+import type { Listing, PendingReviewTarget, TradeCategory } from '@/lib/types'
 
 interface DbListing {
   id: string
@@ -31,6 +33,8 @@ interface DbListing {
   phone: string | null
   google_rating: number | null
   google_rating_count: number | null
+  member_rating: number | null
+  member_review_count: number | null
   views_count: number
 }
 
@@ -125,6 +129,7 @@ export default function DashboardPage() {
   const [accessState, setAccessState] = useState<MemberAccessState>('unaffiliated')
   const [sentResponses, setSentResponses] = useState<SentResponse[]>([])
   const [myRequests, setMyRequests] = useState<MyRequestRow[]>([])
+  const [pendingReviews, setPendingReviews] = useState<PendingReviewTarget[]>([])
   const [loading, setLoading] = useState(true)
   const [profileFields, setProfileFields] = useState<{
     city: string | null
@@ -160,7 +165,7 @@ export default function DashboardPage() {
         supabase
           .from('listings')
           .select(
-            'id, business_name, trade_category, description, phone, google_rating, google_rating_count, views_count'
+            'id, business_name, trade_category, description, phone, google_rating, google_rating_count, member_rating, member_review_count, views_count'
           )
           .eq('profile_id', user.id)
           .eq('is_active', true)
@@ -236,6 +241,11 @@ export default function DashboardPage() {
             .then((r) => (r.ok ? r.json() : { responses: [] }))
             .then((data) => setSentResponses(data.responses ?? []))
             .catch(() => setSentResponses([]))
+
+          fetch('/api/me/pending-reviews', fetchOpts)
+            .then((r) => (r.ok ? r.json() : { targets: [] }))
+            .then((data) => setPendingReviews(data.targets ?? []))
+            .catch(() => setPendingReviews([]))
         }
       })
 
@@ -334,6 +344,9 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
+      <Suspense fallback={null}>
+        <DashboardReviewLauncher />
+      </Suspense>
 
       <div className="bg-navy text-white py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -433,12 +446,25 @@ export default function DashboardPage() {
                   {listing?.ownerName ?? demoListing?.owner_name ?? displayUser.fullName}
                 </p>
 
-                {listing && <StarRating rating={listing.rating} reviewCount={listing.reviewCount} />}
-                {demoListing && !listing && (
-                  <StarRating rating={demoListing.google_rating} reviewCount={demoListing.google_rating_count} />
+                {listing && (
+                  <StarRating
+                    rating={listing.memberRating}
+                    reviewCount={listing.memberReviewCount}
+                    hideWhenEmpty
+                  />
                 )}
-                {dbListing && !listing && !demoListing && (dbListing.google_rating ?? 0) > 0 && (
-                  <StarRating rating={dbListing.google_rating!} reviewCount={dbListing.google_rating_count ?? 0} />
+                {demoListing && !listing && (
+                  <StarRating
+                    rating={5}
+                    reviewCount={3}
+                  />
+                )}
+                {dbListing && !listing && !demoListing && (
+                  <StarRating
+                    rating={dbListing.member_rating ?? 0}
+                    reviewCount={dbListing.member_review_count ?? 0}
+                    hideWhenEmpty
+                  />
                 )}
 
                 <p className="text-sm text-muted mt-3 line-clamp-2 leading-relaxed">
@@ -491,6 +517,10 @@ export default function DashboardPage() {
                   </Link>
                 )}
               </div>
+            )}
+
+            {!isDemoMode && pendingReviews.length > 0 && (
+              <PendingReviewsSection targets={pendingReviews} />
             )}
 
             <MyRequestsSection requests={myRequests} demoMode={isDemoMode} />

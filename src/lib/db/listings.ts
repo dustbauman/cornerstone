@@ -1,5 +1,6 @@
 import type { Listing, TradeCategory } from '@/lib/types'
 import type { demoListings } from '@/lib/demo/data'
+import { getDemoMemberStats } from '@/lib/demo/reviews'
 
 export const STATE_CODE_TO_NAME: Record<string, string> = {
   AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',
@@ -29,6 +30,8 @@ export type DbListingRow = {
   website: string | null
   google_rating: number | null
   google_rating_count: number | null
+  member_rating: number | null
+  member_review_count: number | null
   services: string[] | null
   visibility: string
   is_active: boolean
@@ -65,8 +68,10 @@ export function dbListingToListing(row: DbListingRow): Listing {
       state: STATE_CODE_TO_NAME[row.state] ?? row.state,
       stateCode: row.state,
     },
-    rating: row.google_rating ?? 0,
-    reviewCount: row.google_rating_count ?? 0,
+    memberRating: row.member_rating ?? 0,
+    memberReviewCount: row.member_review_count ?? 0,
+    googleRating: row.google_rating,
+    googleReviewCount: row.google_rating_count,
     description: row.description ?? '',
     services: row.services ?? [],
     phone: row.phone ?? '',
@@ -79,6 +84,7 @@ export function dbListingToListing(row: DbListingRow): Listing {
 }
 
 export function demoListingToListing(dl: typeof demoListings[number]): Listing {
+  const memberStats = getDemoMemberStats(dl.id)
   return {
     id: dl.id,
     slug: dl.slug,
@@ -96,8 +102,10 @@ export function demoListingToListing(dl: typeof demoListings[number]): Listing {
       lat: dl.lat,
       lng: dl.lng,
     },
-    rating: dl.google_rating,
-    reviewCount: dl.google_rating_count,
+    memberRating: memberStats.memberRating,
+    memberReviewCount: memberStats.memberReviewCount,
+    googleRating: dl.google_rating,
+    googleReviewCount: dl.google_rating_count,
     description: dl.description,
     services: dl.services,
     phone: dl.phone,
@@ -113,6 +121,7 @@ export const DB_LISTING_SELECT = `
   id, business_name, description, trade_category,
   city, state, phone, email, website,
   google_rating, google_rating_count,
+  member_rating, member_review_count,
   services, visibility, is_active, views_count, created_at,
   profiles:profile_id (
     full_name, verification_status, lodge_id,

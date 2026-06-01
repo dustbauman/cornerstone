@@ -13,6 +13,17 @@ export type TradeCategory =
   | "Painting"
   | "Other";
 
+export interface MemberReview {
+  id: string;
+  listingId: string;
+  rating: number;
+  body: string | null;
+  reviewerDisplayName: string;
+  reviewerLodge: string | null;
+  requestId: string | null;
+  createdAt: string;
+}
+
 export interface Listing {
   id: string;
   slug: string;
@@ -28,8 +39,11 @@ export interface Listing {
     lat?: number;
     lng?: number;
   };
-  rating: number;
-  reviewCount: number;
+  /** Member review aggregate (primary trust signal). */
+  memberRating: number;
+  memberReviewCount: number;
+  googleRating?: number | null;
+  googleReviewCount?: number | null;
   description: string;
   services: string[];
   phone: string;
@@ -51,4 +65,26 @@ export interface MockUser {
   location: string;
   verified: boolean;
   listingSlug: string;
+}
+
+export interface PendingReviewTarget {
+  listingId: string;
+  businessName: string;
+  ownerName: string;
+  requestId?: string;
+  requestTitle?: string;
+}
+
+export type ReviewEligibilityReason =
+  | "ok"
+  | "sign_in"
+  | "not_verified"
+  | "own_listing"
+  | "already_reviewed"
+  | "not_found";
+
+export interface ReviewEligibility {
+  canReview: boolean;
+  reason: ReviewEligibilityReason;
+  target?: PendingReviewTarget;
 }

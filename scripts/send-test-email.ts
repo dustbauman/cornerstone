@@ -23,6 +23,7 @@ import {
   buildMemberVerifiedEmail,
   buildPasswordResetEmail,
   buildResponseNotificationEmail,
+  buildReviewPromptEmail,
   buildSponsorConfirmEmail,
 } from '../src/lib/email/templates'
 
@@ -40,6 +41,7 @@ const TYPES = [
   'sponsor-confirm',
   'member-verified',
   'response',
+  'review-prompt',
   'all',
 ] as const
 
@@ -173,6 +175,13 @@ function sampleEmails() {
       responderEmail: 'james@example.com',
       message: 'Happy to take a look this week.',
       otherResponseCount: 0,
+    }),
+    'review-prompt': buildReviewPromptEmail({
+      requesterName: 'Robert C. Ingram',
+      requestTitle: 'Need electrician for panel upgrade — 200 amp service',
+      businessName: 'Thornton Electric',
+      ownerName: 'Marcus D. Wells',
+      reviewUrl: `${appUrl}/dashboard?leaveReview=test-listing&requestId=test-request`,
     }),
   } as const
 }

@@ -36,7 +36,11 @@ export default function ListingCard({ listing }: Props) {
         </h3>
         <p className="text-sm text-muted mb-3">{listing.ownerName}</p>
 
-        <StarRating rating={listing.rating} reviewCount={listing.reviewCount} />
+        <StarRating
+          rating={listing.memberRating}
+          reviewCount={listing.memberReviewCount}
+          hideWhenEmpty
+        />
 
         <div className="mt-auto pt-4 border-t border-warm flex items-center justify-between">
           <div className="flex items-center gap-1 text-sm text-muted">

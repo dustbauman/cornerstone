@@ -7,7 +7,11 @@ import Footer from '@/components/layout/Footer'
 import VerifiedBadge from '@/components/directory/VerifiedBadge'
 import CategoryBadge from '@/components/directory/CategoryBadge'
 import StarRating from '@/components/directory/StarRating'
+import MemberReviewsSection from '@/components/directory/MemberReviewsSection'
 import ListingCard from '@/components/directory/ListingCard'
+import { getDemoReviewsForListing } from '@/lib/demo/reviews'
+import { REVIEW_SELECT, mapReviewRows } from '@/lib/db/reviews'
+import type { MemberReview } from '@/lib/types'
 import { getDemoListingBySlug, getDemoRelatedListings, demoListingSlugs } from '@/lib/demo/listings'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { phoneToTelHref } from '@/lib/contact-fields'
@@ -16,6 +20,7 @@ import type { Listing } from '@/lib/types'
 
 interface Props {
   params: { slug: string }
+  searchParams?: { leaveReview?: string; requestId?: string }
 }
 
 // Plain client for use in generateStaticParams and generateMetadata (no cookies needed)
@@ -56,6 +61,34 @@ async function getListing(slug: string): Promise<Listing | null> {
   return null
 }
 
+async function getListingReviews(
+  listing: Listing,
+  slug: string
+): Promise<MemberReview[]> {
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!uuidPattern.test(slug)) {
+    return getDemoReviewsForListing(listing.id)
+  }
+
+  try {
+    const supabase = adminClient()
+    const { data, error } = await supabase
+      .from('reviews')
+      .select(REVIEW_SELECT)
+      .eq('listing_id', listing.id)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('reviews fetch:', error.message)
+      return []
+    }
+
+    return mapReviewRows(data)
+  } catch {
+    return []
+  }
+}
+
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -91,11 +124,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function BusinessProfilePage({ params }: Props) {
+export default async function BusinessProfilePage({ params, searchParams }: Props) {
   const listing = await getListing(params.slug)
   if (!listing) notFound()
 
+  const reviews = await getListingReviews(listing, params.slug)
   const related = getDemoRelatedListings(listing)
+  const autoOpenReview = searchParams?.leaveReview === '1'
+  const reviewRequestId = searchParams?.requestId ?? null
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -132,7 +168,22 @@ export default async function BusinessProfilePage({ params }: Props) {
                 Member since {new Date(listing.joinedDate).getFullYear()}
               </p>
 
-              <StarRating rating={listing.rating} reviewCount={listing.reviewCount} size={16} />
+              <StarRating
+                rating={listing.memberRating}
+                reviewCount={listing.memberReviewCount}
+                size={16}
+                hideWhenEmpty
+              />
+              {listing.googleRating != null &&
+                listing.googleRating > 0 &&
+                listing.memberReviewCount === 0 && (
+                  <p className="text-xs text-muted mt-2">
+                    Also rated {listing.googleRating.toFixed(1)} on Google
+                    {listing.googleReviewCount != null && listing.googleReviewCount > 0
+                      ? ` (${listing.googleReviewCount} reviews)`
+                      : ''}
+                  </p>
+                )}
 
               <div className="mt-5 flex flex-wrap gap-4 text-sm text-muted">
                 <span className="flex items-center gap-1.5">
@@ -167,6 +218,13 @@ export default async function BusinessProfilePage({ params }: Props) {
               </h2>
               <p className="text-[#1A1A1A] leading-relaxed">{listing.description}</p>
             </div>
+
+            <MemberReviewsSection
+              listing={listing}
+              reviews={reviews}
+              autoOpenReview={autoOpenReview}
+              reviewRequestId={reviewRequestId}
+            />
 
             {/* Services */}
             {listing.services.length > 0 && (

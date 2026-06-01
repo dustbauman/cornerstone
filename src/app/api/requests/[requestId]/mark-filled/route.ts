@@ -45,10 +45,17 @@ export async function POST(
   }
 
   const now = new Date().toISOString()
+  const reviewPromptAt = new Date(
+    Date.now() + 14 * 24 * 60 * 60 * 1000
+  ).toISOString()
 
   await admin
     .from('requests')
-    .update({ status: 'filled', filled_at: now })
+    .update({
+      status: 'filled',
+      filled_at: now,
+      review_prompt_at: reviewPromptAt,
+    })
     .eq('id', params.requestId)
 
   if (responseId) {

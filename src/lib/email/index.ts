@@ -12,6 +12,7 @@ import {
   buildMemberVerifiedEmail,
   buildPasswordResetEmail,
   buildResponseNotificationEmail,
+  buildReviewPromptEmail,
   buildSponsorConfirmEmail,
 } from './templates'
 
@@ -246,6 +247,32 @@ export async function sendListingLiveEmail(args: ListingLiveEmailArgs) {
     html,
     text,
     stubDetails: [`Listing: ${args.listingUrl}`],
+  })
+}
+
+export interface ReviewPromptEmailArgs {
+  to: string
+  requesterName: string
+  requestTitle: string
+  businessName: string
+  ownerName: string
+  listingId: string
+  requestId: string
+}
+
+export async function sendReviewPromptEmail(args: ReviewPromptEmailArgs) {
+  const { to, listingId, requestId, ...templateArgs } = args
+  const reviewUrl = `${APP_URL}/dashboard?leaveReview=${listingId}&requestId=${requestId}`
+  const { subject, html, text } = buildReviewPromptEmail({
+    ...templateArgs,
+    reviewUrl,
+  })
+  await deliverEmail({
+    to,
+    subject,
+    html,
+    text,
+    stubDetails: [`Review: ${reviewUrl}`],
   })
 }
 

@@ -665,3 +665,54 @@ export function buildListingLiveEmail(args: ListingLiveTemplateArgs) {
 
   return { subject, html, text }
 }
+
+// —— Review prompt (14 days after request filled) ——
+
+export interface ReviewPromptTemplateArgs {
+  requesterName: string
+  requestTitle: string
+  businessName: string
+  ownerName: string
+  reviewUrl: string
+}
+
+export function buildReviewPromptEmail(args: ReviewPromptTemplateArgs) {
+  const { requesterName, requestTitle, businessName, ownerName, reviewUrl } = args
+  const firstName = requesterName.trim().split(/\s+/)[0] || 'Brother'
+  const subject = `How did ${ownerName} do? Leave a member review on Tyrian`
+
+  const bodyHtml = [
+    emailHeading('Share your experience'),
+    emailParagraph(`Hi ${escapeHtml(firstName)},`),
+    emailParagraph(
+      `A few weeks ago you marked your request as filled on Tyrian:`,
+    ),
+    emailQuoteBlock('Your request', escapeHtml(requestTitle)),
+    emailParagraph(
+      `If you hired <strong>${escapeHtml(ownerName)}</strong> at <strong>${escapeHtml(businessName)}</strong>, a short member review helps brothers in the network find trusted professionals.`,
+    ),
+    emailButton({ href: reviewUrl, label: 'Leave a member review →' }),
+    emailParagraph(
+      'Reviews are only from verified members. One review per listing.',
+      true,
+    ),
+  ].join('')
+
+  const html = emailLayout({
+    preheader: `Review ${businessName} on Tyrian`,
+    bodyHtml,
+  })
+
+  const text = [
+    `Hi ${firstName},`,
+    '',
+    `You marked this request as filled: "${requestTitle}"`,
+    '',
+    `If you worked with ${ownerName} (${businessName}), leave a member review:`,
+    reviewUrl,
+    '',
+    emailTextFooter(),
+  ].join('\n')
+
+  return { subject, html, text, reviewUrl }
+}

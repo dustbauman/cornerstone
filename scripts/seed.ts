@@ -145,6 +145,63 @@ const LISTING_DEFS = [
   },
 ]
 
+const REVIEW_DEFS = [
+  {
+    listing_business: 'Gulf Coast Roofing',
+    reviewer_email: 'robert@plumblineplumbing.com',
+    rating: 5,
+    body: 'James did my whole roof after the storm and was incredible to work with. Fair price, on time, and zero drama.',
+  },
+  {
+    listing_business: 'Gulf Coast Roofing',
+    reviewer_email: 'marcus@thorntonelectric.com',
+    rating: 5,
+    body: 'Recommended by my lodge. He inspected, quoted, and completed the job in under 2 weeks. Top tier.',
+  },
+  {
+    listing_business: 'Gulf Coast Roofing',
+    reviewer_email: 'david@keystonelegal.com',
+    rating: 5,
+    body: 'Honest inspection report that saved me from buying a house with a bad roof. Worth every penny.',
+  },
+  {
+    listing_business: 'Plumb Line Plumbing',
+    reviewer_email: 'james@gulfcoastroofing.com',
+    rating: 5,
+    body: "Robert fixed a slab leak that two other plumbers couldn't find. Methodical, clean, fair.",
+  },
+  {
+    listing_business: 'Plumb Line Plumbing',
+    reviewer_email: 'thomas@levelgroundlandscaping.com',
+    rating: 5,
+    body: 'Did the plumbing for my whole addition. Showed up every day, no excuses, and the inspection passed first try.',
+  },
+  {
+    listing_business: 'Plumb Line Plumbing',
+    reviewer_email: 'william@squaredealauto.com',
+    rating: 4,
+    body: 'Solid plumber, fair rates. Takes his time which means quality work. Scheduling took a few days.',
+  },
+  {
+    listing_business: 'Thornton Electric',
+    reviewer_email: 'robert@plumblineplumbing.com',
+    rating: 5,
+    body: 'Marcus upgraded my panel and installed 2 EV chargers. Explained everything clearly, no surprises on the bill.',
+  },
+  {
+    listing_business: 'Thornton Electric',
+    reviewer_email: 'charles@craftsmanHVAC.com',
+    rating: 5,
+    body: 'He wired a new workshop for me. Showed up early every day and left the place cleaner than he found it.',
+  },
+  {
+    listing_business: 'Thornton Electric',
+    reviewer_email: 'samuel@truenorthit.com',
+    rating: 5,
+    body: 'Did the electrical for our office buildout. On budget, on time, all code compliant. Will use again.',
+  },
+]
+
 const REQUEST_DEFS = [
   { posted_by_name: 'R. Calloway', posted_by_email: 'rcalloway@demo.tyrian.work', lodge_key: 'GULFCOAST', lodge_display: 'Gulf Coast Lodge #441', category: 'Legal', title: 'Looking for a Mason attorney — estate planning, no rush', details: 'Need help getting my affairs in order. Looking for a trust and estate attorney who understands the lodge context.', city: 'Naples', state: 'FL', lat: 26.1420, lng: -81.7948, budget: 'Flexible', timeline: 'Flexible', remote_eligible: true, is_verified_member: true },
   { posted_by_name: 'P. Nguyen', posted_by_email: 'pnguyen@demo.tyrian.work', lodge_key: 'PRAIRIE', lodge_display: 'Prairie Lodge #56', category: 'Financial', title: 'Small business bookkeeping — ongoing monthly engagement', details: 'Running a small contracting company. Need someone to handle monthly books, reconciliation, and quarterly estimates.', city: 'Oklahoma City', state: 'OK', lat: 35.4676, lng: -97.5164, budget: '$200–400/mo', timeline: 'Flexible', remote_eligible: true, is_verified_member: true },
@@ -186,7 +243,7 @@ async function main() {
   console.log('🌱 Tyrian seed starting...\n')
 
   // ── 1. Lodges ─────────────────────────────────────────────────────────────
-  console.log('1/3  Inserting lodges...')
+  console.log('1/4  Inserting lodges...')
   const lodgeIds: Record<string, string> = {}
 
   for (const lodge of LODGE_DEFS) {
@@ -222,11 +279,15 @@ async function main() {
   }
 
   // ── 2. Users + profiles + listings ────────────────────────────────────────
-  console.log('\n2/3  Seeding members + listings...')
+  console.log('\n2/4  Seeding members + listings...')
+
+  const listingIdByBusiness: Record<string, string> = {}
+  const userIdByEmail: Record<string, string> = {}
 
   for (const def of LISTING_DEFS) {
     try {
       const userId = await getOrCreateUser(def.email)
+      userIdByEmail[def.email] = userId
 
       // Update profile with full data
       const lodgeId = lodgeIds[def.lodge_key]
@@ -257,11 +318,12 @@ async function main() {
         .maybeSingle()
 
       if (existing) {
+        listingIdByBusiness[def.business_name] = existing.id
         console.log(`   ↳ ${def.business_name} already exists`)
         continue
       }
 
-      const { error: listingError } = await supabase.from('listings').insert({
+      const { data: insertedListing, error: listingError } = await supabase.from('listings').insert({
         profile_id: userId,
         business_name: def.business_name,
         description: def.description,
@@ -281,17 +343,70 @@ async function main() {
         visibility: 'public',
         is_active: true,
         views_count: Math.floor(Math.random() * 300) + 50,
-      })
+      }).select('id').single()
 
       if (listingError) throw new Error(`listing insert: ${listingError.message}`)
+      listingIdByBusiness[def.business_name] = insertedListing.id
       console.log(`   ✓ ${def.full_name} — ${def.business_name}`)
     } catch (err) {
       console.error(`   ✗ ${def.email}: ${err}`)
     }
   }
 
-  // ── 3. Requests ───────────────────────────────────────────────────────────
-  console.log('\n3/3  Seeding requests...')
+  // ── 3. Member reviews ─────────────────────────────────────────────────────
+  console.log('\n3/4  Seeding member reviews...')
+
+  for (const rev of REVIEW_DEFS) {
+    let resolvedListingId = listingIdByBusiness[rev.listing_business]
+    let reviewerId = userIdByEmail[rev.reviewer_email]
+
+    if (!resolvedListingId) {
+      const { data: listingRow } = await supabase
+        .from('listings')
+        .select('id')
+        .eq('business_name', rev.listing_business)
+        .maybeSingle()
+      if (!listingRow) {
+        console.log(`   ✗ skip review — listing not found: ${rev.listing_business}`)
+        continue
+      }
+      resolvedListingId = listingRow.id
+      listingIdByBusiness[rev.listing_business] = resolvedListingId
+    }
+
+    if (!reviewerId) {
+      reviewerId = await getOrCreateUser(rev.reviewer_email)
+      userIdByEmail[rev.reviewer_email] = reviewerId
+    }
+
+    const { data: existingReview } = await supabase
+      .from('reviews')
+      .select('id')
+      .eq('listing_id', resolvedListingId)
+      .eq('reviewer_id', reviewerId)
+      .maybeSingle()
+
+    if (existingReview) {
+      console.log(`   ↳ review exists for ${rev.listing_business}`)
+      continue
+    }
+
+    const { error: reviewError } = await supabase.from('reviews').insert({
+      listing_id: resolvedListingId,
+      reviewer_id: reviewerId,
+      rating: rev.rating,
+      body: rev.body,
+    })
+
+    if (reviewError) {
+      console.error(`   ✗ ${rev.listing_business}: ${reviewError.message}`)
+    } else {
+      console.log(`   ✓ review on ${rev.listing_business}`)
+    }
+  }
+
+  // ── 4. Requests ───────────────────────────────────────────────────────────
+  console.log('\n4/4  Seeding requests...')
 
   for (const req of REQUEST_DEFS) {
     // Skip if already exists
