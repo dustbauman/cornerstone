@@ -9,7 +9,7 @@ interface Props {
 
 const SIZE_CLASS = {
   sm: "h-8 w-auto", // 32px — compact UI
-  md: "h-9 w-auto sm:h-10", // 36→40px — nav / footer
+  md: "h-11 w-auto sm:h-12", // 44→48px — nav / footer
   lg: "h-12 w-auto", // 48px — marketing blocks
 } as const;
 
