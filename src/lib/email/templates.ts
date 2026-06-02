@@ -727,3 +727,134 @@ export function buildReviewPromptEmail(args: ReviewPromptTemplateArgs) {
 
   return { subject, html, text, reviewUrl }
 }
+
+// —— New request → notify matching pro ——
+
+export interface NewRequestForProTemplateArgs {
+  proFirstName: string
+  requestTitle: string
+  category: string
+  city: string
+  state: string
+  budget: string | null
+  timeline: string | null
+  details: string | null
+  isRemote: boolean
+  viewUrl: string
+  unsubscribeUrl: string
+}
+
+export function buildNewRequestForProEmail(args: NewRequestForProTemplateArgs) {
+  const {
+    proFirstName,
+    requestTitle,
+    category,
+    city,
+    state,
+    budget,
+    timeline,
+    details,
+    isRemote,
+    viewUrl,
+    unsubscribeUrl,
+  } = args
+
+  const location = isRemote ? 'Remote / nationwide' : `${city}, ${state}`
+  const subject = `New ${category} request${isRemote ? '' : ` near ${city}, ${state}`} on Tyrian`
+
+  const metaLine = [
+    `<strong>${escapeHtml(category)}</strong>`,
+    escapeHtml(location),
+    budget ? escapeHtml(budget) : null,
+    timeline ? escapeHtml(timeline) : null,
+  ]
+    .filter(Boolean)
+    .join(' &middot; ')
+
+  const bodyHtml = [
+    emailHeading('A request matches your trade'),
+    emailParagraph(`Hi ${escapeHtml(proFirstName)},`),
+    emailParagraph(
+      'A member or guest just posted a request that fits what you do and where you work. Verified members who respond first tend to get hired.',
+    ),
+    emailQuoteBlock(requestTitle, metaLine),
+    details ? emailParagraph(escapeHtml(details), true) : '',
+    emailButton({ href: viewUrl, label: 'View & respond →' }),
+    emailParagraph(
+      'Your name, lodge, and contact details are shared with the requester only after you respond.',
+      true,
+    ),
+    emailDivider(),
+    emailParagraph(
+      `<a href="${unsubscribeUrl}" style="color:${t.muted};">Turn off request emails</a>`,
+      true,
+    ),
+  ].join('')
+
+  const html = emailLayout({
+    preheader: `${category} request — ${location}`,
+    bodyHtml,
+  })
+
+  const text = [
+    `Hi ${proFirstName},`,
+    '',
+    `New request on Tyrian: "${requestTitle}"`,
+    `${category} · ${location}${budget ? ` · ${budget}` : ''}${timeline ? ` · ${timeline}` : ''}`,
+    details ? `\n${details}` : '',
+    '',
+    `View & respond: ${viewUrl}`,
+    '',
+    `Turn off request emails: ${unsubscribeUrl}`,
+    emailTextFooter(),
+  ].join('\n')
+
+  return { subject, html, text, viewUrl }
+}
+
+// —— Guest request email confirmation ——
+
+export interface RequestConfirmTemplateArgs {
+  requesterName: string
+  requestTitle: string
+  confirmUrl: string
+}
+
+export function buildRequestConfirmEmail(args: RequestConfirmTemplateArgs) {
+  const { requesterName, requestTitle, confirmUrl } = args
+  const firstName = requesterName.trim().split(/\s+/)[0] || 'there'
+  const subject = 'Confirm your request to publish it on Tyrian'
+
+  const bodyHtml = [
+    emailHeading('One step left'),
+    emailParagraph(`Hi ${escapeHtml(firstName)},`),
+    emailParagraph(
+      'Confirm your email to publish your request. Once confirmed, verified Masonic professionals in your area can see it and respond directly.',
+    ),
+    emailQuoteBlock('Your request', escapeHtml(requestTitle)),
+    emailButton({ href: confirmUrl, label: 'Confirm & publish →' }),
+    emailParagraph(
+      "If you didn't post this request, you can ignore this email and nothing will be published.",
+      true,
+    ),
+  ].join('')
+
+  const html = emailLayout({
+    preheader: 'Confirm your email to publish your request',
+    bodyHtml,
+  })
+
+  const text = [
+    `Hi ${firstName},`,
+    '',
+    'Confirm your email to publish your request on Tyrian:',
+    `"${requestTitle}"`,
+    '',
+    `Confirm & publish: ${confirmUrl}`,
+    '',
+    "If you didn't post this, ignore this email.",
+    emailTextFooter(),
+  ].join('\n')
+
+  return { subject, html, text, confirmUrl }
+}

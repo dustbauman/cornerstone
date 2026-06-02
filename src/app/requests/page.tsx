@@ -7,7 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import RequestCard from "@/components/requests/RequestCard";
 import SectionDivider from "@/components/ui/SectionDivider";
-import PostRequestModal from "@/components/requests/PostRequestModal";
+import PostRequestModal, { type PostRequestResult } from "@/components/requests/PostRequestModal";
 import RespondModal, { type ResponderPreview } from "@/components/requests/RespondModal";
 import GuestBrowseSettingsModal from "@/components/requests/GuestBrowseSettingsModal";
 import ActiveFilterChips from "@/components/requests/ActiveFilterChips";
@@ -394,27 +394,36 @@ export default function RequestsPage() {
     [requests]
   );
 
-  function handleNewRequest(request: ServiceRequest, notifyToken?: string | null) {
-    setRequests((prev) => [request, ...prev]);
+  function handleNewRequest(request: ServiceRequest, result: PostRequestResult) {
     setModalOpen(false);
     const requestId = String(request.id);
-    if (requestUser.isLoggedIn && !isDemoMode) {
-      setToast("Your request is live. You'll get an email when a verified member responds.");
-      const responsesPath = notifyToken
-        ? `/requests/${requestId}/responses?token=${encodeURIComponent(notifyToken)}`
-        : `/requests/${requestId}/responses`;
-      setToastAction({
-        href: responsesPath,
-        label: "View your request",
-      });
-    } else {
+
+    if (isDemoMode) {
+      setRequests((prev) => [request, ...prev]);
+      setToast("Your request has been posted (demo).");
+      setToastAction(null);
+      return;
+    }
+
+    // Guest post: not live until the email is confirmed — don't add it to the board.
+    if (result.pending) {
       setToast(
-        isDemoMode
-          ? "Your request has been posted (demo)."
-          : "Your request has been posted. Check your email when a verified member responds."
+        "Almost done — check your email and confirm to publish your request to the network."
       );
       setToastAction(null);
+      return;
     }
+
+    // Live member post.
+    setRequests((prev) => [request, ...prev]);
+    setToast("Your request is live. You'll get an email when a verified member responds.");
+    const responsesPath = result.notifyToken
+      ? `/requests/${requestId}/responses?token=${encodeURIComponent(result.notifyToken)}`
+      : `/requests/${requestId}/responses`;
+    setToastAction({
+      href: responsesPath,
+      label: "View your request",
+    });
   }
 
   function requestIdKey(id: string | number): string {

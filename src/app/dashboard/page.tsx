@@ -20,6 +20,7 @@ import { demoUser, demoListings } from '@/lib/demo/data'
 import { getDemoListingBySlug } from '@/lib/demo/listings'
 import { computeProfileCompletion } from '@/lib/profile/completion'
 import MyRequestsSection, { type MyRequestRow } from '@/components/dashboard/MyRequestsSection'
+import RequestEmailsToggle from '@/components/dashboard/RequestEmailsToggle'
 import PendingReviewsSection from '@/components/dashboard/PendingReviewsSection'
 import DashboardReviewLauncher from '@/components/dashboard/DashboardReviewLauncher'
 import { getAuthHeaders } from '@/lib/supabase/auth-headers'
@@ -524,6 +525,8 @@ export default function DashboardPage() {
             )}
 
             <MyRequestsSection requests={myRequests} demoMode={isDemoMode} />
+
+            <RequestEmailsToggle demoMode={isDemoMode} />
 
             {/* Your responses */}
             {(isDemoMode || accessState === 'verified') && (

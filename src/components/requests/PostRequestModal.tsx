@@ -7,9 +7,14 @@ import { US_STATES } from "@/lib/constants/states";
 import { ServiceRequest, RequestTimeline } from "@/lib/demo/requests";
 import { TradeCategory } from "@/lib/types";
 
+export interface PostRequestResult {
+  notifyToken?: string | null;
+  pending?: boolean;
+}
+
 interface Props {
   onClose: () => void;
-  onSubmit: (request: ServiceRequest, notifyToken?: string | null) => void | Promise<void>;
+  onSubmit: (request: ServiceRequest, result: PostRequestResult) => void | Promise<void>;
   defaultLodge?: string;
   defaultCity?: string;
   defaultState?: string;
@@ -117,7 +122,10 @@ export default function PostRequestModal({
         verifiedMember: !isAnon,
       };
 
-      await onSubmit(newRequest, data.notify_token ?? null);
+      await onSubmit(newRequest, {
+        notifyToken: data.notify_token ?? null,
+        pending: !!data.pending,
+      });
     } catch {
       setSubmitError("Network error. Please try again.");
     } finally {

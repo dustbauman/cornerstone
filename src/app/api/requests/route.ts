@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { DB_REQUEST_SELECT } from '@/lib/db/requests'
@@ -7,6 +8,8 @@ import {
   withLiveResponseCounts,
 } from '@/lib/db/request-response-counts'
 import { geocodeCityState } from '@/lib/geo/nominatim'
+import { notifyMatchingPros, type NotifyRequest } from '@/lib/db/match-pros'
+import { sendRequestConfirmEmail } from '@/lib/email'
 
 const VALID_TIMELINES = new Set(['ASAP', 'Within 1 week', 'Within 1 month', 'Flexible'])
 
@@ -22,6 +25,8 @@ export async function GET() {
     .from('requests')
     .select(DB_REQUEST_SELECT)
     .in('status', ['open', 'active', 'filled'])
+    // Guest posts (no profile_id) are hidden until their email is confirmed.
+    .or('profile_id.not.is.null,confirmed_at.not.is.null')
     .order('created_at', { ascending: false })
     .limit(300)
 
@@ -117,6 +122,9 @@ export async function POST(request: Request) {
     }
   }
 
+  const isGuest = !user
+  const confirmationToken = isGuest ? randomBytes(32).toString('hex') : null
+
   const insertPayload = {
     posted_by_name: postedByName,
     posted_by_email: postedByEmail,
@@ -135,6 +143,9 @@ export async function POST(request: Request) {
     status: 'open',
     remote_eligible: remoteEligible ?? false,
     is_verified_member: isVerifiedMember,
+    // Members are live immediately; guests must confirm their email first.
+    confirmed_at: isGuest ? null : new Date().toISOString(),
+    confirmation_token: confirmationToken,
   }
 
   let { data: row, error } = await admin
@@ -156,9 +167,51 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Failed to post request' }, { status: 500 })
   }
 
+  if (isGuest) {
+    // Don't publish or notify pros yet — wait for email confirmation.
+    try {
+      await sendRequestConfirmEmail({
+        to: postedByEmail,
+        requesterName: postedByName,
+        requestTitle: title,
+        confirmToken: confirmationToken!,
+      })
+    } catch (err) {
+      console.error('Request confirm email failed:', err)
+    }
+
+    return Response.json({ id: row.id, created_at: row.created_at, pending: true })
+  }
+
+  // Member post — live immediately. Notify matching pros once.
+  try {
+    const notifyRequest: NotifyRequest = {
+      id: row.id,
+      profile_id: profileId,
+      category,
+      title,
+      city,
+      state,
+      lat: resolvedLat,
+      lng: resolvedLng,
+      budget: budget || null,
+      timeline: insertPayload.timeline,
+      details: details || null,
+      remote_eligible: remoteEligible ?? false,
+    }
+    await notifyMatchingPros(admin, notifyRequest)
+    await admin
+      .from('requests')
+      .update({ pros_notified_at: new Date().toISOString() })
+      .eq('id', row.id)
+  } catch (err) {
+    console.error('Push-to-pro notify failed:', err)
+  }
+
   return Response.json({
     id: row.id,
     created_at: row.created_at,
+    pending: false,
     notify_token:
       'requester_notify_token' in row
         ? (row as { requester_notify_token?: string }).requester_notify_token ?? null

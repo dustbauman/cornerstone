@@ -8,6 +8,7 @@ import ListingAccessGate from '@/components/member/ListingAccessGate'
 import RemoteToggle from '@/components/ui/RemoteToggle'
 import PhoneInput from '@/components/ui/PhoneInput'
 import { createClient } from '@/lib/supabase/client'
+import { resolveCityCoords } from '@/lib/geo/city-coords-cache'
 import { CATEGORIES } from '@/lib/constants/categories'
 import { US_STATES } from '@/lib/constants/states'
 import { validatePhone, validateEmail, validateWebsite, formatPhoneDisplay } from '@/lib/contact-fields'
@@ -174,6 +175,10 @@ export default function NewListingPage() {
         return
       }
 
+      // Geocode city/state so push-to-pro distance matching works. Best-effort:
+      // a null result degrades to same-state trade matching in notifyMatchingPros.
+      const coords = await resolveCityCoords(form.city, form.state)
+
       const { data, error: insertError } = await supabase
         .from('listings')
         .insert({
@@ -183,6 +188,8 @@ export default function NewListingPage() {
           trade_category: form.tradeCategory,
           city: form.city,
           state: form.state,
+          lat: coords?.lat ?? null,
+          lng: coords?.lng ?? null,
           phone: contact.phone,
           email: contact.email,
           website: contact.website,

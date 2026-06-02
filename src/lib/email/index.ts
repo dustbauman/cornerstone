@@ -10,7 +10,9 @@ import {
   buildLodgeMemberInviteEmail,
   buildMemberMagicLinkEmail,
   buildMemberVerifiedEmail,
+  buildNewRequestForProEmail,
   buildPasswordResetEmail,
+  buildRequestConfirmEmail,
   buildResponseNotificationEmail,
   buildReviewPromptEmail,
   buildSponsorConfirmEmail,
@@ -273,6 +275,59 @@ export async function sendReviewPromptEmail(args: ReviewPromptEmailArgs) {
     html,
     text,
     stubDetails: [`Review: ${reviewUrl}`],
+  })
+}
+
+export interface NewRequestForProEmailArgs {
+  to: string
+  proFirstName: string
+  requestTitle: string
+  requestId: string
+  category: string
+  city: string
+  state: string
+  budget: string | null
+  timeline: string | null
+  details: string | null
+  isRemote: boolean
+  unsubscribeToken: string
+}
+
+export async function sendNewRequestToPro(args: NewRequestForProEmailArgs) {
+  const { to, requestId, unsubscribeToken, ...rest } = args
+  const viewUrl = `${APP_URL}/requests/${requestId}`
+  const unsubscribeUrl = `${APP_URL}/api/me/request-emails/unsubscribe?token=${unsubscribeToken}`
+  const { subject, html, text } = buildNewRequestForProEmail({
+    ...rest,
+    viewUrl,
+    unsubscribeUrl,
+  })
+  await deliverEmail({
+    to,
+    subject,
+    html,
+    text,
+    stubDetails: [`View: ${viewUrl}`, `Unsubscribe: ${unsubscribeUrl.split('?')[0]}?token=[redacted]`],
+  })
+}
+
+export interface RequestConfirmEmailArgs {
+  to: string
+  requesterName: string
+  requestTitle: string
+  confirmToken: string
+}
+
+export async function sendRequestConfirmEmail(args: RequestConfirmEmailArgs) {
+  const { to, confirmToken, ...rest } = args
+  const confirmUrl = `${APP_URL}/requests/confirm?token=${confirmToken}`
+  const { subject, html, text } = buildRequestConfirmEmail({ ...rest, confirmUrl })
+  await deliverEmail({
+    to,
+    subject,
+    html,
+    text,
+    stubDetails: [`Confirm: ${confirmUrl.split('?')[0]}?token=[redacted]`],
   })
 }
 

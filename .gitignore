@@ -40,3 +40,6 @@ next-env.d.ts
 
 # local-only lodge data scrapers
 /tools/
+
+# supabase CLI local state
+/supabase/.temp/
