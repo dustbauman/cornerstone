@@ -86,34 +86,53 @@ export async function scanWebsiteWithAi(
   websiteUrl: string,
   pageText: string
 ): Promise<WebsiteScanResult> {
-  const apiKey = process.env.OPENAI_API_KEY
+  const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     throw new Error('Website scanning is not configured yet. Enter your details manually or contact support.')
   }
 
   const categoriesList = CATEGORIES.join(', ')
 
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-      response_format: { type: 'json_object' },
-      temperature: 0.2,
-      messages: [
-        {
-          role: 'system',
-          content: `You extract business listing details from website text for a US professional directory.
-Return JSON only with keys: businessName, tradeCategory, city, state, description, services (array of strings), phone, email, hours.
+      model: process.env.ANTHROPIC_MODEL || 'claude-haiku-4-5',
+      max_tokens: 1024,
+      system: `You extract business listing details from website text for a US professional directory.
 tradeCategory must be one of: ${categoriesList}.
 state must be a 2-letter US state code when possible.
 description should be 2-4 sentences, professional tone.
 services should be 3-8 short service labels if found.
-Use empty strings or empty arrays when unknown. Do not invent a physical address if not present.`,
+Use empty strings or empty arrays when unknown. Do not invent a physical address if not present.
+Always respond by calling the submit_listing tool.`,
+      tools: [
+        {
+          name: 'submit_listing',
+          description: 'Submit the extracted business listing details.',
+          input_schema: {
+            type: 'object',
+            properties: {
+              businessName: { type: 'string' },
+              tradeCategory: { type: 'string', enum: CATEGORIES },
+              city: { type: 'string' },
+              state: { type: 'string' },
+              description: { type: 'string' },
+              services: { type: 'array', items: { type: 'string' } },
+              phone: { type: 'string' },
+              email: { type: 'string' },
+              hours: { type: 'string' },
+            },
+            required: ['businessName', 'tradeCategory', 'city', 'state', 'description', 'services', 'phone', 'email', 'hours'],
+          },
         },
+      ],
+      tool_choice: { type: 'tool', name: 'submit_listing' },
+      messages: [
         {
           role: 'user',
           content: `Website URL: ${websiteUrl}\n\nPage content:\n${pageText}`,
@@ -124,20 +143,17 @@ Use empty strings or empty arrays when unknown. Do not invent a physical address
 
   if (!res.ok) {
     const err = await res.text()
-    console.error('OpenAI scan error:', err)
+    console.error('Anthropic scan error:', err)
     throw new Error('Could not analyze that website. Try again or enter details manually.')
   }
 
   const data = await res.json()
-  const content = data.choices?.[0]?.message?.content
-  if (!content) throw new Error('No analysis returned for that website.')
+  const toolUse = data.content?.find(
+    (block: { type: string }) => block.type === 'tool_use'
+  )
+  if (!toolUse?.input) throw new Error('No analysis returned for that website.')
 
-  let parsed: AiPayload
-  try {
-    parsed = JSON.parse(content) as AiPayload
-  } catch {
-    throw new Error('Could not parse website analysis.')
-  }
+  const parsed = toolUse.input as AiPayload
 
   let description = (parsed.description ?? '').trim()
   const hours = (parsed.hours ?? '').trim()
