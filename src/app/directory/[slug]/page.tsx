@@ -258,13 +258,25 @@ export default async function BusinessProfilePage({ params, searchParams }: Prop
                 <p className="text-sm text-muted mt-1">{listing.location.city}, {listing.location.state}</p>
               </div>
               <div className="w-full h-56">
-                <iframe
-                  width="100%" height="100%"
-                  style={{ border: 0 }}
-                  loading="lazy"
-                  allowFullScreen
-                  src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU3e5o&q=${encodeURIComponent(listing.location.city + ', ' + listing.location.state)}`}
-                />
+                {process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY ? (
+                  <iframe
+                    width="100%" height="100%"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="no-referrer-when-downgrade"
+                    src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY}&q=${encodeURIComponent(listing.location.city + ', ' + listing.location.state)}`}
+                  />
+                ) : (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(listing.location.city + ', ' + listing.location.state)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex h-full items-center justify-center bg-[#F5F2EB] text-sm text-navy hover:bg-[#EDE8DC] transition-colors"
+                  >
+                    View on Google Maps
+                  </a>
+                )}
               </div>
             </div>
           </div>

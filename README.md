@@ -30,6 +30,8 @@ STRIPE_PRICE_LARGE=
 RESEND_API_KEY=
 RESEND_FROM_EMAIL=hello@tyrian.work
 CRON_SECRET=
+# Maps Embed API — business listing location maps (see Google Cloud setup below)
+NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY=
 ```
 
 ## Seed data
