@@ -1,23 +1,51 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useDemoMode } from '@/lib/demo/context'
 import { DEMO_LANDING_STAT_ITEMS } from '@/lib/demo/stats'
-import type { LandingStats } from '@/lib/db/stats'
+import { EMPTY_LANDING_STATS, type LandingStats } from '@/lib/db/stats'
 
-interface Props {
-  liveStats: LandingStats
-}
-
-export default function LandingStatsBar({ liveStats }: Props) {
+export default function LandingStatsBar() {
   const { isDemoMode } = useDemoMode()
+  const [stats, setStats] = useState<LandingStats>(EMPTY_LANDING_STATS)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (isDemoMode) {
+      setLoading(false)
+      return
+    }
+
+    let cancelled = false
+    setLoading(true)
+
+    fetch('/api/stats')
+      .then(async (res) => {
+        if (!res.ok) return EMPTY_LANDING_STATS
+        return res.json() as Promise<LandingStats>
+      })
+      .then((data) => {
+        if (!cancelled) setStats(data)
+      })
+      .catch(() => {
+        if (!cancelled) setStats(EMPTY_LANDING_STATS)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [isDemoMode])
 
   const statItems = isDemoMode
     ? [...DEMO_LANDING_STAT_ITEMS]
     : [
-        { value: liveStats.professionals.toLocaleString('en-US'), label: 'Verified Professionals' },
-        { value: liveStats.lodges.toLocaleString('en-US'), label: 'Lodges on the Network' },
-        { value: liveStats.states.toLocaleString('en-US'), label: 'States Covered' },
-        { value: liveStats.openRequests.toLocaleString('en-US'), label: 'Open Requests' },
+        { value: stats.professionals.toLocaleString('en-US'), label: 'Verified Professionals' },
+        { value: stats.lodges.toLocaleString('en-US'), label: 'Lodges on the Network' },
+        { value: stats.states.toLocaleString('en-US'), label: 'States Covered' },
+        { value: stats.openRequests.toLocaleString('en-US'), label: 'Open Requests' },
       ]
 
   return (
@@ -26,7 +54,13 @@ export default function LandingStatsBar({ liveStats }: Props) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {statItems.map((s) => (
             <div key={s.label} className="text-center">
-              <div className="font-serif text-3xl font-bold text-gold">{s.value}</div>
+              <div
+                className={`font-serif text-3xl font-bold text-gold transition-opacity ${
+                  loading && !isDemoMode ? 'opacity-40' : ''
+                }`}
+              >
+                {loading && !isDemoMode ? '—' : s.value}
+              </div>
               <div className="text-white/50 text-sm mt-1">{s.label}</div>
             </div>
           ))}

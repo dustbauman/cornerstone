@@ -5,27 +5,38 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { isRecentlyCreatedUser } from '@/lib/auth/membership-gate'
 import {
   AUTH_INTENT_COOKIE,
+  AUTH_NEXT_COOKIE,
   checkAuthAdmission,
   parseAuthIntentCookie,
+  parseAuthNextCookie,
 } from '@/lib/auth/admission'
 
 function sanitizeNextPath(next: string | null): string {
   if (!next || !next.startsWith('/') || next.startsWith('//')) {
     return '/dashboard'
   }
-  return next
+  return next.split('?')[0]
 }
 
-function clearIntentCookie(response: NextResponse) {
+function resolveNextPath(queryNext: string | null, cookieNext: string | undefined): string {
+  if (queryNext) return sanitizeNextPath(queryNext)
+  return sanitizeNextPath(parseAuthNextCookie(cookieNext))
+}
+
+function clearAuthFlowCookies(response: NextResponse) {
   response.cookies.set(AUTH_INTENT_COOKIE, '', { path: '/', maxAge: 0 })
+  response.cookies.set(AUTH_NEXT_COOKIE, '', { path: '/', maxAge: 0 })
 }
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = sanitizeNextPath(searchParams.get('next'))
   const cookieStore = cookies()
   const authIntent = parseAuthIntentCookie(cookieStore.get(AUTH_INTENT_COOKIE)?.value)
+  const next = resolveNextPath(
+    searchParams.get('next'),
+    cookieStore.get(AUTH_NEXT_COOKIE)?.value
+  )
 
   if (code) {
     const supabase = createClient()
@@ -57,8 +68,11 @@ export async function GET(request: Request) {
           if (next !== '/dashboard') {
             loginUrl.searchParams.set('redirect', next)
           }
+          if (authIntent === 'claim' || next.startsWith('/claim')) {
+            loginUrl.searchParams.set('mode', 'claim')
+          }
           const response = NextResponse.redirect(loginUrl.toString())
-          clearIntentCookie(response)
+          clearAuthFlowCookies(response)
           return response
         }
 
@@ -74,12 +88,12 @@ export async function GET(request: Request) {
         }
 
         const response = NextResponse.redirect(`${origin}${next}`)
-        clearIntentCookie(response)
+        clearAuthFlowCookies(response)
         return response
       }
 
       const response = NextResponse.redirect(`${origin}${next}`)
-      clearIntentCookie(response)
+      clearAuthFlowCookies(response)
       return response
     }
   }

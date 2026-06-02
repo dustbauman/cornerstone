@@ -122,7 +122,7 @@ function LoginContent() {
     await fetch('/api/auth/intent', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ intent }),
+      body: JSON.stringify({ intent, next: redirect }),
     })
   }
 

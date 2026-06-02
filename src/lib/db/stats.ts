@@ -2,7 +2,6 @@ import {
   createAdminClient,
   isSupabaseAdminConfigured,
 } from '@/lib/supabase/admin'
-import { isVerifiedPublicListing, type DbListingRow } from '@/lib/db/listings'
 
 export interface LandingStats {
   professionals: number
@@ -26,57 +25,43 @@ export async function getLandingStats(): Promise<LandingStats> {
   let admin
   try {
     admin = createAdminClient()
-  } catch {
+  } catch (err) {
+    console.error('Landing stats: admin client unavailable', err)
     return EMPTY_LANDING_STATS
   }
 
-  let listingsRes
-  let lodgesRes
-  let requestsRes
-  try {
-    ;[listingsRes, lodgesRes, requestsRes] = await Promise.all([
-      admin
-        .from('listings')
-        .select(
-          `id, state, profiles:profile_id ( verification_status, lodge_id )`
-        )
-        .eq('is_active', true)
-        .eq('visibility', 'public'),
-      admin.from('lodges').select('state').eq('status', 'active'),
-      admin
-        .from('requests')
-        .select('id', { count: 'exact', head: true })
-        .in('status', ['open', 'active']),
-    ])
-  } catch {
-    return EMPTY_LANDING_STATS
+  const [professionalsRes, lodgesRes, requestsRes] = await Promise.all([
+    admin
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('verification_status', 'verified')
+      .not('lodge_id', 'is', null),
+    admin.from('lodges').select('state').eq('status', 'active'),
+    admin
+      .from('requests')
+      .select('*', { count: 'exact', head: true })
+      .in('status', ['open', 'active']),
+  ])
+
+  if (professionalsRes.error) {
+    console.error('Landing stats: professionals query failed', professionalsRes.error)
   }
-
-  if (listingsRes.error || lodgesRes.error || requestsRes.error) {
-    return EMPTY_LANDING_STATS
+  if (lodgesRes.error) {
+    console.error('Landing stats: lodges query failed', lodgesRes.error)
   }
-
-  const rows = (listingsRes.data ?? []) as unknown as Pick<
-    DbListingRow,
-    'id' | 'state' | 'profiles'
-  >[]
-
-  const professionals = rows.filter((row) =>
-    isVerifiedPublicListing(row as DbListingRow)
-  ).length
+  if (requestsRes.error) {
+    console.error('Landing stats: requests query failed', requestsRes.error)
+  }
 
   const states = new Set<string>()
-  for (const row of rows) {
-    if (row.state) states.add(row.state)
-  }
   for (const lodge of lodgesRes.data ?? []) {
     if (lodge.state) states.add(lodge.state)
   }
 
   return {
-    professionals,
-    lodges: lodgesRes.data?.length ?? 0,
-    states: states.size,
-    openRequests: requestsRes.count ?? 0,
+    professionals: professionalsRes.error ? 0 : (professionalsRes.count ?? 0),
+    lodges: lodgesRes.error ? 0 : (lodgesRes.data?.length ?? 0),
+    states: lodgesRes.error ? 0 : states.size,
+    openRequests: requestsRes.error ? 0 : (requestsRes.count ?? 0),
   }
 }

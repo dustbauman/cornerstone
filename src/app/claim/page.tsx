@@ -10,6 +10,15 @@ import { createClient } from '@/lib/supabase/client'
 type ClaimState = 'idle' | 'submitting' | 'success' | 'error'
 type ClaimError = 'not_found' | 'expired' | 'claimed' | 'unknown'
 
+async function waitForAuthUser(supabase: ReturnType<typeof createClient>, attempts = 6) {
+  for (let i = 0; i < attempts; i++) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) return user
+    await new Promise(resolve => setTimeout(resolve, 150 * (i + 1)))
+  }
+  return null
+}
+
 function ClaimContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -31,7 +40,7 @@ function ClaimContent() {
     setClaimError(null)
 
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const user = await waitForAuthUser(supabase)
 
     if (!user) {
       sessionStorage.setItem('tyrian_claim_code', trimmed)

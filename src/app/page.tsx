@@ -20,10 +20,6 @@ import Footer from "@/components/layout/Footer";
 import AuthAwareLink from "@/components/layout/AuthAwareLink";
 import TyrianHeroBackground from "@/components/brand/TyrianHeroBackground";
 import LandingStatsBar from "@/components/landing/LandingStatsBar";
-import { getLandingStats } from "@/lib/db/stats";
-
-/** Live stats need the service role; skip static prerender when env is missing at build. */
-export const dynamic = "force-dynamic";
 
 const CATEGORIES = [
   { label: "Roofing", icon: Home },
@@ -67,9 +63,7 @@ const HOW_IT_WORKS = [
   },
 ];
 
-export default async function LandingPage() {
-  const liveStats = await getLandingStats();
-
+export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -111,7 +105,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <LandingStatsBar liveStats={liveStats} />
+      <LandingStatsBar />
 
       {/* How it works */}
       <section className="py-20 bg-stone">

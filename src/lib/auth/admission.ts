@@ -14,8 +14,8 @@ export async function hasUnclaimedLodgeForEmail(
     .eq('paid_by_email', normalized)
     .eq('status', 'active')
     .is('claim_code_claimed_at', null)
-    .maybeSingle()
-  return !!data
+    .limit(1)
+  return (data?.length ?? 0) > 0
 }
 
 export async function checkAuthAdmission(
@@ -28,7 +28,8 @@ export async function checkAuthAdmission(
   if (hasLodgeMembership(profile)) return { allowed: true }
   if (isAuthBootstrapPath(nextPath)) return { allowed: true }
 
-  if (authIntent === 'claim' && nextPath.startsWith('/claim')) {
+  // Checkout payers may not have a profile yet — claim intent is enough.
+  if (authIntent === 'claim') {
     return { allowed: true }
   }
 
@@ -40,8 +41,14 @@ export async function checkAuthAdmission(
 }
 
 export const AUTH_INTENT_COOKIE = 'tyrian_auth_intent'
+export const AUTH_NEXT_COOKIE = 'tyrian_auth_next'
 
 export function parseAuthIntentCookie(value: string | undefined): AuthIntent | null {
   if (value === 'claim' || value === 'join') return value
   return null
+}
+
+export function parseAuthNextCookie(value: string | undefined): string | null {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return null
+  return value
 }
