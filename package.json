@@ -9,7 +9,10 @@
     "lint": "next lint",
     "seed": "tsx scripts/seed.ts",
     "seed:lodges": "tsx scripts/seed-lodge-directory.ts",
-    "email:test": "tsx scripts/send-test-email.ts"
+    "email:test": "tsx scripts/send-test-email.ts",
+    "test": "node --env-file=.env.local scripts/test/run-all.mjs",
+    "test:unit": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@stripe/stripe-js": "^9.7.0",
@@ -36,6 +39,7 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.22.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.8"
   }
 }
