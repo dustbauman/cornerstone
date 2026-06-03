@@ -21,6 +21,7 @@ export function useLodgeAdminGate() {
   const [lodge, setLodge] = useState<LodgeSummary | null>(null)
   const [lodgeId, setLodgeId] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [isPrimaryAdmin, setIsPrimaryAdmin] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -46,6 +47,7 @@ export function useLodgeAdminGate() {
         return
       }
 
+      setIsPrimaryAdmin(profile.is_lodge_admin)
       setLodgeId(profile.lodge_id)
 
       const { data: lodgeData } = await supabase
@@ -60,5 +62,5 @@ export function useLodgeAdminGate() {
     load()
   }, [router])
 
-  return { loading, error, lodge, lodgeId, currentUserId }
+  return { loading, error, lodge, lodgeId, currentUserId, isPrimaryAdmin }
 }

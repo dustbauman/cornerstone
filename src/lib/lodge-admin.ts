@@ -31,5 +31,21 @@ export async function requireLodgeAdmin() {
     return { error: Response.json({ error: 'Lodge not active' }, { status: 403 }) }
   }
 
-  return { userId: user.id, admin, lodge, adminName: profile.full_name ?? 'Your lodge admin' }
+  return {
+    userId: user.id,
+    admin,
+    lodge,
+    adminName: profile.full_name ?? 'Your lodge admin',
+    isPrimaryAdmin: profile.is_lodge_admin,
+    isCoAdmin: profile.is_co_admin,
+  }
+}
+
+export async function requirePrimaryLodgeAdmin() {
+  const result = await requireLodgeAdmin()
+  if ('error' in result) return result
+  if (!result.isPrimaryAdmin) {
+    return { error: Response.json({ error: 'NOT_PRIMARY', message: 'Only the primary admin can do this.' }, { status: 403 }) }
+  }
+  return result
 }

@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     .eq('id', user.id)
     .single()
 
-  if (!profile || profile.lodge_id !== lodgeId || (!profile.is_lodge_admin && !profile.is_co_admin)) {
+  if (!profile || profile.lodge_id !== lodgeId || !profile.is_lodge_admin) {
     return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 

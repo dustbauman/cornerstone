@@ -14,6 +14,7 @@ import { createClient } from '@/lib/supabase/client'
 import ProfileAvatar from '@/components/ui/ProfileAvatar'
 import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
 import AdminStatCard from '@/components/admin/AdminStatCard'
+import { adminRoleLabel } from '@/lib/lodge-admin-roles'
 import { DB_REQUEST_SELECT, type DbRequestRow } from '@/lib/db/requests'
 import { Suspense } from 'react'
 
@@ -80,6 +81,7 @@ function AdminContent() {
   const [inviteSent, setInviteSent] = useState(false)
   const [unverifiedLodges, setUnverifiedLodges] = useState<Lodge[]>([])
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [isPrimaryAdmin, setIsPrimaryAdmin] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const supabase = createClient()
@@ -102,6 +104,8 @@ function AdminContent() {
         setLoading(false)
         return
       }
+
+      setIsPrimaryAdmin(profile.is_lodge_admin)
 
       const lodgeId = profile.lodge_id
 
@@ -463,8 +467,10 @@ function AdminContent() {
                         <div className="min-w-0">
                         <p className="text-sm font-semibold text-[#1A1A1A] truncate">
                           {member.full_name || member.email || 'Unknown'}
-                          {(member.is_lodge_admin || member.is_co_admin) && (
-                            <span className="ml-2 text-[10px] bg-navy/10 text-navy font-semibold px-1.5 py-0.5 rounded">Admin</span>
+                          {adminRoleLabel(member.is_lodge_admin, member.is_co_admin) && (
+                            <span className="ml-2 text-[10px] bg-navy/10 text-navy font-semibold px-1.5 py-0.5 rounded">
+                              {adminRoleLabel(member.is_lodge_admin, member.is_co_admin)}
+                            </span>
                           )}
                         </p>
                         <p className="text-xs text-muted truncate">{member.email}</p>
@@ -554,13 +560,18 @@ function AdminContent() {
                       <p className="text-xs text-[#1A1A1A] leading-relaxed">
                         To invite more brothers, upgrade your plan. You&apos;ll only be charged the difference from your original payment.
                       </p>
-                      {upgradeDiff !== null && (
+                      {upgradeDiff !== null && isPrimaryAdmin && (
                         <Link
                           href="/admin/upgrade"
                           className="block w-full text-center py-2.5 bg-gold hover:bg-[#b8943d] text-navy text-xs font-bold rounded-xl transition-colors"
                         >
                           Upgrade — pay ${upgradeDiff} more →
                         </Link>
+                      )}
+                      {!isPrimaryAdmin && (
+                        <p className="text-xs text-muted">
+                          Contact your primary admin to upgrade the lodge plan.
+                        </p>
                       )}
                       <div className="space-y-2 opacity-40 pointer-events-none select-none">
                         <div className="w-full py-2.5 bg-navy/30 text-white text-xs font-semibold rounded-xl text-center">Copy invite link</div>
@@ -604,7 +615,7 @@ function AdminContent() {
                       )}
 
                       {/* Low count upgrade nudge */}
-                      {runningLow && upgradeDiff !== null && (
+                      {runningLow && upgradeDiff !== null && isPrimaryAdmin && (
                         <Link
                           href="/admin/upgrade"
                           className="block w-full text-center py-2 border border-gold/40 text-navy text-xs font-semibold rounded-xl hover:bg-gold/10 transition-colors mb-4"

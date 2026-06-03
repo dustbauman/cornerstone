@@ -1,6 +1,8 @@
 'use client'
 
 import ProfileAvatar from '@/components/ui/ProfileAvatar'
+import { adminRoleLabel } from '@/lib/lodge-admin-roles'
+import MemberRoleActions from '@/components/admin/MemberRoleActions'
 
 export interface AdminMemberRow {
   id: string
@@ -19,6 +21,10 @@ interface Props {
   actionLoading?: boolean
   onApprove?: () => void
   onDeny?: () => void
+  currentUserId?: string
+  isPrimaryAdmin?: boolean
+  coAdminCount?: number
+  onRoleUpdated?: () => void
 }
 
 export default function MemberDirectoryRow({
@@ -27,7 +33,13 @@ export default function MemberDirectoryRow({
   actionLoading,
   onApprove,
   onDeny,
+  currentUserId,
+  isPrimaryAdmin = false,
+  coAdminCount = 0,
+  onRoleUpdated,
 }: Props) {
+  const roleLabel = adminRoleLabel(member.is_lodge_admin, member.is_co_admin)
+
   return (
     <div className="flex items-center justify-between gap-3 px-6 py-4 hover:bg-stone/50 transition-colors">
       <div className="flex items-center gap-3 min-w-0">
@@ -35,9 +47,9 @@ export default function MemberDirectoryRow({
         <div className="min-w-0">
           <p className="text-sm font-semibold text-[#1A1A1A] truncate">
             {member.full_name || member.email || 'Unknown'}
-            {(member.is_lodge_admin || member.is_co_admin) && (
+            {roleLabel && (
               <span className="ml-2 text-[10px] bg-navy/10 text-navy font-semibold px-1.5 py-0.5 rounded">
-                Admin
+                {roleLabel}
               </span>
             )}
           </p>
@@ -61,6 +73,15 @@ export default function MemberDirectoryRow({
         >
           {member.verification_status}
         </span>
+        {currentUserId && onRoleUpdated && (
+          <MemberRoleActions
+            member={member}
+            currentUserId={currentUserId}
+            isPrimaryAdmin={isPrimaryAdmin}
+            coAdminCount={coAdminCount}
+            onUpdated={onRoleUpdated}
+          />
+        )}
         {showActions && onApprove && onDeny && (
           <>
             <button

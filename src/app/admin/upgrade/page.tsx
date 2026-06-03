@@ -77,6 +77,11 @@ export default function UpgradePage() {
         return
       }
 
+      if (!profile.is_lodge_admin) {
+        router.push('/admin')
+        return
+      }
+
       const [{ data: lodgeData }, { count: verifiedCount }] = await Promise.all([
         supabase
           .from('lodges')

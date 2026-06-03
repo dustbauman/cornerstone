@@ -3,10 +3,11 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Loader2, ArrowLeft, Building2 } from 'lucide-react'
+import { Loader2, ArrowLeft, Building2, Shield, Users } from 'lucide-react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import { createClient } from '@/lib/supabase/client'
+import { adminRoleLabel, CO_ADMIN_CAP } from '@/lib/lodge-admin-roles'
 
 const field =
   'w-full border border-[#E5E0D5] rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20 focus:border-navy transition bg-white'
@@ -20,6 +21,10 @@ function AdminSettingsContent() {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveSuccess, setSaveSuccess] = useState(false)
+  const [isPrimaryAdmin, setIsPrimaryAdmin] = useState(false)
+  const [admins, setAdmins] = useState<
+    { id: string; full_name: string | null; email: string | null; is_lodge_admin: boolean; is_co_admin: boolean }[]
+  >([])
   const [form, setForm] = useState({
     city: '',
     meeting_address: '',
@@ -50,13 +55,25 @@ function AdminSettingsContent() {
         return
       }
 
-      const { data: lodge } = await supabase
-        .from('lodges')
-        .select(
-          'id, city, meeting_address, meeting_schedule, website, welcome_message, directory_id'
-        )
-        .eq('id', profile.lodge_id)
-        .single()
+      setIsPrimaryAdmin(profile.is_lodge_admin)
+
+      const [{ data: lodge }, { data: adminProfiles }] = await Promise.all([
+        supabase
+          .from('lodges')
+          .select(
+            'id, city, meeting_address, meeting_schedule, website, welcome_message, directory_id'
+          )
+          .eq('id', profile.lodge_id)
+          .single(),
+        supabase
+          .from('profiles')
+          .select('id, full_name, email, is_lodge_admin, is_co_admin')
+          .eq('lodge_id', profile.lodge_id)
+          .or('is_lodge_admin.eq.true,is_co_admin.eq.true')
+          .order('is_lodge_admin', { ascending: false }),
+      ])
+
+      setAdmins(adminProfiles || [])
 
       if (lodge) {
         let city = lodge.city || ''
@@ -236,6 +253,55 @@ function AdminSettingsContent() {
             {saving ? 'Saving…' : 'Save lodge settings'}
           </button>
         </form>
+
+        <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6 mt-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield size={18} className="text-navy" />
+            <h2 className="text-base font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+              Lodge administrators
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            {admins.map(admin => {
+              const label = adminRoleLabel(admin.is_lodge_admin, admin.is_co_admin)
+              return (
+                <div key={admin.id} className="flex items-center justify-between gap-3 py-2 border-b border-gray-50 last:border-0">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-[#1A1A1A] truncate">
+                      {admin.full_name || admin.email || 'Unknown'}
+                    </p>
+                    {admin.email && admin.full_name && (
+                      <p className="text-xs text-muted truncate">{admin.email}</p>
+                    )}
+                  </div>
+                  {label && (
+                    <span className="text-[10px] bg-navy/10 text-navy font-semibold px-2 py-0.5 rounded flex-shrink-0">
+                      {label}
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+
+          {isPrimaryAdmin ? (
+            <Link
+              href="/admin/members"
+              className="mt-4 inline-flex items-center gap-1.5 text-sm font-semibold text-navy hover:underline"
+            >
+              <Users size={14} />
+              Manage roles on members page
+              <span className="text-muted font-normal">
+                (up to {CO_ADMIN_CAP} co-admins)
+              </span>
+            </Link>
+          ) : (
+            <p className="text-xs text-muted mt-4">
+              Contact your primary admin to change lodge administrators or billing.
+            </p>
+          )}
+        </div>
 
         <p className="text-xs text-muted text-center mt-4">
           Also available from{' '}
