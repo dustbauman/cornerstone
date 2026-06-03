@@ -10,6 +10,7 @@ import {
 import { geocodeCityState } from '@/lib/geo/nominatim'
 import { notifyMatchingPros, type NotifyRequest } from '@/lib/db/match-pros'
 import { sendRequestConfirmEmail } from '@/lib/email'
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
 
 const VALID_TIMELINES = new Set(['ASAP', 'Within 1 week', 'Within 1 month', 'Flexible'])
 
@@ -52,25 +53,71 @@ export async function GET() {
   return Response.json({ requests })
 }
 
+const FIELD_LIMITS = {
+  title: 160,
+  category: 80,
+  city: 120,
+  state: 40,
+  budget: 80,
+  details: 4000,
+  email: 254,
+  name: 120,
+} as const
+
 export async function POST(request: Request) {
-  const body = await request.json()
-  const {
-    title,
-    category,
-    city,
-    state,
-    budget,
-    timeline,
-    details,
-    email,
-    name,
-    lat,
-    lng,
-    remoteEligible,
-  } = body
+  let body: Record<string, unknown>
+  try {
+    body = await request.json()
+  } catch {
+    return Response.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const str = (v: unknown) => (typeof v === 'string' ? v.trim() : '')
+  const title = str(body.title)
+  const category = str(body.category)
+  const city = str(body.city)
+  const state = str(body.state)
+  const budget = str(body.budget)
+  const timeline = str(body.timeline)
+  const details = str(body.details)
+  const email = str(body.email)
+  const name = str(body.name)
+  const lat = typeof body.lat === 'number' ? body.lat : null
+  const lng = typeof body.lng === 'number' ? body.lng : null
+  const remoteEligible = body.remoteEligible === true
 
   if (!title || !category || !city || !state || !email) {
     return Response.json({ error: 'Missing required fields' }, { status: 400 })
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return Response.json({ error: 'A valid email is required.' }, { status: 400 })
+  }
+
+  const ipLimit = await checkRateLimit({
+    name: 'request-post-ip',
+    identifier: getClientIp(request),
+    max: 10,
+    window: '1 h',
+  })
+  if (!ipLimit.ok) return rateLimitResponse(ipLimit.retryAfter)
+
+  const emailLimit = await checkRateLimit({
+    name: 'request-post-email',
+    identifier: email.toLowerCase(),
+    max: 5,
+    window: '1 h',
+  })
+  if (!emailLimit.ok) return rateLimitResponse(emailLimit.retryAfter)
+
+  for (const [field, max] of Object.entries(FIELD_LIMITS)) {
+    const value = str(body[field])
+    if (value.length > max) {
+      return Response.json(
+        { error: `The ${field} field is too long.` },
+        { status: 400 }
+      )
+    }
   }
 
   const supabase = createServerClient()

@@ -18,6 +18,11 @@ import { adminRoleLabel } from '@/lib/lodge-admin-roles'
 import { DB_REQUEST_SELECT, type DbRequestRow } from '@/lib/db/requests'
 import { Suspense } from 'react'
 
+// Explicit safe columns — never select claim_code or payment fields via the
+// browser (anon/authenticated) client; those are revoked at the DB grant level.
+const LODGE_SAFE_SELECT =
+  'id, name, number, state, city, meeting_address, welcome_message, meeting_schedule, website, tier, status, paid_at, claim_code_claimed_at, directory_id, slug, invite_cap, invites_sent'
+
 interface Lodge {
   id: string
   name: string
@@ -116,12 +121,12 @@ function AdminContent() {
         { data: requestRows },
         unverifiedResult,
       ] = await Promise.all([
-        supabase.from('lodges').select('*').eq('id', lodgeId).single(),
+        supabase.from('lodges').select(LODGE_SAFE_SELECT).eq('id', lodgeId).single(),
         supabase.from('profiles').select('id, full_name, email, trade_category, city, verification_status, is_lodge_admin, is_co_admin').eq('lodge_id', lodgeId),
         supabase.from('listings').select('id, profile_id').eq('is_active', true),
         supabase.from('requests').select(DB_REQUEST_SELECT).in('status', ['open', 'active']),
         showDirectoryReview
-          ? supabase.from('lodges').select('*').is('directory_id', null).eq('status', 'active')
+          ? supabase.from('lodges').select(LODGE_SAFE_SELECT).is('directory_id', null).eq('status', 'active')
           : Promise.resolve({ data: [] as Lodge[] }),
       ])
 

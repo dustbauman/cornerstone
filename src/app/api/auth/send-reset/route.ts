@@ -1,8 +1,17 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendPasswordResetEmail } from '@/lib/email'
 import { getAppUrl } from '@/lib/email/send'
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
+  const ipLimit = await checkRateLimit({
+    name: 'auth-reset-ip',
+    identifier: getClientIp(request),
+    max: 10,
+    window: '1 h',
+  })
+  if (!ipLimit.ok) return rateLimitResponse(ipLimit.retryAfter)
+
   let body: { email?: string }
   try {
     body = await request.json()
@@ -14,6 +23,14 @@ export async function POST(request: Request) {
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return Response.json({ error: 'Valid email required' }, { status: 400 })
   }
+
+  const emailLimit = await checkRateLimit({
+    name: 'auth-reset-email',
+    identifier: email,
+    max: 5,
+    window: '1 h',
+  })
+  if (!emailLimit.ok) return rateLimitResponse(emailLimit.retryAfter)
 
   const appUrl = getAppUrl()
   const redirectTo = `${appUrl}/auth/callback?next=${encodeURIComponent('/auth/reset-password')}`

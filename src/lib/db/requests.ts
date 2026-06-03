@@ -4,7 +4,6 @@ import type { TradeCategory } from '@/lib/types'
 export interface DbRequestRow {
   id: string
   posted_by_name: string
-  posted_by_email: string
   profile_id: string | null
   lodge_id: string | null
   lodge_display: string | null
@@ -24,8 +23,11 @@ export interface DbRequestRow {
   created_at: string
 }
 
+// NOTE: deliberately excludes posted_by_email and *_token — this select feeds
+// public/anon-facing surfaces (the request board, public lodge pages). Server code
+// that needs requester contact selects it explicitly via the service-role client.
 export const DB_REQUEST_SELECT = `
-  id, posted_by_name, posted_by_email, profile_id, lodge_id, lodge_display,
+  id, posted_by_name, profile_id, lodge_id, lodge_display,
   category, title, details, city, state, lat, lng, budget, timeline,
   status, remote_eligible, is_verified_member, responses_count, created_at
 `

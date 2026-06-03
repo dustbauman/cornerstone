@@ -43,10 +43,16 @@ function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const redirectParam = searchParams.get('redirect')
   const claimCode = searchParams.get('code')
   const authError = searchParams.get('error')
-  const redirect = redirectParam ?? (claimCode ? '/claim' : '/dashboard')
+  // Only allow same-origin relative paths to prevent open-redirect via ?redirect=
+  const redirectParam = searchParams.get('redirect')
+  const redirect =
+    redirectParam && redirectParam.startsWith('/') && !redirectParam.startsWith('//')
+      ? redirectParam
+      : claimCode
+        ? '/claim'
+        : '/dashboard'
   const isClaimFlow =
     searchParams.get('mode') === 'claim' ||
     redirect.startsWith('/claim') ||
@@ -195,9 +201,7 @@ function LoginContent() {
 
     if (!res.ok) {
       setError(
-        data.error === 'NO_ACCOUNT'
-          ? 'No Tyrian account exists for this email. Join through your lodge invite link first.'
-          : data.message || 'Could not send sign-in link. Try again or use Google sign-in.'
+        data.message || 'Could not send sign-in link. Try again or use Google sign-in.'
       )
       setLoading(null)
       return

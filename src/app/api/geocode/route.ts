@@ -1,9 +1,18 @@
 import { geocodeCityState, reverseGeocode } from '@/lib/geo/nominatim'
 import { normalizeStateCode } from '@/lib/constants/states'
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
+  const limit = await checkRateLimit({
+    name: 'geocode-ip',
+    identifier: getClientIp(request),
+    max: 30,
+    window: '1 m',
+  })
+  if (!limit.ok) return rateLimitResponse(limit.retryAfter)
+
   const { searchParams } = new URL(request.url)
   const city = searchParams.get('city')?.trim()
   const state = searchParams.get('state')?.trim()

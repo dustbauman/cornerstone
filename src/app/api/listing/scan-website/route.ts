@@ -5,6 +5,7 @@ import {
   scanWebsiteWithAi,
 } from '@/lib/listing/scan-website'
 import { normalizeWebsiteUrl } from '@/lib/url'
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   const supabase = createClient()
@@ -12,6 +13,14 @@ export async function POST(request: Request) {
   if (!user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const limit = await checkRateLimit({
+    name: 'scan-website-user',
+    identifier: user.id,
+    max: 10,
+    window: '1 h',
+  })
+  if (!limit.ok) return rateLimitResponse(limit.retryAfter)
 
   let body: { url?: string }
   try {

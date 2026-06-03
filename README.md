@@ -30,6 +30,9 @@ STRIPE_PRICE_LARGE=
 RESEND_API_KEY=
 RESEND_FROM_EMAIL=hello@tyrian.work
 CRON_SECRET=
+# Rate limiting (Upstash Redis). If unset, rate limiting no-ops (dev/local).
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
 # Maps Embed API — business listing location maps (see Google Cloud setup below)
 NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY=
 ```

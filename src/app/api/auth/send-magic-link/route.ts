@@ -1,8 +1,17 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { sendAuthMagicLinkEmail } from '@/lib/email'
 import { getAppUrl } from '@/lib/email/send'
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
+  const ipLimit = await checkRateLimit({
+    name: 'auth-magic-link-ip',
+    identifier: getClientIp(request),
+    max: 10,
+    window: '1 h',
+  })
+  if (!ipLimit.ok) return rateLimitResponse(ipLimit.retryAfter)
+
   let body: { email?: string; redirectTo?: string; purpose?: string }
   try {
     body = await request.json()
@@ -15,6 +24,14 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Valid email required' }, { status: 400 })
   }
 
+  const emailLimit = await checkRateLimit({
+    name: 'auth-magic-link-email',
+    identifier: email,
+    max: 5,
+    window: '1 h',
+  })
+  if (!emailLimit.ok) return rateLimitResponse(emailLimit.retryAfter)
+
   const purpose = body.purpose === 'claim' ? 'claim' : 'sign-in'
   const appUrl = getAppUrl()
   const redirectTo =
@@ -26,6 +43,15 @@ export async function POST(request: Request) {
   const admin = createAdminClient()
 
   if (purpose === 'sign-in') {
+    // Always return the same generic success to avoid email enumeration:
+    // the response must not reveal whether an account exists for this email.
+    const genericOk = () =>
+      Response.json({
+        success: true,
+        message:
+          'If a Tyrian account exists for this email, a sign-in link has been sent.',
+      })
+
     const { data: profile } = await admin
       .from('profiles')
       .select('id, full_name')
@@ -33,14 +59,7 @@ export async function POST(request: Request) {
       .maybeSingle()
 
     if (!profile) {
-      return Response.json(
-        {
-          error: 'NO_ACCOUNT',
-          message:
-            'No Tyrian account exists for this email. Join through your lodge invite link first.',
-        },
-        { status: 404 }
-      )
+      return genericOk()
     }
 
     const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
@@ -51,7 +70,7 @@ export async function POST(request: Request) {
 
     if (linkError || !linkData.properties?.action_link) {
       console.error('Auth magic link error:', linkError)
-      return Response.json({ error: 'Failed to send sign-in link' }, { status: 500 })
+      return genericOk()
     }
 
     try {
@@ -63,10 +82,9 @@ export async function POST(request: Request) {
       })
     } catch (err) {
       console.error('Sign-in email error:', err)
-      return Response.json({ error: 'Failed to send sign-in link' }, { status: 500 })
     }
 
-    return Response.json({ success: true })
+    return genericOk()
   }
 
   // Claim flow — allow checkout email that may not have a profile yet

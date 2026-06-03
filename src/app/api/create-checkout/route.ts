@@ -4,6 +4,7 @@ import { enrichLodgeGeo } from '@/lib/lodges/geocode-lodge'
 import { sendLodgeClaimEmail } from '@/lib/email'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { INVITE_CAPS } from '@/lib/invites'
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit'
 import {
   getFoundingOffer,
   getStripePriceIdForFoundingOffer,
@@ -12,6 +13,14 @@ import {
 
 export async function POST(request: Request) {
   try {
+    const limit = await checkRateLimit({
+      name: 'create-checkout-ip',
+      identifier: getClientIp(request),
+      max: 10,
+      window: '1 h',
+    })
+    if (!limit.ok) return rateLimitResponse(limit.retryAfter)
+
     const body = await request.json()
     const { lodgeName, lodgeNumber, state, size, payerName, payerEmail, directoryId } = body
 
@@ -94,7 +103,7 @@ export async function POST(request: Request) {
           )
         }
         console.error('Lodge insert error:', lodgeError)
-        return Response.json({ error: 'Failed to create lodge', message: lodgeError.message }, { status: 500 })
+        return Response.json({ error: 'Failed to create lodge' }, { status: 500 })
       }
 
       lodge = inserted
@@ -202,7 +211,7 @@ export async function POST(request: Request) {
     if (activateError) {
       console.error('Lodge activate error:', activateError)
       return Response.json(
-        { error: 'Failed to activate lodge', message: activateError.message },
+        { error: 'Failed to activate lodge' },
         { status: 500 }
       )
     }
@@ -233,7 +242,9 @@ export async function POST(request: Request) {
     return Response.json({ url: `${appUrl}/join/success?${params}` })
   } catch (err) {
     console.error('create-checkout unhandled error:', err)
-    const message = err instanceof Error ? err.message : 'Checkout failed'
-    return Response.json({ error: 'CHECKOUT_FAILED', message }, { status: 500 })
+    return Response.json(
+      { error: 'CHECKOUT_FAILED', message: 'Could not start checkout. Please try again.' },
+      { status: 500 }
+    )
   }
 }
