@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from "next/link";
 import {
   ShieldCheck,
@@ -20,6 +21,13 @@ import Footer from "@/components/layout/Footer";
 import AuthAwareLink from "@/components/layout/AuthAwareLink";
 import TyrianHeroBackground from "@/components/brand/TyrianHeroBackground";
 import LandingStatsBar from "@/components/landing/LandingStatsBar";
+
+export const metadata: Metadata = {
+  title: {
+    absolute: 'Tyrian — The Masonic Professional Referral Network',
+  },
+  description: 'Tyrian connects you with lodge-verified professionals. Find trusted contractors, attorneys, and service providers vouched for by their Masonic lodge.',
+}
 
 const CATEGORIES = [
   { label: "Roofing", icon: Home },

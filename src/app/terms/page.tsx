@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import LegalPage from '@/components/layout/LegalPage'
 
 export const metadata: Metadata = {
-  title: 'Terms of Use · Tyrian',
+  title: 'Terms of Use',
   robots: { index: false },
 }
 

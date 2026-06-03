@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'The Network · Tyrian',
+  title: 'The Network',
   description:
-    'Browse lodges on Tyrian — verified professionals, open requests, and members from lodges across the country.',
+    'Browse lodges on Tyrian — lodge-verified professionals, open service requests, and Masonic business connections from lodges across the country.',
 }
 
 export default function NetworkLayout({ children }: { children: React.ReactNode }) {

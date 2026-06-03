@@ -4,15 +4,15 @@ import { getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
 const siteDescription =
-  "Tyrian connects lodge-verified Freemason professionals with members and the public across the US. Browse trusted contractors, attorneys, and service providers — every listing backed by a real community.";
+  "Tyrian connects you with lodge-verified professionals. Find trusted contractors, attorneys, and service providers vouched for by their Masonic lodge.";
 
 const ogDescription =
-  "Find or list lodge-verified businesses. The professional network built on Freemasonry's foundation of trust.";
+  "Find or list lodge-verified professionals. The Masonic referral network built on Freemasonry's foundation of trust.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: "Tyrian — The Verified Business Network for Freemasons",
+    default: "Tyrian — The Masonic Professional Referral Network",
     template: "%s | Tyrian",
   },
   description: siteDescription,
@@ -21,12 +21,12 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: getSiteUrl(),
     siteName: "Tyrian",
-    title: "Tyrian · Verified Masonic Professionals",
+    title: "Tyrian — The Masonic Professional Referral Network",
     description: ogDescription,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tyrian · Verified Masonic Professionals",
+    title: "Tyrian — The Masonic Professional Referral Network",
     description: ogDescription,
   },
 };

@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import LegalPage from '@/components/layout/LegalPage'
 
 export const metadata: Metadata = {
-  title: 'About Tyrian',
-  description: 'Tyrian is the verified business network and request board for Freemasons.',
+  title: 'About',
+  description: 'Tyrian is the lodge-verified professional referral network for Freemasons. Every listing is tied to a real lodge, a real sponsor, and a real community across the US.',
 }
 
 export default function AboutPage() {

@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import LegalPage from '@/components/layout/LegalPage'
 
 export const metadata: Metadata = {
-  title: 'Contact · Tyrian',
-  description: 'Get in touch with the Tyrian team.',
+  title: 'Contact',
+  description: 'Questions about Tyrian, lodge signup, or member verification? Reach the team at hello@tyrian.work — the lodge-verified Masonic professional referral network.',
 }
 
 export default function ContactPage() {
