@@ -839,7 +839,7 @@ export default function RequestsPage() {
                 Post a Request. Let the Network Respond.
               </h1>
               <p className="text-white/60 text-lg max-w-2xl">
-                Browse open requests or post your own. Verified professionals respond directly —
+                Browse open requests or post your own. Lodge-verified professionals respond directly —
                 no middleman, no fees.
               </p>
             </div>
@@ -958,7 +958,7 @@ export default function RequestsPage() {
             <div className="bg-navy rounded-2xl p-5 text-white">
               <h3 className="font-serif text-lg font-bold mb-1">Need a service?</h3>
               <p className="text-white/60 text-sm mb-4 leading-relaxed">
-                Post your request to the network. Verified professionals in your area will respond directly.
+                Post your request to the network. Lodge-verified professionals in your area will respond directly.
               </p>
               <button
                 onClick={() => setModalOpen(true)}

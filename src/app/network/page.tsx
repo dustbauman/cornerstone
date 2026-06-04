@@ -315,7 +315,7 @@ function NetworkContent() {
             The Network
           </h1>
           <p className="text-white/60 text-lg max-w-2xl mb-3">
-            Every lodge on Tyrian. Browse listings, open requests, and verified members from lodges
+            Every lodge on Tyrian. Browse lodge-verified listings, open service requests, and Masonic business connections from lodges
             across the country.
           </p>
           <p className="text-white/60 text-sm mb-4">

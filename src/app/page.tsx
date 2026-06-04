@@ -65,7 +65,7 @@ const HOW_IT_WORKS = [
     step: "03",
     label: "Get found and referred",
     title: "Get found and referred",
-    body: "Members search for verified professionals. The public finds you through Google. Every connection on Tyrian is backed by real accountability — not just an algorithm.",
+    body: "Members search for lodge-verified professionals. The public finds you through Google. Every connection on Tyrian is backed by real accountability — not just an algorithm.",
     cta: "Explore the Network",
     href: "/network",
   },
@@ -220,7 +220,7 @@ export default function LandingPage() {
             <div>
               <h3 className="font-serif text-2xl font-bold text-navy mb-2">Can&apos;t find what you need?</h3>
               <p className="text-muted max-w-xl">
-                Post a service request to the network. Verified professionals in your area will
+                Post a service request to the network. Lodge-verified professionals in your area will
                 respond directly — no middleman, no fees.
               </p>
             </div>
@@ -258,9 +258,8 @@ export default function LandingPage() {
               <p className="text-muted text-xs font-semibold uppercase tracking-wider mb-3">For the public</p>
               <h3 className="font-serif text-2xl font-bold text-navy mb-4">Hire professionals you can trust</h3>
               <p className="text-muted leading-relaxed mb-6">
-                Every business on Tyrian has been vetted through a real community vetting
-                process — not a credit card charge. Browse freely, contact directly, hire
-                confidently.
+                Every business on Tyrian is lodge-verified by a real community — not a credit
+                card charge. Browse freely, contact directly, hire confidently.
               </p>
               <Link
                 href="/directory"

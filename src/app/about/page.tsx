@@ -15,7 +15,7 @@ export default function AboutPage() {
         sponsor confirmation — not an anonymous profile.
       </p>
       <p>
-        Members browse a directory of trusted trades and services, post requests when they need
+        Members browse the Freemason business directory for trusted trades and services, post requests when they need
         help, and respond to open jobs in their area. Lodges unlock the network for their
         members and manage verification from a dedicated admin panel.
       </p>
