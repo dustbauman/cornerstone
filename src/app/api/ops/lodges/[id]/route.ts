@@ -1,6 +1,8 @@
 import { requirePlatformAdmin } from '@/lib/platform-admin'
 import { enrichLodgeGeo } from '@/lib/lodges/geocode-lodge'
 
+const VALID_STATUSES = new Set(['active', 'suspended', 'inactive'])
+
 export async function PATCH(
   request: Request,
   { params }: { params: { id: string } }
@@ -12,10 +14,17 @@ export async function PATCH(
   const lodgeId = params.id
 
   const body = await request.json().catch(() => ({}))
-  const { directory_id } = body as { directory_id?: string | null }
+  const { directory_id, status } = body as {
+    directory_id?: string | null
+    status?: string
+  }
 
-  if (directory_id === undefined) {
-    return Response.json({ error: 'directory_id is required' }, { status: 400 })
+  if (directory_id === undefined && status === undefined) {
+    return Response.json({ error: 'Provide directory_id or status' }, { status: 400 })
+  }
+
+  if (status !== undefined && !VALID_STATUSES.has(status)) {
+    return Response.json({ error: `Invalid status. Must be one of: ${Array.from(VALID_STATUSES).join(', ')}` }, { status: 400 })
   }
 
   const { data: lodge, error: fetchErr } = await admin
@@ -28,10 +37,11 @@ export async function PATCH(
     return Response.json({ error: 'Lodge not found' }, { status: 404 })
   }
 
-  const { error: patchErr } = await admin
-    .from('lodges')
-    .update({ directory_id })
-    .eq('id', lodgeId)
+  const patch: Record<string, string | null> = {}
+  if (directory_id !== undefined) patch.directory_id = directory_id
+  if (status !== undefined) patch.status = status
+
+  const { error: patchErr } = await admin.from('lodges').update(patch).eq('id', lodgeId)
 
   if (patchErr) {
     console.error('ops lodge patch error:', patchErr)

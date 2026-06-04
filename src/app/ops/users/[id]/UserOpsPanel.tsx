@@ -15,6 +15,8 @@ interface Props {
   currentLodgeId: string | null
   currentLodgeName: string | null
   currentVerificationStatus: string
+  currentIsLodgeAdmin: boolean
+  currentIsCoAdmin: boolean
   lodges: Lodge[]
 }
 
@@ -23,11 +25,15 @@ export default function UserOpsPanel({
   currentLodgeId,
   currentLodgeName,
   currentVerificationStatus,
+  currentIsLodgeAdmin,
+  currentIsCoAdmin,
   lodges,
 }: Props) {
   const router = useRouter()
   const [selectedLodgeId, setSelectedLodgeId] = useState(currentLodgeId ?? '')
   const [verificationStatus, setVerificationStatus] = useState(currentVerificationStatus)
+  const [isLodgeAdmin, setIsLodgeAdmin] = useState(currentIsLodgeAdmin)
+  const [isCoAdmin, setIsCoAdmin] = useState(currentIsCoAdmin)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -38,13 +44,15 @@ export default function UserOpsPanel({
     setSaved(false)
     setError('')
     try {
-      const patch: Record<string, string | null> = {}
+      const patch: Record<string, string | boolean | null> = {}
       if (selectedLodgeId !== (currentLodgeId ?? '')) {
         patch.lodge_id = selectedLodgeId || null
       }
       if (verificationStatus !== currentVerificationStatus) {
         patch.verification_status = verificationStatus
       }
+      if (isLodgeAdmin !== currentIsLodgeAdmin) patch.is_lodge_admin = isLodgeAdmin
+      if (isCoAdmin !== currentIsCoAdmin) patch.is_co_admin = isCoAdmin
       if (Object.keys(patch).length === 0) {
         setError('No changes to save.')
         return
@@ -147,6 +155,34 @@ export default function UserOpsPanel({
               {status}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Admin roles */}
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-6">
+        <h2 className="text-xl font-bold text-navy mb-1" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+          Admin roles
+        </h2>
+        <p className="text-xs text-muted mb-4">Override lodge admin status cross-lodge. Use with caution.</p>
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isLodgeAdmin}
+              onChange={e => setIsLodgeAdmin(e.target.checked)}
+              className="w-4 h-4 rounded border-[#E5E0D5] text-navy focus:ring-navy/20"
+            />
+            <span className="text-sm font-medium text-[#1A1A1A]">Primary lodge admin</span>
+          </label>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isCoAdmin}
+              onChange={e => setIsCoAdmin(e.target.checked)}
+              className="w-4 h-4 rounded border-[#E5E0D5] text-navy focus:ring-navy/20"
+            />
+            <span className="text-sm font-medium text-[#1A1A1A]">Co-admin</span>
+          </label>
         </div>
       </div>
 

@@ -5,8 +5,9 @@ import Footer from '@/components/layout/Footer'
 import { requirePlatformAdmin } from '@/lib/platform-admin'
 import {
   Building2, Users, AlertCircle, UserX, ChevronRight,
-  LayoutDashboard, ListChecks, Eye,
+  LayoutDashboard, ListChecks, Eye, MessageSquare, Star,
 } from 'lucide-react'
+import OpsSignOut from './OpsSignOut'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,10 +75,37 @@ export default async function OpsDashboard() {
             Operations Console
           </h1>
           <p className="text-white/60 mt-1 text-sm">Internal — not visible to members or lodge admins.</p>
+          <div className="mt-4">
+            <OpsSignOut />
+          </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+
+        {/* Quick nav */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { href: '/ops/listings', label: 'Listings', icon: Eye, desc: 'Deactivate / reactivate' },
+            { href: '/ops/requests', label: 'Requests', icon: MessageSquare, desc: 'Withdraw / delete' },
+            { href: '/ops/reviews', label: 'Reviews', icon: Star, desc: 'Remove abusive reviews' },
+          ].map(({ href, label, icon: Icon, desc }) => (
+            <Link
+              key={href}
+              href={href}
+              className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-4 hover:border-gold/40 hover:shadow-md transition-all group flex items-center gap-3"
+            >
+              <div className="w-8 h-8 rounded-full bg-navy/5 flex items-center justify-center flex-shrink-0">
+                <Icon size={15} className="text-navy" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-navy group-hover:text-gold transition-colors">{label}</p>
+                <p className="text-[11px] text-muted">{desc}</p>
+              </div>
+              <ChevronRight size={14} className="text-muted ml-auto flex-shrink-0" />
+            </Link>
+          ))}
+        </div>
 
         {/* Platform stats */}
         <div className="grid grid-cols-3 gap-4">

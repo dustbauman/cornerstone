@@ -84,6 +84,8 @@ export default async function OpsUserDetail({
               currentLodgeId={profile.lodge_id}
               currentLodgeName={lodgeName}
               currentVerificationStatus={profile.verification_status}
+              currentIsLodgeAdmin={profile.is_lodge_admin}
+              currentIsCoAdmin={profile.is_co_admin}
               lodges={(lodges ?? []) as { id: string; name: string; number: string; state: string }[]}
             />
           </div>

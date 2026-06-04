@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, CheckCircle2, Link2, Loader2, X } from 'lucide-react'
+import { Search, CheckCircle2, Link2, Loader2, X, ShieldOff, ShieldCheck } from 'lucide-react'
 
 interface DirectoryResult {
   id: string
@@ -17,6 +17,7 @@ interface Lodge {
   name: string
   number: string
   state: string
+  status: string
   directory_id: string | null
 }
 
@@ -28,7 +29,28 @@ export default function LodgeLinkPanel({ lodge }: { lodge: Lodge }) {
   const [selected, setSelected] = useState<DirectoryResult | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [suspending, setSuspending] = useState(false)
   const [error, setError] = useState('')
+
+  const isSuspended = lodge.status === 'suspended'
+
+  async function toggleSuspend() {
+    const newStatus = isSuspended ? 'active' : 'suspended'
+    const verb = isSuspended ? 'Unsuspend' : 'Suspend'
+    if (!confirm(`${verb} ${lodge.name}?`)) return
+    setSuspending(true)
+    try {
+      const res = await fetch(`/api/ops/lodges/${lodge.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!res.ok) { setError('Status update failed'); return }
+      router.refresh()
+    } finally {
+      setSuspending(false)
+    }
+  }
 
   async function search(q: string) {
     setQuery(q)
@@ -194,6 +216,39 @@ export default function LodgeLinkPanel({ lodge }: { lodge: Lodge }) {
             'Link & verify lodge'
           )}
         </button>
+      </div>
+
+      {/* Suspend / unsuspend */}
+      <div className={`mt-6 pt-6 border-t ${isSuspended ? 'border-red-100' : 'border-[#E5E0D5]'}`}>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[#1A1A1A]">
+              {isSuspended ? 'Lodge is suspended' : 'Suspend lodge'}
+            </p>
+            <p className="text-xs text-muted mt-0.5">
+              {isSuspended
+                ? 'Unsuspending restores normal access for this lodge.'
+                : 'Hides this lodge from the platform and blocks member actions.'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={toggleSuspend}
+            disabled={suspending}
+            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border transition-colors disabled:opacity-50 flex-shrink-0 ${
+              isSuspended
+                ? 'text-[#2D6A4F] border-[#2D6A4F]/30 hover:bg-[#2D6A4F]/5'
+                : 'text-red-600 border-red-200 hover:bg-red-50'
+            }`}
+          >
+            {suspending
+              ? <Loader2 size={14} className="animate-spin" />
+              : isSuspended
+              ? <><ShieldCheck size={14} /> Unsuspend</>
+              : <><ShieldOff size={14} /> Suspend</>
+            }
+          </button>
+        </div>
       </div>
     </div>
   )

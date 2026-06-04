@@ -11,14 +11,18 @@ export async function PATCH(
   const userId = params.id
 
   const body = await request.json().catch(() => ({}))
-  const { lodge_id, verification_status } = body as {
+  const { lodge_id, verification_status, is_lodge_admin, is_co_admin } = body as {
     lodge_id?: string | null
     verification_status?: string
+    is_lodge_admin?: boolean
+    is_co_admin?: boolean
   }
 
-  const patch: Record<string, string | null> = {}
+  const patch: Record<string, string | boolean | null> = {}
   if (lodge_id !== undefined) patch.lodge_id = lodge_id
   if (verification_status !== undefined) patch.verification_status = verification_status
+  if (is_lodge_admin !== undefined) patch.is_lodge_admin = is_lodge_admin
+  if (is_co_admin !== undefined) patch.is_co_admin = is_co_admin
 
   if (Object.keys(patch).length === 0) {
     return Response.json({ error: 'No fields to update' }, { status: 400 })
@@ -42,9 +46,8 @@ export async function DELETE(
   if ('error' in result) return result.error
 
   const { admin } = result
-  const userId = params.id
 
-  const { error } = await admin.auth.admin.deleteUser(userId)
+  const { error } = await admin.auth.admin.deleteUser(params.id)
 
   if (error) {
     console.error('ops user delete error:', error)

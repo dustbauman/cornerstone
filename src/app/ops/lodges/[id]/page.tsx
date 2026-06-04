@@ -81,7 +81,7 @@ export default async function OpsLodgeDetail({
 
           {/* Directory link panel */}
           <div className="lg:col-span-2">
-            <LodgeLinkPanel lodge={lodge} />
+            <LodgeLinkPanel lodge={{ id: lodge.id, name: lodge.name, number: lodge.number, state: lodge.state, status: lodge.status, directory_id: lodge.directory_id }} />
           </div>
 
           {/* Lodge info + members */}
