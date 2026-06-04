@@ -74,7 +74,9 @@ export default function RespondModal({ request, preview, onClose, onSubmit }: Pr
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
           <div className="bg-stone rounded-xl px-4 py-3 text-sm">
             <p className="font-medium text-navy">
-              {request.name} · {request.lodge} · {request.city}, {request.state}
+              {request.lodge
+                ? `${request.name} · ${request.lodge} · ${request.city}, ${request.state}`
+                : `${request.name} · ${request.city}, ${request.state}`}
             </p>
             <p className="text-xs text-muted mt-1">Posted {formatTime(request.postedHoursAgo)}</p>
           </div>

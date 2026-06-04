@@ -72,9 +72,13 @@ export default function PostRequestModal({
     setSubmitting(true);
     setSubmitError("");
 
-    const lodge = form.lodgeNumber
-      ? `${defaultLodge.replace(/ #\d+$/, "")} #${form.lodgeNumber}`
-      : defaultLodge;
+    const lodge = isAnon
+      ? form.lodgeNumber
+        ? `Lodge #${form.lodgeNumber}`
+        : ""
+      : form.lodgeNumber
+        ? `${defaultLodge.replace(/ #\d+$/, "")} #${form.lodgeNumber}`
+        : defaultLodge;
 
     try {
       const res = await fetch("/api/requests", {

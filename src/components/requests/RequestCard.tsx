@@ -61,8 +61,9 @@ export default function RequestCard({
         <div className="mt-3 pt-3 border-t border-warm">
           <p className="text-sm font-semibold text-trust">✓ Response sent</p>
           <p className="text-xs text-muted mt-0.5">
-            {request.name} from {request.lodge.split("#")[0]?.trim() || "their lodge"} will be
-            notified.
+            {request.lodge
+              ? `${request.name} from ${request.lodge.split("#")[0]?.trim() || "their lodge"} will be notified.`
+              : `${request.name} will be notified.`}
           </p>
         </div>
       );
@@ -158,8 +159,12 @@ export default function RequestCard({
 
       <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted mb-2">
         <span className="font-medium text-[#1A1A1A]">{request.name}</span>
-        <span>·</span>
-        <span>{request.lodge}</span>
+        {request.lodge && (
+          <>
+            <span>·</span>
+            <span>{request.lodge}</span>
+          </>
+        )}
         <span>·</span>
         <span className="flex items-center gap-0.5">
           <MapPin size={10} className="text-gold flex-shrink-0" />

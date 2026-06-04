@@ -48,7 +48,8 @@ export function dbRequestToServiceRequest(row: DbRequestRow): ServiceRequest {
     title: row.title,
     category: row.category as TradeCategory,
     name: row.posted_by_name,
-    lodge: row.lodge_display ?? 'Tyrian Member',
+    // Guests have no profile/lodge — omit rather than implying membership.
+    lodge: row.lodge_display ?? (row.profile_id ? 'Tyrian Member' : ''),
     lodgeId: row.lodge_id,
     city: row.city,
     state: row.state,
