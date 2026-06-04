@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Settings, ClipboardList, Network } from 'lucide-react'
+import { Menu, X, Settings, ClipboardList, Network, KeyRound } from 'lucide-react'
 import Logo from './Logo'
 import DashboardNavDropdown from './DashboardNavDropdown'
 import UserAccountMenu from './UserAccountMenu'
@@ -110,6 +110,9 @@ export default function Navbar() {
             >
               Network
             </Link>
+            <Link href="/lodges" className="text-white/80 hover:text-white text-sm font-medium transition-colors">
+              For Lodges
+            </Link>
             {isLoggedIn && (
               <DashboardNavDropdown
                 isLodgeAdmin={!!profile?.isLodgeAdmin}
@@ -162,6 +165,14 @@ export default function Navbar() {
           >
             <Network size={16} />
             Network
+          </Link>
+          <Link
+            href="/lodges"
+            className="flex items-center gap-2 text-white/80 hover:text-white text-base font-medium py-2"
+            onClick={() => setMenuOpen(false)}
+          >
+            <KeyRound size={16} />
+            For Lodges
           </Link>
           {isLoggedIn && (
             <DashboardNavDropdown

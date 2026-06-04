@@ -104,6 +104,7 @@ export default function LandingPage() {
                 <ArrowRight size={20} />
               </Link>
               <AuthAwareLink
+                hrefLoggedOut="/lodges"
                 className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-lg px-8 py-4 rounded-xl border border-white/20 transition-colors"
               >
                 List Your Business
@@ -249,7 +250,7 @@ export default function LandingPage() {
                 verified professional reputation that compounds over time. Your lodge affiliation
                 is your credential — put it to work.
               </p>
-              <AuthAwareLink className="inline-flex items-center gap-2 bg-gold hover:bg-gold-dark text-navy font-bold px-5 py-3 rounded-xl transition-colors text-sm">
+              <AuthAwareLink hrefLoggedOut="/lodges" className="inline-flex items-center gap-2 bg-gold hover:bg-gold-dark text-navy font-bold px-5 py-3 rounded-xl transition-colors text-sm">
                 List Your Business →
               </AuthAwareLink>
             </div>
