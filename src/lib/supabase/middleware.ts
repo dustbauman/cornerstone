@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { verifyOpsToken, OPS_COOKIE } from '@/lib/ops-token'
 
 function redirectWithSessionCookies(url: URL, sessionResponse: NextResponse) {
   const redirectResponse = NextResponse.redirect(url)
@@ -43,6 +44,17 @@ export async function updateSession(request: NextRequest) {
     path.startsWith('/settings')
 
   const requiresLodge = path.startsWith('/dashboard') || path.startsWith('/admin')
+  // /ops pages: redirect to /ops/login if the signed cookie is missing/invalid.
+  // /api/ops routes: no redirect — requirePlatformAdmin() in each handler returns 404.
+  const isOpsPage = path.startsWith('/ops') && !path.startsWith('/api/ops') && path !== '/ops/login'
+  if (isOpsPage) {
+    const token = request.cookies.get(OPS_COOKIE)?.value ?? ''
+    if (!(await verifyOpsToken(token))) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/ops/login'
+      return NextResponse.redirect(url)
+    }
+  }
 
   if (!user && isProtected) {
     const url = request.nextUrl.clone()

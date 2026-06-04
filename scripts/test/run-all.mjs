@@ -23,7 +23,7 @@ process.env.TEST_BASE_URL = BASE
 process.env.STRIPE_WEBHOOK_SECRET = STRIPE_WEBHOOK_SECRET
 
 const SUITES = [
-  'smoke', 'signup', 'requests', 'admin-roles', 'stripe', 'security',
+  'smoke', 'signup', 'requests', 'admin-roles', 'stripe', 'security', 'ops',
 ]
 
 async function isUp() {
