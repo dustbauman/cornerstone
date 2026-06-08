@@ -12,7 +12,7 @@ function getResend(): Resend | null {
 }
 
 export function getEmailFrom(): string {
-  return process.env.RESEND_FROM_EMAIL?.trim() || 'hello@tyrian.work'
+  return process.env.RESEND_FROM_EMAIL?.trim() || 'Tyrian <hello@tyrian.work>'
 }
 
 export function getAppUrl(): string {

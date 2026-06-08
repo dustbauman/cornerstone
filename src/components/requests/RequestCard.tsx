@@ -136,8 +136,8 @@ export default function RequestCard({
   }
 
   return (
-    <div
-      className="tyrian-card-interactive p-5"
+    <article
+      className="relative overflow-hidden rounded-lg border border-warm bg-white p-5 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-gold/35 hover:shadow-card-hover"
       style={borderLeft ? { borderLeft } : undefined}
     >
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -157,7 +157,7 @@ export default function RequestCard({
         {request.title}
       </h3>
 
-      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted mb-2">
+      <div className="relative flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted mb-2">
         <span className="font-medium text-[#1A1A1A]">{request.name}</span>
         {request.lodge && (
           <>
@@ -221,6 +221,6 @@ export default function RequestCard({
 
         {request.status !== "filled" && renderRespondArea()}
       </div>
-    </div>
+    </article>
   );
 }

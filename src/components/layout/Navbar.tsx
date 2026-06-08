@@ -8,6 +8,7 @@ import Logo from './Logo'
 import DashboardNavDropdown from './DashboardNavDropdown'
 import UserAccountMenu from './UserAccountMenu'
 import { createClient } from '@/lib/supabase/client'
+import { useDemoMode } from '@/lib/demo/context'
 import type { Session } from '@supabase/supabase-js'
 
 interface NavProfile {
@@ -18,6 +19,7 @@ interface NavProfile {
 
 export default function Navbar() {
   const pathname = usePathname()
+  const { isDemoMode, toggleDemo } = useDemoMode()
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<NavProfile | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -122,6 +124,23 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            <button
+              type="button"
+              onClick={toggleDemo}
+              className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-semibold tracking-[0.08em] transition-colors ${
+                isDemoMode
+                  ? 'border-gold/40 bg-gold text-navy'
+                  : 'border-white/15 bg-white/5 text-gold hover:bg-white/10'
+              }`}
+              aria-label={isDemoMode ? 'Switch to live mode' : 'Switch to demo mode'}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isDemoMode ? 'bg-navy' : 'bg-gold'
+                }`}
+              />
+              {isDemoMode ? 'DEMO' : 'LIVE'}
+            </button>
             {isLoggedIn ? (
               <UserAccountMenu userLabel={userLabel} onSignOut={handleSignOut} />
             ) : (
@@ -183,6 +202,26 @@ export default function Navbar() {
             />
           )}
           <div className="pt-2 border-t border-white/10">
+            <button
+              type="button"
+              onClick={() => {
+                toggleDemo()
+                setMenuOpen(false)
+              }}
+              className={`mb-3 flex w-full items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-semibold tracking-[0.08em] transition-colors ${
+                isDemoMode
+                  ? 'border-gold/40 bg-gold text-navy'
+                  : 'border-white/15 bg-white/5 text-gold'
+              }`}
+              aria-label={isDemoMode ? 'Switch to live mode' : 'Switch to demo mode'}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  isDemoMode ? 'bg-navy' : 'bg-gold'
+                }`}
+              />
+              {isDemoMode ? 'DEMO MODE' : 'LIVE MODE'}
+            </button>
             {isLoggedIn ? (
               <>
                 <p className="text-white/50 text-xs px-1 pb-2 truncate">{userLabel}</p>

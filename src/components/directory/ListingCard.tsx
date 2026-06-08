@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MapPin } from "lucide-react";
+import { MapPin, ShieldCheck } from "lucide-react";
 import { Listing } from "@/lib/types";
 import VerifiedBadge from "./VerifiedBadge";
 import CategoryBadge from "./CategoryBadge";
@@ -25,43 +25,63 @@ export default function ListingCard({ listing }: Props) {
       tabIndex={0}
       aria-label={listing.businessName}
     >
-      <div className="tyrian-card-interactive p-5 h-full flex flex-col">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <CategoryBadge trade={listing.trade} size="sm" />
-          {listing.verified && <VerifiedBadge size="sm" />}
-        </div>
+      <article className="relative h-full overflow-hidden rounded-lg border border-warm bg-white shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-gold/35 hover:shadow-card-hover">
+        <div className="absolute inset-y-0 left-0 w-1 bg-gold" aria-hidden />
 
-        <h3 className="font-serif text-lg font-bold text-navy group-hover:text-gold transition-colors leading-tight mb-1">
-          {listing.businessName}
-        </h3>
-        <p className="text-sm text-muted mb-3">{listing.ownerName}</p>
-
-        <StarRating
-          rating={listing.memberRating}
-          reviewCount={listing.memberReviewCount}
-          hideWhenEmpty
-        />
-
-        <div className="mt-auto pt-4 border-t border-warm flex items-center justify-between">
-          <div className="flex items-center gap-1 text-sm text-muted">
-            <MapPin size={13} />
-            <span>{listing.location.city}, {listing.location.stateCode}</span>
+        <div className="relative p-5 h-full flex flex-col">
+          <div className="flex items-start justify-between gap-3 mb-5">
+            <CategoryBadge trade={listing.trade} size="sm" />
+            {listing.verified && <VerifiedBadge size="sm" />}
           </div>
-          {listing.lodgeSlug ? (
-            <Link
-              href={`/lodge/${listing.lodgeSlug}`}
-              className="text-xs text-muted/70 font-light hover:text-navy hover:underline"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {listing.lodge} #{listing.lodgeNumber}
-            </Link>
-          ) : (
-            <span className="text-xs text-muted/70 font-light">
-              {listing.lodge} #{listing.lodgeNumber}
-            </span>
-          )}
+
+          <h3 className="font-serif text-xl font-bold text-navy group-hover:text-gold transition-colors leading-tight mb-1">
+            {listing.businessName}
+          </h3>
+          <p className="text-sm text-muted mb-4">{listing.ownerName}</p>
+
+          <StarRating
+            rating={listing.memberRating}
+            reviewCount={listing.memberReviewCount}
+            hideWhenEmpty
+          />
+
+          <div className="mt-auto pt-5 space-y-3">
+            <div className="rounded-lg border border-warm bg-stone/45 px-3.5 py-3">
+              <div className="flex items-start gap-2.5">
+                <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md border border-trust/20 bg-white text-trust">
+                  <ShieldCheck size={14} strokeWidth={2.4} />
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-trust">
+                    Verified through
+                  </p>
+                  {listing.lodgeSlug ? (
+                    <Link
+                      href={`/lodge/${listing.lodgeSlug}`}
+                      className="text-sm font-semibold text-navy hover:text-gold hover:underline"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {listing.lodge} #{listing.lodgeNumber}
+                    </Link>
+                  ) : (
+                    <p className="text-sm font-semibold text-navy">
+                      {listing.lodge} #{listing.lodgeNumber}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-3 text-sm text-muted">
+              <div className="flex items-center gap-1.5">
+                <MapPin size={13} className="text-gold" />
+                <span>{listing.location.city}, {listing.location.stateCode}</span>
+              </div>
+              <span className="text-xs font-medium text-muted/80">Public listing</span>
+            </div>
+          </div>
         </div>
-      </div>
+      </article>
     </div>
   );
 }

@@ -31,37 +31,8 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   return (
     <DemoContext.Provider value={{ isDemoMode, toggleDemo }}>
       {children}
-      <DemoToggle isDemoMode={isDemoMode} onToggle={toggleDemo} />
     </DemoContext.Provider>
   )
 }
 
 export const useDemoMode = () => useContext(DemoContext)
-
-function DemoToggle({ isDemoMode, onToggle }: { isDemoMode: boolean; onToggle: () => void }) {
-  return (
-    <button
-      onClick={onToggle}
-      style={{
-        position: 'fixed', bottom: '1.5rem', right: '1.5rem',
-        zIndex: 9999,
-        display: 'flex', alignItems: 'center', gap: '8px',
-        background: isDemoMode ? '#C9A84C' : '#1B2A4A',
-        color: isDemoMode ? '#1B2A4A' : '#C9A84C',
-        border: 'none', borderRadius: '24px',
-        padding: '8px 16px', cursor: 'pointer',
-        fontSize: '12px', fontFamily: "'DM Sans', sans-serif",
-        fontWeight: 500, letterSpacing: '0.05em',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-        transition: 'all 0.2s',
-      }}
-    >
-      <span style={{
-        width: 8, height: 8, borderRadius: '50%',
-        background: isDemoMode ? '#1B2A4A' : '#C9A84C',
-        flexShrink: 0,
-      }} />
-      {isDemoMode ? 'DEMO MODE' : 'LIVE MODE'}
-    </button>
-  )
-}

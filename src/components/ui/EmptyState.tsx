@@ -22,7 +22,7 @@ export default function EmptyState({
 }: Props) {
   return (
     <div className={`text-center py-16 px-4 ${className}`}>
-      <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-navy/5 mb-4">
+      <div className="inline-flex items-center justify-center w-14 h-14 rounded-lg bg-navy/5 border border-warm mb-4">
         <Icon size={28} className="text-navy/40" strokeWidth={1.5} />
       </div>
       <p className="font-serif text-xl font-bold text-navy mb-2">{title}</p>

@@ -78,7 +78,7 @@ function DirectoryContent() {
   const [browseArea, setBrowseArea] = useState<GuestAreaPrefs>(DEFAULT_GUEST_AREA)
   const [profileArea, setProfileArea] = useState<GuestAreaPrefs | null>(null)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [nearMeOnly, setNearMeOnly] = useState(true)
+  const [nearMeOnly, setNearMeOnly] = useState(false)
   const [coordsTick, setCoordsTick] = useState(0)
 
   useEffect(() => {
@@ -358,7 +358,7 @@ function DirectoryContent() {
     <div className="flex flex-col min-h-screen">
       <Navbar />
 
-      <div className="bg-navy text-white py-12">
+      <div className="bg-navy text-white py-12 border-b border-gold/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1
             className="text-4xl font-bold mb-2"
@@ -408,7 +408,7 @@ function DirectoryContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row gap-3 mb-4 rounded-lg border border-warm bg-white/75 p-3 shadow-card">
           <div className="relative flex-1">
             <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
             <input
@@ -416,13 +416,13 @@ function DirectoryContent() {
               placeholder="Search by trade, name, or profession..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border border-[#E5E0D5] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A84C]/40 focus:border-[#C9A84C] transition"
+              className="w-full pl-10 pr-4 py-3 bg-white border border-[#E5E0D5] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A84C]/40 focus:border-[#C9A84C] transition"
             />
           </div>
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-[#E5E0D5] bg-white text-navy text-sm font-medium hover:bg-stone transition"
+            className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-[#E5E0D5] bg-white text-navy text-sm font-medium hover:bg-stone transition"
           >
             <SlidersHorizontal size={16} />
             Browse settings
@@ -430,7 +430,7 @@ function DirectoryContent() {
           <button
             type="button"
             onClick={() => setFiltersOpen((v) => !v)}
-            className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition sm:hidden ${
+            className={`flex items-center gap-2 px-4 py-3 rounded-lg border text-sm font-medium transition sm:hidden ${
               filtersOpen ? 'bg-navy text-white border-navy' : 'bg-white border-[#E5E0D5] text-navy'
             }`}
           >
@@ -451,12 +451,12 @@ function DirectoryContent() {
 
         <div className="flex gap-8">
           <aside className={`${filtersOpen ? 'block' : 'hidden'} sm:block w-full sm:w-56 flex-shrink-0`}>
-            <div className="bg-white rounded-2xl border border-[#E5E0D5] p-5 sticky top-20 space-y-5">
-              <div className="bg-stone rounded-xl p-4 border border-[#E5E0D5] space-y-3">
+            <div className="bg-white rounded-lg border border-[#E5E0D5] p-5 sticky top-20 space-y-5 shadow-card">
+              <div className="bg-stone rounded-lg p-4 border border-[#E5E0D5] space-y-3">
                 <button
                   type="button"
                   onClick={toggleNearMe}
-                  className={`w-full flex items-center justify-between rounded-lg px-2 py-1.5 -mx-2 transition-colors ${
+                  className={`w-full flex items-center justify-between rounded-md px-2 py-1.5 -mx-2 transition-colors ${
                     nearMeOnly ? 'bg-navy/5 ring-1 ring-navy/10' : 'hover:bg-white/80'
                   }`}
                 >
@@ -551,7 +551,7 @@ function DirectoryContent() {
 
             <Link
               href="/requests"
-              className="flex items-center justify-between gap-3 bg-[#C9A84C]/10 border border-[#C9A84C]/25 rounded-xl px-4 py-3 mb-5 hover:bg-[#C9A84C]/15 transition-colors group"
+              className="flex items-center justify-between gap-3 bg-[#C9A84C]/10 border border-[#C9A84C]/25 rounded-lg px-4 py-3 mb-5 hover:bg-[#C9A84C]/15 transition-colors group"
             >
               <p className="text-sm text-navy">
                 Can&apos;t find the right professional?{' '}
@@ -583,7 +583,7 @@ function DirectoryContent() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-20 text-muted">
+              <div className="text-center py-20 px-5 text-muted rounded-lg border border-dashed border-warm bg-white/65">
                 <Search size={40} className="mx-auto mb-3 opacity-30" />
                 <p className="font-medium text-lg">
                   {hasFilters ? 'No professionals match your filters' : 'No verified professionals found.'}
