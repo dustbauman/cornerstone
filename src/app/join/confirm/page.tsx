@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import {
   FOUNDING_PRICES_DOLLARS,
   FOUNDING_PROGRAM_LABELS,
+  STANDARD_ANNUAL_PRICE_DOLLARS,
   type FoundingProgramTier,
 } from '@/lib/pricing/constants'
 
@@ -17,7 +18,11 @@ const SIZE_LABELS: Record<string, string> = {
   standard: '40–100 members',
   large:    '100+ members',
 }
-const SIZE_PRICES: Record<string, number> = { small: 299, standard: 499, large: 799 }
+const SIZE_PRICES: Record<string, number> = {
+  small: STANDARD_ANNUAL_PRICE_DOLLARS,
+  standard: STANDARD_ANNUAL_PRICE_DOLLARS,
+  large: STANDARD_ANNUAL_PRICE_DOLLARS,
+}
 
 const STATE_NAMES: Record<string, string> = {
   AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',
@@ -50,13 +55,13 @@ function ConfirmContent() {
     foundingProgramParam === 'pioneer' || foundingProgramParam === 'charter'
       ? foundingProgramParam
       : null
-  const isFoundingEligible = foundingProgram !== null
+  const isLifetimeFree = foundingProgram === 'pioneer'
 
   // size is mutable — TierNudge may change it before checkout
   const [size, setSize] = useState(searchParams.get('size') || 'standard')
 
-  const listPrice = SIZE_PRICES[size] ?? 499
-  const price = foundingProgram
+  const listPrice = SIZE_PRICES[size] ?? STANDARD_ANNUAL_PRICE_DOLLARS
+  const price = isLifetimeFree && foundingProgram
     ? FOUNDING_PRICES_DOLLARS[foundingProgram]
     : listPrice
 
@@ -145,7 +150,7 @@ function ConfirmContent() {
         <h1 className="text-3xl font-bold text-navy mb-1" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
           Confirm your lodge details
         </h1>
-        <p className="text-muted text-sm mb-8">Please review before completing payment.</p>
+        <p className="text-muted text-sm mb-8">Please review before continuing.</p>
 
         <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm overflow-hidden mb-6">
           <div className="px-6 py-5 space-y-3">
@@ -164,14 +169,18 @@ function ConfirmContent() {
           <div className="px-6 py-4 border-t border-[#E5E0D5] bg-stone/50 flex items-center justify-between">
             <span className="text-sm text-muted">Platform fee</span>
             <span className="text-lg font-bold text-navy" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
-              {isFoundingEligible && (
-                <span className="text-sm font-normal text-muted line-through mr-2">${listPrice}</span>
+              {isLifetimeFree && (
+                <span className="text-sm font-normal text-muted line-through mr-2">${listPrice}/year</span>
               )}
-              ${price}{' '}
-              <span className="text-sm font-normal text-muted">(one-time)</span>
+              {isLifetimeFree && ' '}
+              {isLifetimeFree ? 'Free' : `$${price}`}
+              {!isLifetimeFree && <span className="text-sm font-normal text-muted">/year</span>}
               {foundingProgram && (
                 <span className="block text-xs font-normal text-[#92400E] mt-0.5">
-                  {FOUNDING_PROGRAM_LABELS[foundingProgram]} Founding Lodge — lifetime access
+                  {' '}
+                  {isLifetimeFree
+                    ? `${FOUNDING_PROGRAM_LABELS[foundingProgram]} Lodge — free for life`
+                    : `${FOUNDING_PROGRAM_LABELS[foundingProgram]} Lodge — free signup, normal $${STANDARD_ANNUAL_PRICE_DOLLARS}/year`}
                 </span>
               )}
             </span>
@@ -183,7 +192,7 @@ function ConfirmContent() {
         </div>
 
         {/* Tier nudge — only shows when member_count is available and there's a mismatch */}
-        {!isFoundingEligible && (
+        {!isLifetimeFree && (
           <TierNudge
             memberCount={memberCount}
             selectedSize={size}
@@ -218,7 +227,7 @@ function ConfirmContent() {
           >
             {submitting
               ? <><span className="w-4 h-4 border-2 border-navy border-t-transparent rounded-full animate-spin" /> Processing…</>
-              : 'Complete Payment →'
+              : isLifetimeFree ? 'Activate Lodge →' : 'Complete Payment →'
             }
           </button>
         </div>

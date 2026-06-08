@@ -13,7 +13,7 @@ import TyrianHeroBackground from "@/components/brand/TyrianHeroBackground";
 import FoundingLodgeBadge from "@/components/brand/FoundingLodgeBadge";
 import { createClient } from "@/lib/supabase/server";
 import { getFoundingSlotCounts } from "@/lib/pricing/founding";
-import { FOUNDING_SLOTS_TOTAL } from "@/lib/pricing/constants";
+import { FOUNDING_SLOTS_TOTAL, FOUNDING_TIER_1_SLOTS, STANDARD_ANNUAL_PRICE_DOLLARS } from "@/lib/pricing/constants";
 
 export const metadata = {
   title: "Bring Tyrian to Your Lodge",
@@ -44,10 +44,12 @@ const CHAMPION_REASONS = [
 
 export default async function LodgesPage() {
   let totalRemaining = FOUNDING_SLOTS_TOTAL;
+  let lifetimeRemaining = FOUNDING_TIER_1_SLOTS;
   try {
     const supabase = createClient();
     const counts = await getFoundingSlotCounts(supabase);
     totalRemaining = counts.totalRemaining;
+    lifetimeRemaining = counts.pioneerRemaining;
   } catch {
     // Fall back to the full slot count if the lookup fails — page still renders.
   }
@@ -197,13 +199,15 @@ export default async function LodgesPage() {
             Any brother can unlock it for the whole lodge
           </h2>
           <p className="text-white/70 text-lg leading-relaxed mb-4">
-            The one who does makes it a{" "}
+            The first five lodges become{" "}
             <span className="text-gold font-semibold">Founding Lodge</span> —
-            $99 once, lifetime, no annual dues, ever.
+            free for life. After that, every lodge is ${STANDARD_ANNUAL_PRICE_DOLLARS}/year.
           </p>
           {foundingOpen && (
             <p className="text-white/50 text-sm mb-10">
-              {totalRemaining} of {FOUNDING_SLOTS_TOTAL} founding lodges remain.
+              {lifetimeRemaining > 0
+                ? `${lifetimeRemaining} of ${FOUNDING_TIER_1_SLOTS} lifetime founding lodges remain.`
+                : `${totalRemaining} early lodge spots remain at normal $${STANDARD_ANNUAL_PRICE_DOLLARS}/year access.`}
             </p>
           )}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

@@ -3,7 +3,7 @@ import { generateUniqueClaimCode } from '@/lib/lodges/claim-code'
 import { generateUniqueLodgeSlug } from '@/lib/lodges/slug'
 import { sendLodgeClaimEmail } from '@/lib/email'
 import { INVITE_CAPS } from '@/lib/invites'
-import { getFoundingOffer } from '@/lib/pricing'
+import { PROGRAM_TO_LODGE_TIER, type FoundingProgramTier } from '@/lib/pricing'
 
 function adminClient() {
   return createClient(
@@ -52,12 +52,15 @@ export async function POST(request: Request) {
     return Response.json({ received: true })
   }
 
-  // Assign tier server-side at payment time — never trust the client
-  const { offer: foundingOffer } = await getFoundingOffer(supabase)
+  // Metadata is written by our checkout route when the session is created.
+  const foundingProgram =
+    meta.founding_program === 'pioneer' || meta.founding_program === 'charter'
+      ? (meta.founding_program as FoundingProgramTier)
+      : null
   const size = meta.lodge_size as string
 
-  const tier = foundingOffer
-    ? foundingOffer.lodgeTier
+  const tier = foundingProgram
+    ? PROGRAM_TO_LODGE_TIER[foundingProgram]
     : size === 'small'
       ? 'small'
       : size === 'large'

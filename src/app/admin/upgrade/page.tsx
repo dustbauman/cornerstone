@@ -8,36 +8,16 @@ import Footer from '@/components/layout/Footer'
 import { createClient } from '@/lib/supabase/client'
 
 const TIER_LABELS: Record<string, string> = {
-  founding: 'Founding',
-  charter:  'Charter',
-  small:    'Small ($299)',
-  standard: 'Standard ($499)',
-  large:    'Large ($799)',
+  founding: 'Founding (free for life)',
+  charter:  'Early ($99/year)',
+  small:    'Small ($99/year)',
+  standard: 'Standard ($99/year)',
+  large:    'Large ($99/year)',
 }
 
 const UPGRADE_OPTIONS: Record<string, { to: string; label: string; price: number; features: string[] }[]> = {
-  small: [
-    {
-      to: 'standard',
-      label: 'Standard',
-      price: 200,
-      features: ['Up to 100 member invites', 'Lodge analytics dashboard', 'Priority placement in Network'],
-    },
-    {
-      to: 'large',
-      label: 'Large',
-      price: 500,
-      features: ['Unlimited member invites', 'Lodge analytics dashboard', 'Priority placement in Network', 'Dedicated onboarding support'],
-    },
-  ],
-  standard: [
-    {
-      to: 'large',
-      label: 'Large',
-      price: 300,
-      features: ['Unlimited member invites', 'Lodge analytics dashboard', 'Priority placement in Network', 'Dedicated onboarding support'],
-    },
-  ],
+  small: [],
+  standard: [],
 }
 
 interface LodgeSummary {
@@ -143,7 +123,7 @@ export default function UpgradePage() {
   const lodge = lodgeState?.lodge ?? null
   const options = lodge ? UPGRADE_OPTIONS[lodge.tier] : null
 
-  if (!lodgeState || !options) {
+  if (!lodgeState || !options?.length) {
     return (
       <div className="flex flex-col min-h-screen bg-stone">
         <Navbar />
@@ -154,9 +134,7 @@ export default function UpgradePage() {
               No upgrades available
             </h1>
             <p className="text-sm text-muted mb-4">
-              {lodge?.tier === 'large' || lodge?.tier === 'founding' || lodge?.tier === 'charter'
-                ? 'Your lodge is already on the highest tier with unlimited invites.'
-                : 'Upgrade options are not available for your current plan.'}
+              Every active lodge now includes unlimited invites at the same flat platform price.
             </p>
             <Link href="/admin" className="text-sm font-semibold text-navy underline">← Back to admin</Link>
           </div>

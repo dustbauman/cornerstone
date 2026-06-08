@@ -8,6 +8,8 @@ import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit
 import {
   getFoundingOffer,
   getStripePriceIdForFoundingOffer,
+  getStripePriceIdForStandardAnnual,
+  STANDARD_ANNUAL_PRICE_DOLLARS,
   STANDARD_PRICES_DOLLARS,
 } from '@/lib/pricing'
 
@@ -119,8 +121,9 @@ export async function POST(request: Request) {
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+    const isLifetimeFree = foundingOffer?.billingModel === 'lifetime_free'
 
-    if (process.env.STRIPE_SECRET_KEY) {
+    if (process.env.STRIPE_SECRET_KEY && !isLifetimeFree) {
       const Stripe = (await import('stripe')).default
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
@@ -128,12 +131,7 @@ export async function POST(request: Request) {
       if (foundingOffer) {
         priceId = getStripePriceIdForFoundingOffer(foundingOffer)
       } else {
-        const priceMap: Record<string, string> = {
-          small: process.env.STRIPE_PRICE_STANDARD_SMALL!,
-          standard: process.env.STRIPE_PRICE_STANDARD!,
-          large: process.env.STRIPE_PRICE_LARGE!,
-        }
-        priceId = priceMap[size] || process.env.STRIPE_PRICE_STANDARD!
+        priceId = getStripePriceIdForStandardAnnual()
       }
 
       if (!priceId) {
@@ -147,7 +145,7 @@ export async function POST(request: Request) {
       }
 
       const session = await stripe.checkout.sessions.create({
-        mode: 'payment',
+        mode: 'subscription',
         payment_method_types: ['card'],
         line_items: [{ price: priceId, quantity: 1 }],
         metadata: {
@@ -159,6 +157,8 @@ export async function POST(request: Request) {
           payer_email: normalizedPayerEmail,
           payer_name: payerName,
           founding_program: foundingOffer?.programTier ?? '',
+          billing_model: 'annual',
+          annual_price_dollars: String(STANDARD_ANNUAL_PRICE_DOLLARS),
         },
         customer_email: normalizedPayerEmail,
         success_url: `${appUrl}/join/success?session_id={CHECKOUT_SESSION_ID}`,
@@ -176,7 +176,7 @@ export async function POST(request: Request) {
       return Response.json({ url: session.url })
     }
 
-    // Dev / no Stripe: activate immediately
+    // Free founding / dev / no Stripe: activate immediately
     const tier = foundingOffer
       ? foundingOffer.lodgeTier
       : size === 'small'
@@ -189,7 +189,7 @@ export async function POST(request: Request) {
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 30)
     const amount = foundingOffer
-      ? foundingOffer.priceDollars
+      ? foundingOffer.priceDollars || foundingOffer.annualPriceDollars
       : STANDARD_PRICES_DOLLARS[size as keyof typeof STANDARD_PRICES_DOLLARS] ??
         STANDARD_PRICES_DOLLARS.standard
 

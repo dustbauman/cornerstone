@@ -7,12 +7,12 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import LodgeSearch, { US_STATES, type LodgeResult } from '@/components/lodge/LodgeSearch'
 import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
-import { FOUNDING_TIER_1_SLOTS } from '@/lib/pricing/constants'
+import { FOUNDING_TIER_1_SLOTS, STANDARD_ANNUAL_PRICE_DOLLARS } from '@/lib/pricing/constants'
 
 const SIZE_OPTIONS = [
-  { value: 'small',    label: 'Under 40 members',  price: 299 },
-  { value: 'standard', label: '40–100 members',    price: 499 },
-  { value: 'large',    label: '100+ members',      price: 799 },
+  { value: 'small',    label: 'Under 40 members',  price: STANDARD_ANNUAL_PRICE_DOLLARS },
+  { value: 'standard', label: '40–100 members',    price: STANDARD_ANNUAL_PRICE_DOLLARS },
+  { value: 'large',    label: '100+ members',      price: STANDARD_ANNUAL_PRICE_DOLLARS },
 ]
 
 type LookupStatus = 'idle' | 'checking' | 'active' | 'pending' | 'not_found' | 'error'
@@ -116,8 +116,9 @@ function JoinContent() {
   const selectedSize = SIZE_OPTIONS.find(o => o.value === size)
   const canSubmit = selectedLodge && size && payerName.trim() && payerEmail.trim() && confirmed
   const foundingOffer = foundingStatus?.offer ?? null
-  const isFoundingEligible = foundingOffer !== null
   const foundingPrice = foundingOffer?.priceDollars ?? null
+  const isLifetimeFree = foundingOffer?.programTier === 'pioneer'
+  const isEarlyAnnual = foundingOffer?.programTier === 'charter'
 
   return (
     <div className="flex flex-col min-h-screen bg-stone">
@@ -250,22 +251,22 @@ function JoinContent() {
                 <FoundingLodgeBadge
                   variant="callout"
                   label={
-                    foundingOffer.programTier === 'pioneer'
-                      ? 'Pioneer Founding Lodge — $99 lifetime'
-                      : 'Charter Founding Lodge — $299 lifetime'
+                    isLifetimeFree
+                      ? 'Founding Lodge — free for life'
+                      : 'Early Lodge — free signup, then $99/year'
                   }
                 />
                 <p className="text-sm text-[#78350F] mt-2">
-                  {foundingOffer.programTier === 'pioneer' ? (
+                  {isLifetimeFree ? (
                     <>
-                      {foundingStatus!.pioneerRemaining} of {FOUNDING_TIER_1_SLOTS} Pioneer slots remain.
-                      Pay ${foundingOffer.priceDollars} once for lifetime access — no annual fee, ever.
+                      {foundingStatus!.pioneerRemaining} of {FOUNDING_TIER_1_SLOTS} lifetime founding slots remain.
+                      No signup fee, no annual fee, free for life.
                     </>
                   ) : (
                     <>
-                      Pioneer slots are full. {foundingStatus!.charterRemaining} Charter{' '}
-                      {foundingStatus!.charterRemaining === 1 ? 'slot' : 'slots'} remain at $
-                      {foundingOffer.priceDollars} — still lifetime, still no annual fee.
+                      The lifetime founding slots are full. {foundingStatus!.charterRemaining} early{' '}
+                      {foundingStatus!.charterRemaining === 1 ? 'spot' : 'spots'} remain with no signup fee.
+                      Normal platform access is ${STANDARD_ANNUAL_PRICE_DOLLARS}/year.
                     </>
                   )}
                 </p>
@@ -297,29 +298,31 @@ function JoinContent() {
                         <input type="radio" name="size" value={opt.value} checked={size === opt.value} onChange={() => setSize(opt.value)} className="accent-navy" />
                         <span className="text-sm font-medium text-[#1A1A1A]">{opt.label}</span>
                       </div>
-                      {isFoundingEligible && foundingPrice !== null ? (
+                      {isLifetimeFree && foundingPrice !== null ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted line-through">${opt.price}</span>
-                          <span className="text-sm font-semibold text-[#92400E]">${foundingPrice}</span>
+                          <span className="text-sm text-muted line-through">${opt.price}/year</span>
+                          <span className="text-sm font-semibold text-[#92400E]">Free</span>
                         </div>
                       ) : (
-                        <span className="text-sm font-semibold text-navy">${opt.price}</span>
+                        <span className="text-sm font-semibold text-navy">${opt.price}/year</span>
                       )}
                     </label>
                   ))}
                 </div>
                 <p className="text-sm text-muted mt-2">
-                  One-time platform fee:{' '}
-                  {isFoundingEligible && foundingOffer ? (
+                  Platform access:{' '}
+                  {isLifetimeFree && foundingOffer ? (
                     <>
-                      <span className="line-through text-muted">${selectedSize?.price}</span>{' '}
-                      <span className="font-semibold text-[#92400E]">${foundingPrice}</span>
+                      <span className="line-through text-muted">${selectedSize?.price}/year</span>{' '}
+                      <span className="font-semibold text-[#92400E]">Free for life</span>
                       <span className="text-[#92400E] ml-2">
-                        ({foundingOffer.label} — lifetime, one-time)
+                        ({foundingOffer.label} Lodge)
                       </span>
                     </>
+                  ) : isEarlyAnnual ? (
+                    <span className="font-semibold text-navy">Free signup, then ${STANDARD_ANNUAL_PRICE_DOLLARS}/year</span>
                   ) : (
-                    <span className="font-semibold text-navy">${selectedSize?.price}</span>
+                    <span className="font-semibold text-navy">${selectedSize?.price}/year</span>
                   )}
                 </p>
               </div>
@@ -375,7 +378,7 @@ function JoinContent() {
                 disabled={!canSubmit || submitting}
                 className="w-full bg-[#C9A84C] hover:bg-[#b8943d] text-navy font-bold py-3.5 rounded-xl disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
               >
-                Continue to Payment →
+                {isLifetimeFree ? 'Activate Lodge →' : 'Continue to Payment →'}
               </button>
             </form>
 

@@ -7,9 +7,9 @@ const TIER_BOUNDARIES = {
 }
 
 const TIERS = [
-  { value: 'small',    label: 'Small',    price: '$299', cap: 'Up to 40 member invites' },
-  { value: 'standard', label: 'Standard', price: '$499', cap: 'Up to 100 member invites' },
-  { value: 'large',    label: 'Large',    price: '$799', cap: 'Unlimited invites'        },
+  { value: 'small',    label: 'Small',    price: '$99/year', cap: 'Unlimited member invites' },
+  { value: 'standard', label: 'Standard', price: '$99/year', cap: 'Unlimited member invites' },
+  { value: 'large',    label: 'Large',    price: '$99/year', cap: 'Unlimited member invites' },
 ]
 
 function getRecommended(memberCount: number): string {
@@ -47,8 +47,8 @@ export function TierNudge({ memberCount, selectedSize, onTierChange }: TierNudge
         <strong>{memberCount} registered members</strong>.
       </p>
       <p className="text-xs text-muted leading-relaxed mb-4">
-        We&apos;ve suggested <strong>{recommendedTier.label} ({recommendedTier.price})</strong> as the right fit.
-        You can still choose any tier — if you hit your invite limit later, you can upgrade and only pay the difference.
+        We&apos;ve suggested <strong>{recommendedTier.label}</strong> as the right fit.
+        Every lodge gets the same $99/year platform access with unlimited member invites.
       </p>
 
       <div className="space-y-1.5">

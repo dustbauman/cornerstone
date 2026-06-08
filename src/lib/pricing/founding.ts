@@ -9,6 +9,8 @@ import {
   FOUNDING_TIER_2_SLOTS,
   type FoundingProgramTier,
   PROGRAM_TO_LODGE_TIER,
+  STANDARD_ANNUAL_PRICE_CENTS,
+  STANDARD_ANNUAL_PRICE_DOLLARS,
   type LodgeTier,
 } from './constants'
 
@@ -26,11 +28,14 @@ export type FoundingOffer = {
   lodgeTier: LodgeTier
   priceDollars: number
   priceCents: number
+  annualPriceDollars: number
+  annualPriceCents: number
+  billingModel: 'lifetime_free' | 'annual'
   label: string
   callout: string
 }
 
-/** Active lodges in the founding program (Pioneer + Charter). */
+/** Active lodges in the launch program (first five lifetime-free, next five early annual). */
 export async function getFoundingSlotCounts(
   supabase: SupabaseClient
 ): Promise<FoundingSlotCounts> {
@@ -79,20 +84,29 @@ function buildOffer(programTier: FoundingProgramTier): FoundingOffer {
     lodgeTier,
     priceDollars: FOUNDING_PRICES_DOLLARS[programTier],
     priceCents: FOUNDING_PRICES_CENTS[programTier],
+    annualPriceDollars: programTier === 'charter' ? STANDARD_ANNUAL_PRICE_DOLLARS : 0,
+    annualPriceCents: programTier === 'charter' ? STANDARD_ANNUAL_PRICE_CENTS : 0,
+    billingModel: programTier === 'pioneer' ? 'lifetime_free' : 'annual',
     label: FOUNDING_PROGRAM_LABELS[programTier],
     callout: FOUNDING_PROGRAM_CALLout[programTier],
   }
 }
 
-/** Stripe Price ID for a founding offer (server-only). */
+/** Stripe Price ID for a paid founding offer (server-only). */
 export function getStripePriceIdForFoundingOffer(offer: FoundingOffer): string | undefined {
   if (offer.programTier === 'pioneer') {
-    return (
-      process.env.STRIPE_PRICE_PIONEER ||
-      process.env.STRIPE_PRICE_FOUNDING // legacy $1 price ID — replace in Stripe
-    )
+    return undefined
   }
-  return process.env.STRIPE_PRICE_CHARTER
+  return getStripePriceIdForStandardAnnual()
+}
+
+/** Stripe Price ID for the flat $99/year lodge subscription (server-only). */
+export function getStripePriceIdForStandardAnnual(): string | undefined {
+  return (
+    process.env.STRIPE_PRICE_LODGE_ANNUAL ||
+    process.env.STRIPE_PRICE_STANDARD_ANNUAL ||
+    process.env.STRIPE_PRICE_STANDARD
+  )
 }
 
 export async function getFoundingOffer(

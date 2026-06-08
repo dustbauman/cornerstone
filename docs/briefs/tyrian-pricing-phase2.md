@@ -1,5 +1,6 @@
 # Tyrian — Pricing Phase 2: Annual Standard Billing
 
+> **Superseded:** The active model is now the flat $99/year launch model in [tyrian-pricing-v2.md](./tyrian-pricing-v2.md).
 > **Prerequisite:** Phase 1 shipped (Pioneer $99 / Charter $299 founding program).
 > **Source of truth:** [tyrian-pricing-v2.md](./tyrian-pricing-v2.md)
 

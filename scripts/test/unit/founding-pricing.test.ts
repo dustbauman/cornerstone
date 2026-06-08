@@ -25,15 +25,18 @@ describe('resolveFoundingOffer', () => {
     const offer = resolveFoundingOffer(counts(0, 0))
     expect(offer?.programTier).toBe('pioneer')
     expect(offer?.lodgeTier).toBe('founding')
-    expect(offer?.priceDollars).toBe(99)
-    expect(offer?.priceCents).toBe(9900)
+    expect(offer?.priceDollars).toBe(0)
+    expect(offer?.priceCents).toBe(0)
+    expect(offer?.billingModel).toBe('lifetime_free')
   })
 
-  it('rolls to charter once all pioneer slots are taken', () => {
+  it('rolls to early annual once all lifetime founding slots are taken', () => {
     const offer = resolveFoundingOffer(counts(FOUNDING_TIER_1_SLOTS, 0))
     expect(offer?.programTier).toBe('charter')
     expect(offer?.lodgeTier).toBe('charter')
-    expect(offer?.priceDollars).toBe(299)
+    expect(offer?.priceDollars).toBe(0)
+    expect(offer?.annualPriceDollars).toBe(99)
+    expect(offer?.billingModel).toBe('annual')
   })
 
   it('returns null when the program is full', () => {
@@ -48,24 +51,24 @@ describe('resolveFoundingOffer', () => {
 describe('founding tier helpers', () => {
   it('identifies founding program lodge tiers', () => {
     expect(isFoundingProgramLodgeTier('founding')).toBe(true)
-    expect(isFoundingProgramLodgeTier('charter')).toBe(true)
+    expect(isFoundingProgramLodgeTier('charter')).toBe(false)
     expect(isFoundingProgramLodgeTier('standard')).toBe(false)
     expect(isFoundingProgramLodgeTier(null)).toBe(false)
   })
 
   it('maps lodge tier back to program tier', () => {
     expect(foundingProgramTierFromLodgeTier('founding')).toBe('pioneer')
-    expect(foundingProgramTierFromLodgeTier('charter')).toBe('charter')
+    expect(foundingProgramTierFromLodgeTier('charter')).toBeNull()
     expect(foundingProgramTierFromLodgeTier('large')).toBeNull()
   })
 })
 
 describe('INVITE_CAPS', () => {
-  it('grants unlimited invites to founding/charter/large, caps small/standard', () => {
+  it('grants unlimited invites to every lodge tier in the flat pricing model', () => {
     expect(INVITE_CAPS.founding).toBeNull()
     expect(INVITE_CAPS.charter).toBeNull()
     expect(INVITE_CAPS.large).toBeNull()
-    expect(INVITE_CAPS.small).toBe(40)
-    expect(INVITE_CAPS.standard).toBe(100)
+    expect(INVITE_CAPS.small).toBeNull()
+    expect(INVITE_CAPS.standard).toBeNull()
   })
 })

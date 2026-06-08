@@ -2,11 +2,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { INVITE_CAPS } from '@/lib/invites'
 
-// Difference amounts in cents
+// Legacy difference amounts in cents. The current flat $99/year model no
+// longer exposes upgrade options in the admin UI.
 const UPGRADE_PRICES: Record<string, number> = {
-  small_to_standard: 20000,   // $299 → $499
-  small_to_large:    50000,   // $299 → $799
-  standard_to_large: 30000,   // $499 → $799
+  small_to_standard: 20000,
+  small_to_large:    50000,
+  standard_to_large: 30000,
 }
 
 export async function POST(request: Request) {

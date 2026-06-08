@@ -3,8 +3,8 @@ import { createAdminClient } from './supabase/admin'
 export const INVITE_CAPS: Record<string, number | null> = {
   founding: null,
   charter:  null,
-  small:    40,
-  standard: 100,
+  small:    null,
+  standard: null,
   large:    null,
 }
 

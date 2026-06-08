@@ -50,9 +50,8 @@ export async function run() {
       .select('status, tier, invite_cap, claim_code, slug, paid_at, stripe_session_id, paid_by_email')
       .eq('id', lodge.id).single()
     s.eq(row.status, 'active', 'lodge activated')
-    // Empty founding program -> server assigns the founding (pioneer) tier, ignoring client size.
-    s.eq(row.tier, 'founding', 'tier assigned server-side (founding override, not client size)')
-    s.ok(row.invite_cap === null, 'founding tier has unlimited invite_cap')
+    s.eq(row.tier, 'small', 'tier assigned from checkout metadata')
+    s.ok(row.invite_cap === null, 'flat pricing has unlimited invite_cap')
     s.ok(!!row.claim_code, 'claim_code generated')
     s.ok(!!row.slug, 'slug generated')
     s.ok(!!row.paid_at, 'paid_at set')
@@ -74,7 +73,7 @@ export async function run() {
     const { data: row } = await admin.from('lodges')
       .select('tier, invite_cap, upgraded_at, upgrade_stripe_session_id').eq('id', lodge.id).single()
     s.eq(row.tier, 'standard', 'tier upgraded')
-    s.eq(row.invite_cap, 100, 'invite_cap updated to standard cap')
+    s.ok(row.invite_cap === null, 'invite_cap remains unlimited')
     s.ok(!!row.upgraded_at, 'upgraded_at set')
     s.ok(!!row.upgrade_stripe_session_id, 'upgrade session id recorded')
   }

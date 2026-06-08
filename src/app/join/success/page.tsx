@@ -7,8 +7,8 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import FoundingLodgeBadge from '@/components/brand/FoundingLodgeBadge'
 import {
-  foundingProgramTierFromLodgeTier,
   isFoundingProgramLodgeTier,
+  STANDARD_ANNUAL_PRICE_DOLLARS,
 } from '@/lib/pricing/constants'
 
 function SuccessContent() {
@@ -47,7 +47,6 @@ function SuccessContent() {
   }, [claimCode, sessionId])
 
   const isFoundingProgram = isFoundingProgramLodgeTier(tier)
-  const foundingProgram = foundingProgramTierFromLodgeTier(tier)
 
   function copyCode() {
     navigator.clipboard.writeText(claimCode)
@@ -93,18 +92,20 @@ function SuccessContent() {
           </div>
         </div>
 
-        {isFoundingProgram && (
+        {(isFoundingProgram || tier === 'charter') && (
           <div className="mb-5 p-4 bg-[#FEF3C7] border border-[#C9A84C]/40 rounded-xl">
             <FoundingLodgeBadge
               variant="callout"
               label={
-                foundingProgram === 'charter'
-                  ? "You're a Charter Founding Lodge — lifetime access secured."
-                  : "You're a Pioneer Founding Lodge — one of the first nationally."
+                tier === 'charter'
+                  ? `You're an Early Lodge — free signup, then $${STANDARD_ANNUAL_PRICE_DOLLARS}/year.`
+                  : "You're a Founding Lodge — free for life."
               }
             />
             <p className="text-sm text-[#78350F] mt-2">
-              Your lodge carries permanent Founding Lodge designation with no annual renewal.
+              {tier === 'charter'
+                ? 'Your lodge is part of the first ten on Tyrian and has normal annual platform access.'
+                : 'Your lodge carries permanent Founding Lodge designation with no annual renewal.'}
             </p>
           </div>
         )}
